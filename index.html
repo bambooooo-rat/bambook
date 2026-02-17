@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bambook - Course Materials</title>
+    <!-- 引入樣式 -->
+    <link rel="stylesheet" href="assets/css/fonts.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- 引入 Python 生成的資料 -->
+    <script src="course_data.js"></script>
+    <!-- 引入主程式邏輯 -->
+    <script src="assets/js/main.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 
+            [Header] 
+            Compact Mode: Flexbox layout inside (Logo Left, Nav Right)
+        -->
+        <header class="header-card">
+            <!-- 品牌標誌：淡化處理，只是一個視覺錨點 -->
+            <div class="header-title">
+                <span>📚 Bambook</span>
+            </div>
+            
+            <!-- 導覽列：動態生成學期按鈕 -->
+            <nav id="semester-nav" class="semester-nav"></nav>
+        </header>
+
+        <!-- 內容區：動態載入 -->
+        <main id="content-area"></main>
+    </div>
+
+</body>
+</html>
