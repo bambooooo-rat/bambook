@@ -31,6 +31,7 @@ body {
     background-color: var(--bg-body);
     color: var(--text-primary);
     line-height: 1.6;
+    /* 開啟 iOS 慣性捲動 */
     -webkit-overflow-scrolling: touch;
 }
 
@@ -56,6 +57,8 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 15px 30px;
+
+    /* GPU 加速提示，優化 Sticky 效果 */
     will-change: transform;
     transform: translateZ(0); 
 }
@@ -146,8 +149,15 @@ body {
     margin-bottom: 20px;
     border: 1px solid var(--border-color);
     animation: fadeIn 0.3s ease-out;
-    content-visibility: auto;
-    contain-intrinsic-size: 500px; 
+
+    /* [關鍵修正] 
+       移除 content-visibility: auto; 
+       解決快速滑動時的白屏/截斷問題。
+       改用 transform: translate3d(0,0,0) 強制開啟 GPU 圖層合成，
+       提升滑動流暢度且不會有副作用。
+    */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
 }
 
 .card-label {
@@ -294,7 +304,9 @@ body {
     overflow: hidden;
     background: #fff;
     transition: box-shadow 0.2s;
-    content-visibility: auto;
+    
+    /* [關鍵修正] 這裡也移除 content-visibility */
+    transform: translate3d(0, 0, 0);
 }
 
 .slide-accordion-header {
