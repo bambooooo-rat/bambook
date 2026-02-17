@@ -1,10 +1,10 @@
 /* assets/css/style.css */
 
 :root {
-    /* --- 色彩系統 (源自 GeoGuessr Meta) --- */
-    --bg-body: #f0f2f5;           /* Profile 頁面專用背景 */
+    /* --- 色彩系統 --- */
+    --bg-body: #f0f2f5;
     --bg-white: #ffffff;
-    --bg-light-gray: #f7f9fa;     /* 徽章背景 */
+    --bg-light-gray: #f7f9fa;
     --bg-hover: #f1f1f1;
     
     --text-primary: #333333;
@@ -14,9 +14,9 @@
     
     --border-color: #e1e4e8;
     
-    --color-accent: #2196f3;      /* 主強調色 */
-    --color-header-blue: #2c3e50; /* 標題深藍 */
-    --color-accent-red: #d9534f;  /* 強調色 */
+    --color-accent: #2196f3;
+    --color-header-blue: #2c3e50;
+    --color-accent-red: #d9534f;
 
     --shadow-card: 0 4px 12px rgba(0,0,0,0.08);
     --shadow-hover: 0 6px 16px rgba(0,0,0,0.12);
@@ -31,45 +31,48 @@ body {
     background-color: var(--bg-body);
     color: var(--text-primary);
     line-height: 1.6;
+    /* [優化] 開啟 iOS 慣性捲動，讓滑動更像原生 App */
+    -webkit-overflow-scrolling: touch;
 }
 
 .container {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 20px; /* 減少上方留白 */
+    padding: 20px;
 }
 
-/* --- [修改] Compact Header Design --- 
-   不再是巨大的卡片，而是緊湊的導覽列
-*/
+/* --- Header --- */
 .header-card {
     background: var(--bg-white);
-    padding: 12px 20px; /* 大幅減少內距 */
-    border-radius: 12px; /* 稍微縮小圓角 */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* 陰影變輕 */
+    padding: 12px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     margin-bottom: 25px;
     border: 1px solid var(--border-color);
     position: sticky;
-    top: 15px; /* 距離頂部一點點距離，製造懸浮感 */
+    top: 15px;
     z-index: 100;
     
-    /* Flex 佈局：左 Logo 右 Nav */
     display: flex;
     align-items: center;
-    flex-wrap: wrap; /* 手機版自動換行 */
+    flex-wrap: wrap;
     gap: 15px 30px;
+
+    /* [優化] 提示瀏覽器這個元素會變動，提前開啟 GPU 加速 */
+    will-change: transform;
+    transform: translateZ(0); 
 }
 
 .header-title {
-    font-size: 1.1rem; /* 字體縮小，當作 Logo */
+    font-size: 1.1rem;
     margin: 0;
-    color: var(--text-secondary); /* 顏色變淡，不搶視覺 */
+    color: var(--text-secondary);
     font-weight: 700;
     display: flex;
     align-items: center;
     gap: 8px;
-    white-space: nowrap; /* 不換行 */
-    opacity: 0.8; /* 稍微透明 */
+    white-space: nowrap;
+    opacity: 0.8;
 }
 
 .header-title:hover {
@@ -79,24 +82,22 @@ body {
     transition: 0.2s;
 }
 
-/* 導覽列容器 */
 .semester-nav {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     padding: 0;
-    border: none; /* 移除分隔線 */
+    border: none;
     margin: 0;
-    flex-grow: 1; /* 佔據剩餘空間 */
-    justify-content: flex-end; /* 靠右對齊 (可選 flex-start 靠左) */
+    flex-grow: 1;
+    justify-content: flex-end;
 }
 
-/* 按鈕樣式微調 (更小巧) */
 .nav-btn {
     appearance: none;
-    background: transparent; /* 預設透明背景 */
-    border: 1px solid transparent; /* 預設無邊框 */
-    padding: 6px 14px; /* 縮小按鈕 */
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 6px 14px;
     border-radius: 20px;
     font-size: 0.9rem;
     font-family: var(--font-main);
@@ -107,6 +108,8 @@ body {
     display: flex;
     align-items: center;
     gap: 5px;
+    /* [優化] 移除手機點擊後的 300ms 延遲 */
+    touch-action: manipulation;
 }
 
 .nav-btn:hover {
@@ -115,26 +118,28 @@ body {
 }
 
 .nav-btn.active {
-    background: var(--bg-active, #e3f2fd); /* 淺藍底 */
-    color: var(--color-accent); /* 藍字 */
+    background: var(--bg-active, #e3f2fd);
+    color: var(--color-accent);
     border-color: rgba(33, 150, 243, 0.2);
-    box-shadow: none; /* 移除浮起陰影，改為平面化 */
+    box-shadow: none;
     transform: none;
 }
 
-/* 手機版調整 */
 @media (max-width: 600px) {
     .header-card {
-        flex-direction: column; /* 上下排列 */
+        flex-direction: column;
         align-items: flex-start;
         gap: 10px;
     }
     .semester-nav {
         width: 100%;
-        justify-content: flex-start; /* 手機版靠左 */
-        overflow-x: auto; /* 允許橫向滑動 */
+        justify-content: flex-start;
+        overflow-x: auto;
         padding-bottom: 5px;
+        /* [優化] 隱藏捲軸但保留功能 */
+        scrollbar-width: none; 
     }
+    .semester-nav::-webkit-scrollbar { display: none; }
 }
 
 /* --- Content Cards --- */
@@ -146,6 +151,14 @@ body {
     margin-bottom: 20px;
     border: 1px solid var(--border-color);
     animation: fadeIn 0.3s ease-out;
+
+    /* [關鍵優化] 內容可見性：
+       告訴瀏覽器如果這張卡片在螢幕外，就不要花力氣去渲染它的內容。
+       這能大幅減少頁面初始化的 CPU 消耗。
+    */
+    content-visibility: auto;
+    /* 給一個預估高度，避免捲軸亂跳 */
+    contain-intrinsic-size: 500px; 
 }
 
 .card-label {
@@ -166,11 +179,7 @@ body {
 }
 
 /* --- List Items --- */
-.resource-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+.resource-list { list-style: none; padding: 0; margin: 0; }
 
 .resource-item {
     display: flex;
@@ -181,32 +190,15 @@ body {
     transition: background 0.2s;
     border-radius: 6px;
 }
-
 .resource-item:last-child { border-bottom: none; }
 .resource-item:hover { background-color: #fcfcfc; }
 
-.item-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.item-title {
-    font-weight: 600;
-    color: var(--text-title);
-    font-size: 1.05rem;
-}
-
-.item-meta {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-top: 2px;
-}
+.item-info { display: flex; flex-direction: column; }
+.item-title { font-weight: 600; color: var(--text-title); font-size: 1.05rem; }
+.item-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
 
 /* --- Buttons --- */
-.action-group {
-    display: flex;
-    gap: 8px;
-}
+.action-group { display: flex; gap: 8px; }
 
 .btn {
     text-decoration: none;
@@ -221,15 +213,8 @@ body {
     border: 1px solid transparent;
 }
 
-/* [修改] btn-primary 樣式現在統一為 btn-sol 的藍色風格 */
-.btn-primary { 
-    background: #e3f2fd; 
-    color: #1976d2; 
-    border: 1px solid #bbdefb; 
-}
-.btn-primary:hover { 
-    background: #bbdefb; 
-}
+.btn-primary { background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; }
+.btn-primary:hover { background: #bbdefb; }
 
 .btn-sol { background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; }
 .btn-sol:hover { background: #bbdefb; }
@@ -263,25 +248,6 @@ body {
     box-shadow: var(--shadow-hover);
     transform: translateY(-3px);
     border-color: var(--color-accent);
-}
-
-/* Textbook Button */
-.btn-download-large {
-    display: block;
-    text-align: center;
-    background: var(--color-accent);
-    color: white;
-    padding: 10px;
-    border-radius: 6px;
-    margin-top: 10px;
-    font-weight: bold;
-    text-decoration: none;
-    transition: background 0.2s, transform 0.1s;
-    box-shadow: 0 2px 5px rgba(33, 150, 243, 0.3);
-}
-.btn-download-large:hover {
-    background: #1976d2;
-    transform: translateY(-2px);
 }
 
 /* Compact Grid (Slides) */
@@ -331,14 +297,16 @@ body {
 }
 .practice-item-compact:hover { background-color: #f9f9f9; }
 
-/* --- [新增] Slides Accordion (手風琴效果) --- */
+/* Accordion */
 .slide-accordion-group {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     margin-bottom: 12px;
-    overflow: hidden; /* 確保圓角不被子元素切掉 */
+    overflow: hidden;
     background: #fff;
     transition: box-shadow 0.2s;
+    /* [優化] Accordion 內容預設隱藏，加上 content-visibility */
+    content-visibility: auto;
 }
 
 .slide-accordion-header {
@@ -348,43 +316,22 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    user-select: none; /* 防止連點反白 */
-    border-left: 4px solid var(--color-header-blue); /* 左側色條裝飾 */
+    user-select: none;
+    border-left: 4px solid var(--color-header-blue);
+    /* [優化] 消除點擊後的背景閃爍 */
+    -webkit-tap-highlight-color: transparent;
 }
+.slide-accordion-header:hover { background: #f0f4f8; }
+.slide-header-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+.slide-toggle-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.3s ease; }
 
-.slide-accordion-header:hover {
-    background: #f0f4f8;
-}
-
-.slide-header-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.slide-toggle-icon {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    transition: transform 0.3s ease;
-}
-
-/* 展開時的狀態 */
-.slide-accordion-header.active {
-    background: #eef2f5;
-}
-
-.slide-accordion-header.active .slide-toggle-icon {
-    transform: rotate(180deg);
-}
+.slide-accordion-header.active { background: #eef2f5; }
+.slide-accordion-header.active .slide-toggle-icon { transform: rotate(180deg); }
 
 .slide-accordion-body {
-    display: none; /* 預設隱藏 */
+    display: none;
     padding: 15px;
     border-top: 1px solid var(--border-color);
     background: #fff;
 }
-
-/* 用 JS 切換這個 class 來顯示 */
-.slide-accordion-body.open {
-    display: grid; /* 展開時恢復 grid 佈局 */
-}
+.slide-accordion-body.open { display: grid; }
