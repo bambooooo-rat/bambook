@@ -149,13 +149,6 @@ body {
     margin-bottom: 20px;
     border: 1px solid var(--border-color);
     animation: fadeIn 0.3s ease-out;
-
-    /* [關鍵修正] 
-       移除 content-visibility: auto; 
-       解決快速滑動時的白屏/截斷問題。
-       改用 transform: translate3d(0,0,0) 強制開啟 GPU 圖層合成，
-       提升滑動流暢度且不會有副作用。
-    */
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
 }
@@ -304,8 +297,6 @@ body {
     overflow: hidden;
     background: #fff;
     transition: box-shadow 0.2s;
-    
-    /* [關鍵修正] 這裡也移除 content-visibility */
     transform: translate3d(0, 0, 0);
 }
 
