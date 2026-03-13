@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSemester(semesters[0], nav.children[0]);
     }
 
-    // [核心優化] 分段渲染引擎
     function renderSemester(sem, activeBtn) {
         // 更新按鈕狀態
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));

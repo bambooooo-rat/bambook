@@ -537,7 +537,7 @@ window.COURSE_DATA = {
             },
             {
                 "title": "handout3",
-                "blank": null,
+                "blank": "assets/工程數學/handout/handout3_填空版.pdf",
                 "sol": "assets/工程數學/handout/handout3_解答版.pdf"
             },
             {
