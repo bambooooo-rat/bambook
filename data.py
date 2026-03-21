@@ -11,11 +11,19 @@ def format_path(path):
     """將 Windows 路徑 (\) 轉換為 Web 路徑 (/)"""
     return path.replace('\\', '/')
 
+def parse_syllabus(semester_path):
+    """解析課程大綱：尋找課程根目錄下的 syllabus.pdf (不分大小寫)"""
+    if os.path.exists(semester_path):
+        for f in os.listdir(semester_path):
+            if f.lower() == 'syllabus.pdf' and os.path.isfile(os.path.join(semester_path, f)):
+                return format_path(os.path.join(semester_path, f))
+    return None
+
 def parse_textbooks(semester_path):
     """解析教科書：支援標準格式與純檔名格式"""
     textbooks = []
     tb_dir = os.path.join(semester_path, 'textbook')
-    
+
     if os.path.exists(tb_dir):
         for f in sorted(os.listdir(tb_dir)):
             if f.lower().endswith('.pdf'):
@@ -180,6 +188,7 @@ def main():
         
         # 這裡呼叫定義好的函式
         course_data[semester] = {
+            'syllabus': parse_syllabus(semester_path),
             'textbooks': parse_textbooks(semester_path),
             'handouts': parse_handouts(semester_path),
             'slides': parse_slides(semester_path),

@@ -1,5 +1,6 @@
 window.COURSE_DATA = {
     "微積分乙": {
+        "syllabus": null,
         "textbooks": [
             {
                 "title": "NTNU calculus (B) Note",
@@ -510,6 +511,7 @@ window.COURSE_DATA = {
         }
     },
     "工程數學": {
+        "syllabus": "assets/工程數學/syllabus.pdf",
         "textbooks": [
             {
                 "title": "Advanced Engineering Mathematics",

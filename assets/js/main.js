@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. 定義渲染任務佇列 (Render Queue)
         // 每個函式負責生成一小塊 HTML，而不是一次生成全部
         const tasks = [
+            () => getSyllabusHTML(d.syllabus),
             () => getTextbooksHTML(d.textbooks),
             () => getHandoutsHTML(d.handouts),
             () => getSlidesHTML(d.slides),
@@ -83,6 +84,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 以下為各區塊的 HTML 生成器 (Logic Split) ---
+
+    function getSyllabusHTML(syllabusPath) {
+        if (!syllabusPath) return '';
+        
+        // 為了讓大綱看起來有獨立性，這裡給它一個稍微不同的排版 (使用 flex 置中對齊與自訂邊框)
+        return `
+        <div class="content-card" style="padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--color-accent);">
+            <div style="font-weight: 600; font-size: 1.1rem; color: var(--text-title); display: flex; align-items: center; gap: 8px;">
+                📋 研討內容與時間 Syllabus
+            </div>
+            <div class="action-group">
+                <a href="${syllabusPath}" class="btn btn-primary" target="_blank">📄 下載 PDF</a>
+            </div>
+        </div>`;
+    }
 
     function getTextbooksHTML(textbooks) {
         if (!textbooks || textbooks.length === 0) return '';
