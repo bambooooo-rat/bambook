@@ -570,6 +570,23 @@ window.COURSE_DATA = {
         ],
         "slides": [
             {
+                "category": "師大工教114學年上課講義",
+                "files": [
+                    {
+                        "name": "ch01_First order ODEs",
+                        "path": "assets/工程數學/slide/師大工教114學年上課講義/ch01_First order ODEs.pdf"
+                    },
+                    {
+                        "name": "ch02_Second order ODEs",
+                        "path": "assets/工程數學/slide/師大工教114學年上課講義/ch02_Second order ODEs.pdf"
+                    },
+                    {
+                        "name": "ch03_High order ODEs",
+                        "path": "assets/工程數學/slide/師大工教114學年上課講義/ch03_High order ODEs.pdf"
+                    }
+                ]
+            },
+            {
                 "category": "師大電機112學年上課簡報",
                 "files": [
                     {

@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
         <div class="content-card" style="padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--color-accent);">
             <div style="font-weight: 600; font-size: 1.1rem; color: var(--text-title); display: flex; align-items: center; gap: 8px;">
-                📋 研討內容與時間 Syllabus
+                📋 研討期程 Syllabus
             </div>
             <div class="action-group">
                 <a href="${syllabusPath}" class="btn btn-primary" target="_blank">📄 下載 PDF</a>
