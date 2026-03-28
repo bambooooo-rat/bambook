@@ -48,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const d = data[sem];
         
         // 2. 定義渲染任務佇列 (Render Queue)
-        // 每個函式負責生成一小塊 HTML，而不是一次生成全部
         const tasks = [
             () => getSyllabusHTML(d.syllabus),
             () => getTextbooksHTML(d.textbooks),
@@ -70,11 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const html = task();
 
         if (html) {
-            // 創建一個容器並插入 DOM
-            // 這裡使用 div 而不是 innerHTML +=，效能更好
             const sectionDiv = document.createElement('div');
             sectionDiv.innerHTML = html;
-            // 加入淡入動畫 class
             sectionDiv.style.animation = 'fadeIn 0.3s ease-out';
             content.appendChild(sectionDiv);
         }
@@ -83,19 +79,18 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(() => processRenderQueue(tasks));
     }
 
-    // --- 以下為各區塊的 HTML 生成器 (Logic Split) ---
+    // --- 以下為各區塊的 HTML 生成器 ---
 
     function getSyllabusHTML(syllabusPath) {
         if (!syllabusPath) return '';
         
-        // 為了讓大綱看起來有獨立性，這裡給它一個稍微不同的排版 (使用 flex 置中對齊與自訂邊框)
         return `
         <div class="content-card" style="padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--color-accent);">
             <div style="font-weight: 600; font-size: 1.1rem; color: var(--text-title); display: flex; align-items: center; gap: 8px;">
-                📋 研討期程 Syllabus
+                📋 研討期程
             </div>
             <div class="action-group">
-                <a href="${syllabusPath}" class="btn btn-primary" target="_blank">📄 下載 PDF</a>
+                <a href="${syllabusPath}" class="btn btn-primary" target="_blank">.PDF</a>
             </div>
         </div>`;
     }
@@ -151,13 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getSlidesHTML(slides) {
         if (!slides || slides.length === 0) return '';
-        // 資料夾 A-Z
         const sortedCategories = slides.sort((a, b) => a.category.localeCompare(b.category));
         
         let html = `<div class="content-card"><div class="card-label">💻 Slides</div>`;
         
         sortedCategories.forEach(cat => {
-            // 檔案 A-Z
             const sortedFiles = sortByName([...cat.files], 'name');
             html += `
             <div class="slide-accordion-group">
@@ -165,16 +158,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="slide-header-title">${cat.category}</span>
                     <span class="slide-toggle-icon">▼</span>
                 </div>
-                <div class="slide-accordion-body grid-compact">`; 
+                <div class="slide-accordion-body">
+                    <!-- 使用與歷屆試題相同的網格類別 -->
+                    <div class="practice-grid-list">`; 
             
             sortedFiles.forEach(f => {
                 html += `
-                <a href="${f.path}" class="grid-item-compact" target="_blank">
-                    <span class="grid-icon-compact">📄</span>
-                    <span class="grid-title-compact">${f.name}</span>
-                </a>`;
+                <div class="practice-item-compact">
+                    <span style="font-size:0.9rem;">${f.name}</span>
+                    <div class="action-group">
+                        <a href="${f.path}" class="btn btn-primary" target="_blank">.PDF</a>
+                    </div>
+                </div>`;
             });
-            html += `</div></div>`;
+            html += `</div></div></div>`;
         });
         html += `</div>`;
         return html;
@@ -182,8 +179,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getPracticeHTML(practice) {
         if (!practice) return '';
-        const { exams, answers, links } = practice;
-        if (exams.length === 0 && answers.length === 0 && links.length === 0) return '';
+        const { exams = [], midterm_answers = [], final_answers = [], other_answers = [], answers: legacy_answers = [], links = [] } = practice;
+        
+        const hasAnswers = midterm_answers.length > 0 || final_answers.length > 0 || other_answers.length > 0 || legacy_answers.length > 0;
+
+        if (exams.length === 0 && !hasAnswers && links.length === 0) return '';
 
         let html = `<div class="content-card"><div class="card-label">🧠 Practice & Resources</div>`;
 
@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
             html += `</div></div>`;
         }
 
-        if (exams.length > 0 || answers.length > 0) {
+        if (exams.length > 0 || hasAnswers) {
             html += `<div style="display:flex; flex-direction:column; gap:20px;">`;
             
             // 試題區 (A-Z)
@@ -219,28 +219,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `</div></div>`;
             }
 
-            // 詳解區 (Z-A + Accordion)
-            if (answers.length > 0) {
-                const sortedAnswers = sortByName([...answers], 'name').reverse();
-                html += `
-                <div class="slide-accordion-group">
-                    <div class="slide-accordion-header" onclick="toggleSlide(this)">
-                        <span class="slide-header-title">💡 參考詳解</span>
-                        <span class="slide-toggle-icon">▼</span>
-                    </div>
-                    <div class="slide-accordion-body">
-                        <div class="practice-grid-list">`;
+            // 詳解區：將各類別包裝成獨立的手風琴 (Accordion)
+            if (hasAnswers) {
+                html += `<div>
+                    <h4 style="margin:0 0 10px 0; color:var(--text-title);">💡 參考詳解</h4>
+                    <div style="display:flex; flex-direction:column; gap:10px;">`;
                 
-                sortedAnswers.forEach(ans => {
-                    html += `
-                    <div class="practice-item-compact">
-                        <span style="font-size:0.9rem;">${ans.name}</span>
-                        <div class="action-group">
-                            <a href="${ans.path}" class="btn btn-sol" target="_blank">.PDF</a>
+                const generateAnswerAccordion = (title, answersList, icon) => {
+                    if (!answersList || answersList.length === 0) return '';
+                    const sortedAnswers = sortByName([...answersList], 'name').reverse(); // Z-A 排序
+                    
+                    let accHtml = `
+                    <div class="slide-accordion-group" style="margin-bottom:0;">
+                        <div class="slide-accordion-header" onclick="toggleSlide(this)">
+                            <span class="slide-header-title">${icon} ${title}</span>
+                            <span class="slide-toggle-icon">▼</span>
                         </div>
-                    </div>`;
-                });
-                html += `</div></div></div>`;
+                        <div class="slide-accordion-body">
+                            <div class="practice-grid-list">`;
+                    
+                    sortedAnswers.forEach(ans => {
+                        accHtml += `
+                        <div class="practice-item-compact">
+                            <span style="font-size:0.9rem;">${ans.name}</span>
+                            <div class="action-group">
+                                <a href="${ans.path}" class="btn btn-sol" target="_blank">.PDF</a>
+                            </div>
+                        </div>`;
+                    });
+                    
+                    accHtml += `</div></div></div>`;
+                    return accHtml;
+                };
+
+                html += generateAnswerAccordion('期中考參考詳解', midterm_answers, '');
+                html += generateAnswerAccordion('期末考參考詳解', final_answers, '');
+                html += generateAnswerAccordion('其他參考詳解', other_answers, '');
+                html += generateAnswerAccordion('參考詳解', legacy_answers, ''); // 相容舊資料
+
+                html += `</div></div>`;
             }
             html += `</div>`;
         }

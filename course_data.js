@@ -58,284 +58,32 @@ window.COURSE_DATA = {
                 "category": "師大工教112學年上課簡報",
                 "files": [
                     {
-                        "name": "師大1-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大1-3.pdf"
+                        "name": "Chapter 1 Functions",
+                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/Chapter 1 Functions.pdf"
                     },
                     {
-                        "name": "師大1-5",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大1-5.pdf"
+                        "name": "Chapter 2 Limits and Continuity",
+                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/Chapter 2 Limits and Continuity.pdf"
                     },
                     {
-                        "name": "師大1-6",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大1-6.pdf"
+                        "name": "Chapter 3 Derivatives",
+                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/Chapter 3 Derivatives.pdf"
                     },
                     {
-                        "name": "師大10-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大10-1.pdf"
+                        "name": "Chapter 4 Applications of Derivatives",
+                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/Chapter 4 Applications of Derivatives.pdf"
                     },
                     {
-                        "name": "師大10-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大10-2.pdf"
+                        "name": "Chapter 5 Integrals",
+                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/Chapter 5 Integrals.pdf"
                     },
                     {
-                        "name": "師大10-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大10-3.pdf"
+                        "name": "Chapter 6 Applications of Definite Integrals",
+                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/Chapter 6 Applications of Definite Integrals.pdf"
                     },
                     {
-                        "name": "師大10-4",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大10-4.pdf"
-                    },
-                    {
-                        "name": "師大10-5",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大10-5.pdf"
-                    },
-                    {
-                        "name": "師大11-6",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大11-6.pdf"
-                    },
-                    {
-                        "name": "師大12-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大12-1.pdf"
-                    },
-                    {
-                        "name": "師大12-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大12-2.pdf"
-                    },
-                    {
-                        "name": "師大13-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大13-1.pdf"
-                    },
-                    {
-                        "name": "師大13-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大13-2.pdf"
-                    },
-                    {
-                        "name": "師大13-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大13-3.pdf"
-                    },
-                    {
-                        "name": "師大13-4",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大13-4.pdf"
-                    },
-                    {
-                        "name": "師大13-5",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大13-5.pdf"
-                    },
-                    {
-                        "name": "師大13-6",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大13-6.pdf"
-                    },
-                    {
-                        "name": "師大13-7",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大13-7.pdf"
-                    },
-                    {
-                        "name": "師大13-8",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大13-8.pdf"
-                    },
-                    {
-                        "name": "師大14-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大14-1.pdf"
-                    },
-                    {
-                        "name": "師大14-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大14-2.pdf"
-                    },
-                    {
-                        "name": "師大14-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大14-3.pdf"
-                    },
-                    {
-                        "name": "師大14-4",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大14-4.pdf"
-                    },
-                    {
-                        "name": "師大14-4考古題",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大14-4考古題.pdf"
-                    },
-                    {
-                        "name": "師大14-5",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大14-5.pdf"
-                    },
-                    {
-                        "name": "師大14-7",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大14-7.pdf"
-                    },
-                    {
-                        "name": "師大14-8",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大14-8.pdf"
-                    },
-                    {
-                        "name": "師大2-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大2-2.pdf"
-                    },
-                    {
-                        "name": "師大2-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大2-3.pdf"
-                    },
-                    {
-                        "name": "師大2-4",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大2-4.pdf"
-                    },
-                    {
-                        "name": "師大2-5",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大2-5.pdf"
-                    },
-                    {
-                        "name": "師大2-6",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大2-6.pdf"
-                    },
-                    {
-                        "name": "師大3-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大3-1.pdf"
-                    },
-                    {
-                        "name": "師大3-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大3-2.pdf"
-                    },
-                    {
-                        "name": "師大3-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大3-3.pdf"
-                    },
-                    {
-                        "name": "師大3-5",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大3-5.pdf"
-                    },
-                    {
-                        "name": "師大3-6",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大3-6.pdf"
-                    },
-                    {
-                        "name": "師大3-7",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大3-7.pdf"
-                    },
-                    {
-                        "name": "師大3-8",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大3-8.pdf"
-                    },
-                    {
-                        "name": "師大3-9",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大3-9.pdf"
-                    },
-                    {
-                        "name": "師大4-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大4-1.pdf"
-                    },
-                    {
-                        "name": "師大4-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大4-2.pdf"
-                    },
-                    {
-                        "name": "師大4-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大4-3.pdf"
-                    },
-                    {
-                        "name": "師大4-4",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大4-4.pdf"
-                    },
-                    {
-                        "name": "師大4-5",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大4-5.pdf"
-                    },
-                    {
-                        "name": "師大4-8",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大4-8.pdf"
-                    },
-                    {
-                        "name": "師大5-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大5-1.pdf"
-                    },
-                    {
-                        "name": "師大5-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大5-2.pdf"
-                    },
-                    {
-                        "name": "師大5-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大5-3.pdf"
-                    },
-                    {
-                        "name": "師大5-4",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大5-4.pdf"
-                    },
-                    {
-                        "name": "師大5-5",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大5-5.pdf"
-                    },
-                    {
-                        "name": "師大5-6",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大5-6.pdf"
-                    },
-                    {
-                        "name": "師大6-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大6-1.pdf"
-                    },
-                    {
-                        "name": "師大6-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大6-2.pdf"
-                    },
-                    {
-                        "name": "師大6-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大6-3.pdf"
-                    },
-                    {
-                        "name": "師大6-4",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大6-4.pdf"
-                    },
-                    {
-                        "name": "師大8-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大8-1.pdf"
-                    },
-                    {
-                        "name": "師大8-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大8-2.pdf"
-                    },
-                    {
-                        "name": "師大8-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大8-3.pdf"
-                    },
-                    {
-                        "name": "師大8-4",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大8-4.pdf"
-                    },
-                    {
-                        "name": "師大8-7",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大8-7.pdf"
-                    },
-                    {
-                        "name": "師大9-1",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大9-1.pdf"
-                    },
-                    {
-                        "name": "師大9-2",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大9-2.pdf"
-                    },
-                    {
-                        "name": "師大9-3",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大9-3.pdf"
-                    },
-                    {
-                        "name": "師大9-4",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大9-4.pdf"
-                    },
-                    {
-                        "name": "師大9-5",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大9-5.pdf"
-                    },
-                    {
-                        "name": "師大9-6",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大9-6.pdf"
-                    },
-                    {
-                        "name": "師大9-7",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大9-7.pdf"
-                    },
-                    {
-                        "name": "師大9-8",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大9-8.pdf"
-                    },
-                    {
-                        "name": "師大9-9",
-                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/師大9-9.pdf"
+                        "name": "Chapter 8 Techniques of Integration",
+                        "path": "assets/微積分乙/slide/師大工教112學年上課簡報/Chapter 8 Techniques of Integration.pdf"
                     }
                 ]
             },
@@ -343,48 +91,28 @@ window.COURSE_DATA = {
                 "category": "師大電機107學年上課簡報",
                 "files": [
                     {
-                        "name": "Chap01_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap01_calculusB.pdf"
+                        "name": "Chapter 1 Limits and Their Properties",
+                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chapter 1 Limits and Their Properties.pdf"
                     },
                     {
-                        "name": "Chap02_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap02_calculusB.pdf"
+                        "name": "Chapter 2 Differentiation",
+                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chapter 2 Differentiation.pdf"
                     },
                     {
-                        "name": "Chap03_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap03_calculusB.pdf"
+                        "name": "Chapter 3 Applications of Differentiation",
+                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chapter 3 Applications of Differentiation.pdf"
                     },
                     {
-                        "name": "Chap04_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap04_calculusB.pdf"
+                        "name": "Chapter 4 Integration",
+                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chapter 4 Integration.pdf"
                     },
                     {
-                        "name": "Chap05_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap05_calculusB.pdf"
+                        "name": "Chapter 5 Applications of Integration",
+                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chapter 5 Applications of Integration.pdf"
                     },
                     {
-                        "name": "Chap06_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap06_calculusB.pdf"
-                    },
-                    {
-                        "name": "Chap07_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap07_calculusB.pdf"
-                    },
-                    {
-                        "name": "Chap08_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap08_calculusB.pdf"
-                    },
-                    {
-                        "name": "Chap09_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap09_calculusB.pdf"
-                    },
-                    {
-                        "name": "Chap11_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap11_calculusB.pdf"
-                    },
-                    {
-                        "name": "Chap12_calculusB",
-                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chap12_calculusB.pdf"
+                        "name": "Chapter 6 Integration Techniques and Improper Integrals",
+                        "path": "assets/微積分乙/slide/師大電機107學年上課簡報/Chapter 6 Integration Techniques and Improper Integrals.pdf"
                     }
                 ]
             }
@@ -418,7 +146,7 @@ window.COURSE_DATA = {
                     "path": "assets/微積分乙/practice/NTNU_微積分乙期末考歷屆(更新至113).pdf"
                 }
             ],
-            "answers": [
+            "midterm_answers": [
                 {
                     "name": "1051_期中考詳解",
                     "path": "assets/微積分乙/practice/answer/1051_微積分乙_期中考詳解.pdf"
@@ -436,6 +164,40 @@ window.COURSE_DATA = {
                     "path": "assets/微積分乙/practice/answer/106以前_微積分乙_期中考簡答(極限).pdf"
                 },
                 {
+                    "name": "1071_期中考詳解",
+                    "path": "assets/微積分乙/practice/answer/1071_微積分乙_期中考詳解.pdf"
+                },
+                {
+                    "name": "1081_期中考詳解",
+                    "path": "assets/微積分乙/practice/answer/1081_微積分乙_期中考詳解.pdf"
+                },
+                {
+                    "name": "1091_期中考詳解",
+                    "path": "assets/微積分乙/practice/answer/1091_微積分乙_期中考詳解.pdf"
+                },
+                {
+                    "name": "1101_期中考詳解",
+                    "path": "assets/微積分乙/practice/answer/1101_微積分乙_期中考詳解.pdf"
+                },
+                {
+                    "name": "1111_期中考詳解",
+                    "path": "assets/微積分乙/practice/answer/1111_微積分乙_期中考詳解.pdf"
+                },
+                {
+                    "name": "1121_期中考詳解",
+                    "path": "assets/微積分乙/practice/answer/1121_微積分乙_期中考詳解.pdf"
+                },
+                {
+                    "name": "1131_期中考詳解",
+                    "path": "assets/微積分乙/practice/answer/1131_微積分乙_期中考詳解.pdf"
+                },
+                {
+                    "name": "1141_期中考詳解",
+                    "path": "assets/微積分乙/practice/answer/1141_微積分乙_期中考詳解.pdf"
+                }
+            ],
+            "final_answers": [
+                {
                     "name": "106以前_期末考簡答(其它部分)",
                     "path": "assets/微積分乙/practice/answer/106以前_微積分乙_期末考簡答(其它部分).pdf"
                 },
@@ -444,70 +206,39 @@ window.COURSE_DATA = {
                     "path": "assets/微積分乙/practice/answer/106以前_微積分乙_期末考簡答(積分部分).pdf"
                 },
                 {
-                    "name": "1071_期中考詳解",
-                    "path": "assets/微積分乙/practice/answer/1071_微積分乙_期中考詳解.pdf"
-                },
-                {
                     "name": "1071_期末考詳解",
                     "path": "assets/微積分乙/practice/answer/1071_微積分乙_期末考詳解.pdf"
-                },
-                {
-                    "name": "1081_期中考詳解",
-                    "path": "assets/微積分乙/practice/answer/1081_微積分乙_期中考詳解.pdf"
                 },
                 {
                     "name": "1081_期末考詳解",
                     "path": "assets/微積分乙/practice/answer/1081_微積分乙_期末考詳解.pdf"
                 },
                 {
-                    "name": "1091_期中考詳解",
-                    "path": "assets/微積分乙/practice/answer/1091_微積分乙_期中考詳解.pdf"
-                },
-                {
                     "name": "1091_期末考詳解",
                     "path": "assets/微積分乙/practice/answer/1091_微積分乙_期末考詳解.pdf"
-                },
-                {
-                    "name": "1101_期中考詳解",
-                    "path": "assets/微積分乙/practice/answer/1101_微積分乙_期中考詳解.pdf"
                 },
                 {
                     "name": "1101_期末考詳解",
                     "path": "assets/微積分乙/practice/answer/1101_微積分乙_期末考詳解.pdf"
                 },
                 {
-                    "name": "1111_期中考詳解",
-                    "path": "assets/微積分乙/practice/answer/1111_微積分乙_期中考詳解.pdf"
-                },
-                {
                     "name": "1111_期末考詳解",
                     "path": "assets/微積分乙/practice/answer/1111_微積分乙_期末考詳解.pdf"
-                },
-                {
-                    "name": "1121_期中考詳解",
-                    "path": "assets/微積分乙/practice/answer/1121_微積分乙_期中考詳解.pdf"
                 },
                 {
                     "name": "1121_期末考詳解",
                     "path": "assets/微積分乙/practice/answer/1121_微積分乙_期末考詳解.pdf"
                 },
                 {
-                    "name": "1131_期中考詳解",
-                    "path": "assets/微積分乙/practice/answer/1131_微積分乙_期中考詳解.pdf"
-                },
-                {
                     "name": "1131_期末考詳解",
                     "path": "assets/微積分乙/practice/answer/1131_微積分乙_期末考詳解.pdf"
-                },
-                {
-                    "name": "1141_期中考詳解",
-                    "path": "assets/微積分乙/practice/answer/1141_微積分乙_期中考詳解.pdf"
                 },
                 {
                     "name": "1141_期末考詳解",
                     "path": "assets/微積分乙/practice/answer/1141_微積分乙_期末考詳解.pdf"
                 }
-            ]
+            ],
+            "other_answers": []
         }
     },
     "工程數學": {
@@ -640,7 +371,9 @@ window.COURSE_DATA = {
                 }
             ],
             "exams": [],
-            "answers": []
+            "midterm_answers": [],
+            "final_answers": [],
+            "other_answers": []
         }
     }
 };

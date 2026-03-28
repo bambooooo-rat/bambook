@@ -114,7 +114,9 @@ def parse_practice(semester_path):
     practice_data = {
         'links': [],
         'exams': [],
-        'answers': []
+        'midterm_answers': [],
+        'final_answers': [],
+        'other_answers': []
     }
     prac_dir = os.path.join(semester_path, 'practice')
     
@@ -152,14 +154,22 @@ def parse_practice(semester_path):
                     # 取得原始檔名
                     name = os.path.splitext(f)[0]
                     
-                    # [新增] 簡化顯示名稱：將 "_微積分乙_" 替換為 "_"
-                    # 例如：1051_微積分乙_期中考詳解 -> 1051_期中考詳解
+                    # 簡化顯示名稱：將 "_微積分乙_" 替換為 "_"
                     name = name.replace('_微積分乙_', '_')
-
-                    practice_data['answers'].append({
+                    
+                    # 檔案資料物件
+                    file_item = {
                         'name': name,
                         'path': format_path(os.path.join(semester_path, 'practice', 'answer', f))
-                    })
+                    }
+
+                    # [修改] 根據檔名關鍵字進行分類
+                    if '期中' in name:
+                        practice_data['midterm_answers'].append(file_item)
+                    elif '期末' in name:
+                        practice_data['final_answers'].append(file_item)
+                    else:
+                        practice_data['other_answers'].append(file_item)
                     
     return practice_data
 

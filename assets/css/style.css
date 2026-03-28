@@ -33,12 +33,27 @@ body {
     line-height: 1.6;
     /* 開啟 iOS 慣性捲動 */
     -webkit-overflow-scrolling: touch;
+    
+    /* 新增：確保網頁內容不夠時，Footer 依然置底 */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+
+    /* 新增：禁止文字選取 */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
 }
 
 .container {
     max-width: 1100px;
     margin: 0 auto;
     padding: 20px;
+    
+    /* 新增：讓 Container 填滿剩下的高度，把 Footer 往下推 */
+    flex: 1;
+    width: 100%;
 }
 
 /* --- Header --- */
@@ -242,37 +257,10 @@ body {
     border-color: var(--color-accent);
 }
 
-/* Compact Grid (Slides) */
+/* 移除原有的 .grid-compact 樣式，改統一使用下方 Practice Compact List 的樣式 */
 .slides-container { margin-bottom: 20px; }
-.grid-compact {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-    gap: 10px;
-}
-.grid-item-compact {
-    background: #fff;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    transition: all 0.2s;
-    text-decoration: none;
-    color: var(--text-primary);
-    height: 100%;
-}
-.grid-item-compact:hover {
-    border-color: var(--color-accent);
-    background: #f8fbff;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.grid-icon-compact { font-size: 1.5rem; margin-bottom: 5px; }
-.grid-title-compact { font-size: 0.85rem; line-height: 1.3; word-break: break-word; }
 
-/* Practice Compact List */
+/* Practice Compact List (與 Slides 區塊共用) */
 .practice-grid-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
@@ -325,3 +313,62 @@ body {
     background: #fff;
 }
 .slide-accordion-body.open { display: grid; }
+
+/* --- Footer 滿版樣式 --- */
+.site-footer {
+    width: 100%;
+    background-color: #f5f5f7;
+    color: #86868b;
+    font-size: 12px;
+    line-height: 1.33337;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    font-family: var(--font-main);
+    border-top: 1px solid #d2d2d7;
+    padding: 20px 0;
+    margin-top: auto;
+}
+
+.footer-content {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 22px;
+}
+
+.legal-disclaimer {
+    padding-bottom: 12px;
+    border-bottom: 1px solid #d2d2d7;
+    margin-bottom: 12px;
+    text-align: justify;
+}
+
+.legal-disclaimer p {
+    margin-bottom: 8px;
+}
+
+.legal-disclaimer p:last-child {
+    margin-bottom: 0;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+.footer-bottom p {
+    margin: 4px 0;
+}
+
+.footer-bottom a {
+    color: #515154;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-bottom a:hover {
+    color: #1d1d1f;
+    text-decoration: underline;
+}
