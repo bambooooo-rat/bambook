@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拓樸學主題式學習地圖：Topological Spaces</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: #faf9f6; }
+        .font-serif-en { font-family: 'Lora', serif; line-height: 1.8; }
+        .highlight-yellow { background-color: #fef08a; padding: 0.125rem 0.25rem; border-radius: 0.25rem; }
+        .highlight-red { background-color: #fecaca; padding: 0.125rem 0.25rem; border-radius: 0.25rem; }
+        .highlight-blue { background-color: #bfdbfe; padding: 0.125rem 0.25rem; border-radius: 0.25rem; }
+        .highlight-green { background-color: #bbf7d0; padding: 0.125rem 0.25rem; border-radius: 0.25rem; }
+        .highlight-purple { background-color: #e9d5ff; padding: 0.125rem 0.25rem; border-radius: 0.25rem; }
+        
+        .zh-block { background-color: #f0ece2; border-left: 4px solid #94a3b8; }
+        .annotation-card { background-color: #ffffff; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .anno-border-yellow { border-left: 4px solid #eab308; }
+        .anno-border-red { border-left: 4px solid #ef4444; }
+        .anno-border-blue { border-left: 4px solid #3b82f6; }
+        
+        .section-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-bottom: 3rem; }
+        @media (min-width: 1024px) {
+            .section-grid { grid-template-columns: 2fr 1fr; }
+        }
+        
+        /* Thematic Header styling */
+        .theme-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- 1. 頂部導覽列 -->
+    <header class="sticky top-0 z-50 bg-slate-900 text-white shadow-md border-b-4 border-yellow-500">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl font-bold tracking-wide">Topology: Thematic Restructure</h1>
+                <p class="text-sm text-slate-400">主題式重構：結構 $\rightarrow$ 特性 $\rightarrow$ 映射</p>
+            </div>
+            <div class="flex flex-wrap gap-3 text-xs font-semibold">
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-yellow-300 inline-block"></span>核心概念</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-300 inline-block"></span>定理法則</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-300 inline-block"></span>實例應用</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-300 inline-block"></span>易錯誤區</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-purple-300 inline-block"></span>跨域連結</span>
+            </div>
+        </div>
+        
+        <!-- 主題式導航條 -->
+        <nav class="bg-slate-800 border-t border-slate-700 overflow-x-auto whitespace-nowrap scrollbar-hide">
+            <div class="max-w-7xl mx-auto px-6 py-2 text-sm flex items-center">
+                <!-- Part 1 -->
+                <span class="text-yellow-400 font-bold mr-3 tracking-wide">I. 空間結構</span>
+                <div class="space-x-4 text-slate-300 mr-6 border-r border-slate-600 pr-6">
+                    <a href="#sec-1" class="hover:text-white transition">2.1 定義</a>
+                    <a href="#sec-4" class="hover:text-white transition">2.4 基底</a>
+                    <a href="#sec-2" class="hover:text-white transition">2.2 子空間</a>
+                    <a href="#sec-10" class="hover:text-white transition">2.10 有限積</a>
+                    <a href="#sec-11" class="hover:text-white transition">2.11 Zorn引理</a>
+                    <a href="#sec-12" class="hover:text-white transition">2.12 無窮積</a>
+                </div>
+                <!-- Part 2 -->
+                <span class="text-red-400 font-bold mr-3 tracking-wide">II. 空間特性</span>
+                <div class="space-x-4 text-slate-300 mr-6 border-r border-slate-600 pr-6">
+                    <a href="#sec-5" class="hover:text-white transition">2.5 分離公理</a>
+                    <a href="#sec-6" class="hover:text-white transition">2.6 緊緻</a>
+                    <a href="#sec-7" class="hover:text-white transition">2.7 局部緊緻</a>
+                    <a href="#sec-8" class="hover:text-white transition">2.8-9 連通</a>
+                </div>
+                <!-- Part 3 -->
+                <span class="text-blue-400 font-bold mr-3 tracking-wide">III. 空間映射</span>
+                <div class="space-x-4 text-slate-300 mr-6">
+                    <a href="#sec-3" class="hover:text-white transition">2.3 連續與同胚</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+
+        <!-- ========================================== -->
+        <!-- PART I: 空間結構 (Spatial Structure)       -->
+        <!-- ========================================== -->
+        <div class="theme-header text-white p-8 rounded-2xl shadow-lg mb-12 flex flex-col md:flex-row items-center gap-6 mt-4">
+            <div class="text-5xl font-black text-yellow-400 opacity-90">I</div>
+            <div>
+                <h1 class="text-3xl font-bold mb-2">空間結構 (Spatial Structure)</h1>
+                <p class="text-slate-300 text-lg leading-relaxed">
+                    拓樸學的第一步是建立舞台。我們用「開集」定義最純粹的空間，用「基底」作為基本積木來簡化描述。接著，透過向下切片的「子空間」與向上組合的「積空間」技術，我們能夠從簡單的幾何物件，推演出極度複雜的高維度、甚至是無窮維度的宇宙。
+                </p>
+            </div>
+        </div>
+
+        <!-- 2.1 定義與基礎 -->
+        <div id="sec-1" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.1</span> Topological Spaces (拓樸空間)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    In Chapter I, an axiomatic framework for the purpose of <span class="highlight-purple">generalizing the idea of distance</span> in Euclidean space was developed. A <span class="highlight-yellow">topology for $X$</span> is a family $\mathcal{T}$ of subsets of $X$ having three properties: 
+                    <span class="highlight-red">(1) Both $X$ and $\emptyset$ belong to $\mathcal{T}$. (2) Any union of sets in $\mathcal{T}$ belongs to $\mathcal{T}$. (3) Any finite intersection of sets in $\mathcal{T}$ belongs to $\mathcal{T}$.</span>
+                    A topological space is a pair $(X, \mathcal{T})$. The sets in $\mathcal{T}$ are called <span class="highlight-yellow">open sets</span>.
+                    It is crucial to note that <span class="highlight-green">an arbitrary intersection of open sets is NOT necessarily open</span>.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    拓樸學的出發點，就是徹底拋棄微積分裡的「距離」概念。我們改用「宣告」的方式：直接規定某些子集合是「開集」，把它們收集成家族 $\mathcal{T}$。<br>
+                    合法拓樸必須滿足三條鐵律：<br>
+                    1. 全集 $X$ 和空集 $\emptyset$ 都必須在裡面。<br>
+                    2. 任意聯集，結果必須在裡面。<br>
+                    3. 有限交集，結果才保證在裡面。
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900">📚 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside mt-1 text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 1.1-1.2:</strong> 集合 $S$ 是開集 $\iff S = \text{int}(S)$；且內部 $\text{int}(S)$ 必為開集。</li>
+                            <li><strong>Thm 1.3-1.4:</strong> 集合 $S$ 是閉集 $\iff S = \overline{S}$；且閉包 $\overline{S}$ 必為閉集。</li>
+                            <li><strong>Thm 1.5:</strong> 若數列 $\{x_i\}$ 在 $S$ 內收斂至 $x$，則 $x \in \overline{S}$。<span class="text-red-600 font-semibold">(一般拓樸反之不一定成立！)</span></li>
+                            <li><strong>Thm 1.6:</strong> $\overline{S}$ 是內部 $\text{int}(S)$ 與邊界 $\partial S$ 的互斥聯集。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 mt-2 rounded-r-lg shadow-sm">
+                    <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2"><span>🎯</span> 經典習題引導</h4>
+                    <p class="text-sm text-slate-700 mb-2"><strong>[Exercise 1.2] Cofinite Topology (餘有限拓樸)</strong><br>
+                    定義 $\mathcal{T}$ 包含 $\emptyset$ 以及所有「補集為有限集」的子集。證明這是一個拓樸。</p>
+                    <p class="text-xs text-indigo-700 bg-indigo-100 p-2 rounded"><strong>💡 破題引導：</strong>驗證交集公理時利用迪摩根定律：開集交集的補集 = 補集(有限集)的聯集。有限個有限集聯集依然是有限集，故交集仍為開集。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">理解如何不用距離公式，純粹用「集合的包含關係（開集）」來定義空間結構。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「全空、任聯、有限交」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.4 基底 -->
+        <div id="sec-4" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.4</span> Base for a Topology (拓樸基底)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    A family $\mathcal{B}$ of open subsets of $X$ is a <span class="highlight-yellow">base</span> for the topology of $X$ if <span class="highlight-red">every open subset of $X$ is a union of sets in $\mathcal{B}$</span>. 
+                    A topological space $X$ is <span class="highlight-yellow">second-countable</span> if there is a countable family of open sets that forms a base.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    為了避免窮舉無限多種奇形怪狀的開集，我們找出「基本開集（基底 $\mathcal{B}$）」作為積木。空間裡任何一個開集，都必須能用這些積木透過「聯集」拼湊出來。<br>
+                    如果可以用「可數個」的基底拼出所有開集，則稱該空間具有「第二可數性」。
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900">📚 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside mt-1 text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 4.1:</strong> $\mathcal{B}$ 是基底 $\iff$ 對任何開集 $U$ 及其內任意點 $x$，都能找到基底 $V \in \mathcal{B}$ 使得 $x \in V \subset U$。</li>
+                            <li><strong>Thm 4.2:</strong> 隨意族 $\mathcal{B}$ 成為合法基底的條件：(1)聯集為全空間 (2)任意兩基底交集內，必能塞入更小的基底。</li>
+                            <li><strong>Thm 4.3 (Lindelöf):</strong> 第二可數空間的任何開覆蓋，必存在可數子覆蓋。</li>
+                            <li><strong>Thm 4.4:</strong> 第二可數空間必定是可分空間 (Separable)。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 mt-2 rounded-r-lg shadow-sm">
+                    <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2"><span>🎯</span> 經典習題引導</h4>
+                    <p class="text-sm text-slate-700 mb-2"><strong>[Exercise 4.6] The Half-Open Interval Topology (下極限拓樸)</strong><br>
+                    定義 $\mathbb{R}$ 上的基底為 $[a, b)$ 形式的區間。探討其性質。</p>
+                    <p class="text-xs text-indigo-700 bg-indigo-100 p-2 rounded"><strong>💡 破題引導：</strong>利用 Thm 4.2 證明。在此拓樸下，$ [a, b) $ 既是開集也是閉集！（因為其補集 $(-\infty, a) \cup [b, \infty)$ 也能用半開區間聯集）。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">將複雜空間簡化為少數「基本單位（積木）」，這是後續建構積空間的基石。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「基底就是樂高積木」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.2 子空間 -->
+        <div id="sec-2" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.2</span> Subspaces (子空間)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    Let $(X, \mathcal{T})$ be a topological space and let $S$ be a subset of $X$. Then the family <span class="highlight-red">$\mathcal{S} = \{U \cap S : U \in \mathcal{T}\}$</span> of subsets of $S$ is a topology for $S$ called the <span class="highlight-yellow">relative topology</span>. 
+                    It is important to keep in mind that a <span class="highlight-green">relatively open subset of a subspace $S$ need not be open in $X$</span>.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    在空間 $X$ 裡切出子集合 $S$。拿大空間的所有開集，像餅乾模具一樣去跟 $S$「取交集」，切出來的就是 $S$ 裡的「相對開集」。<br>
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900">📚 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside mt-1 text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 2.1:</strong> $E$ 於 $S$ 內是相對閉集 $\iff E = T \cap S$ (其中 $T$ 為 $X$ 中的閉集)。</li>
+                            <li><strong>Thm 2.2:</strong> 相對閉包 $\overline{E}_{rel} = \overline{E} \cap S$。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">學會如何將整體結構「向下切片」繼承到局部。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「拿大空間的刀，切子空間的肉」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.10 有限積空間 -->
+        <div id="sec-10" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.10</span> Finite Product Spaces (有限積空間)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    The <span class="highlight-yellow">product topology</span> on the Cartesian product $X = X_1 \times \cdots \times X_n$ is the topology for which a base of open sets is given by the "rectangles" <span class="highlight-red">$\{ U_1 \times \cdots \times U_n : U_j \text{ open in } X_j \}$</span>. 
+                    It is the <span class="highlight-purple">smallest topology for which each of the projections $\pi_j$ is continuous</span>.
+                    <span class="highlight-green">Warning: A product of normal spaces need not be normal.</span>
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    積空間是把拓樸空間「乘」在一起（如 $\mathbb{R} \times \mathbb{R} = \mathbb{R}^2$）。積拓樸的基底就是由各空間開集構成的「開矩形」。<br>
+                    它是一種「最不嚴格的拓樸」，剛好能讓所有的座標投影 $\pi_j$ 都是連續函數。<br>
+                    它保留了連通性、緊緻性與 Hausdorff 性質，但<span class="text-red-600 font-semibold">不保留 Normal ($T_4$) 性質</span>！
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900">📚 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside mt-1 text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 10.1-10.3:</strong> $\pi_j$ 為連續開映射。函數 $f$ 打進積空間連續 $\iff$ 所有投影 $\pi_j \circ f$ 皆連續。</li>
+                            <li><strong>Thm 10.4-10.6:</strong> 有限積空間保持 Hausdorff、路徑連通與連通性。</li>
+                            <li><strong>Thm 10.8:</strong> 有限積空間保持緊緻性。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">從低維拼裝到高維（笛卡兒積），並確認哪些結構性質能「遺傳」。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-red">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 測驗考點</h3>
+                    <p class="text-sm text-slate-700"><strong>Sorgenfrey Plane (Ex 10.5):</strong> 兩個 Normal 的半開區間空間相乘後，會變成非 Normal 空間。這是必背反例！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.11 Zorn引理 -->
+        <div id="sec-11" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.11</span> Set Theory and Zorn's Lemma (集合論與 Zorn 引理)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    <span class="highlight-red">Zorn's Lemma</span>: Let $\mathcal{S}$ be a partially ordered set. If <span class="highlight-yellow">each totally ordered subset of $\mathcal{S}$ has an upper bound</span>, then $\mathcal{S}$ has a <span class="highlight-purple">maximal element</span>.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    這是在進入「無窮維度」前必須裝備的純集合論武器（等價於選擇公理）。<br>
+                    它告訴我們：要在無窮大的系統裡尋找某個「極大值（無法再被超越的結構）」，只要證明「在這個系統裡，每一條單向往上的鏈，頂端都有個上界」，就能斷言極大值必定存在。
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">掌握非構造性證明。處理不可數、無窮維度時用來「召喚」極大物件。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「有鏈必有界，有界必有極大」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.12 無窮積空間 -->
+        <div id="sec-12" class="section-grid scroll-mt-32 mb-16">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.12</span> Infinite Product Spaces (無窮積空間)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    For an infinite product $X = \prod X_\alpha$, the base consists of sets $\{ x \in X : x(\alpha_j) \in U_{\alpha_j}, 1 \le j \le m \}$. 
+                    <span class="highlight-green">Only a FINITE number of components are restricted to open sets</span>, while all other components are unrestricted.
+                    <span class="highlight-red">Theorem 12.4 (Tychonoff's Theorem)</span>: Any product of compact spaces is compact.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    在無窮多個空間相乘時，開集基底的嚴格規矩是：<span class="text-red-600 font-bold">「只能有『有限個』維度被開集限制，剩下的無限多個維度必須全部放開。」</span><br>
+                    為什麼要定這個奇怪的規矩？這一切都是為了保證拓樸學最偉大的 <strong>Tychonoff 定理</strong> 成立：任意（包含不可數）無窮積的緊緻空間，其結果依然是緊緻的！
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900">📚 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside mt-1 text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 12.3 (Alexander Subbase Theorem):</strong> 若次基底的開覆蓋具備有限子覆蓋，則空間緊緻。(需動用 Zorn 引理)</li>
+                            <li><strong class="text-red-600">Thm 12.4 (Tychonoff Theorem):</strong> 任意無窮積的緊緻空間必緊緻。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">理解無窮維度的殘缺美，見證 Tychonoff 定理如何透過限制開集來維持緊緻性。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-red">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 測驗考點</h3>
+                    <p class="text-sm text-slate-700"><strong>盒拓樸 (Box Topology, Ex 12.11)：</strong> 如果允許無限個維度同時被限制，緊緻性就會崩潰。名詞比較必考。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PART II: 空間特性 (Spatial Properties)     -->
+        <!-- ========================================== -->
+        <div class="theme-header text-white p-8 rounded-2xl shadow-lg mb-12 flex flex-col md:flex-row items-center gap-6">
+            <div class="text-5xl font-black text-red-400 opacity-90">II</div>
+            <div>
+                <h1 class="text-3xl font-bold mb-2">空間特性 (Spatial Properties)</h1>
+                <p class="text-slate-300 text-lg leading-relaxed">
+                    有了舞台結構，我們開始測量空間的「形狀與質量」。分離公理賦予了空間的「解析度」（讓點與點不糊在一起）；緊緻性是將微積分中「有界閉區間」的概念徹底拓樸化；而連通性則定義了幾何圖形的「不可分割性」。這些特性決定了該空間能支撐多少數學定理。
+                </p>
+            </div>
+        </div>
+
+        <!-- 2.5 分離公理 -->
+        <div id="sec-5" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.5</span> Separation Axioms (分離公理)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    The space $X$ is a <span class="highlight-yellow">$T_2$ space, or Hausdorff space</span>, if for each pair of distinct points $x, y \in X$ there <span class="highlight-red">exist disjoint open sets $U$ and $V$</span> such that $x \in U$ and $y \in V$.
+                    The space $X$ is <span class="highlight-yellow">regular ($T_3$)</span> if points and closed sets can be separated, and <span class="highlight-yellow">normal ($T_4$)</span> if two disjoint closed sets can be separated by disjoint open sets.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    • <strong>Hausdorff ($T_2$)：</strong> 兩個不同的點，必定能用不相交的開集「泡泡」分別包起來。（極限唯一的保證）。<br>
+                    • <strong>Regular ($T_3$)：</strong> 一個點和一個不包含它的閉集能被分開。<br>
+                    • <strong>Normal ($T_4$)：</strong> 兩個互不相交的閉集能被分開。<br>
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900">📚 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside mt-1 text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 5.1:</strong> 所有度量空間都是最嚴格的 $T_4$ 空間。</li>
+                            <li><strong class="text-red-600">Thm 5.3 (Urysohn's Lemma):</strong> (硬定理) Normal 空間中，能構造出完美介於 0~1 的連續突起函數 (Bump function) 來分離閉集。</li>
+                            <li><strong class="text-red-600">Thm 5.4 (Tietze Extension):</strong> (硬定理) Normal 空間中，定義在閉子集上的連續函數必能擴張至全空間。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">了解如何透過增加公理，提升空間「解析度」，避免產生糊在一起的幽靈點。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「解析度等級：點點($T_2$)、點閉($T_3$)、閉閉($T_4$)」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.6 緊緻 -->
+        <div id="sec-6" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.6</span> Compactness (緊緻性)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    A topological space $X$ is <span class="highlight-yellow">compact</span> if <span class="highlight-red">every open cover of $X$ has a finite subcover</span>. 
+                    <span class="highlight-red">Theorem 6.5</span>: A compact Hausdorff space is normal.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    緊緻性是拓樸學對「有限大小（Bounded）」的終極抽象：只要有無窮多個開集能覆蓋全空間，你永遠可以從中只挑出「有限個」就完成覆蓋。<br>
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900">📚 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside mt-1 text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 6.2:</strong> 緊緻空間內的閉集必緊緻。</li>
+                            <li><strong>Cor 6.4:</strong> Hausdorff 空間中的緊緻集必定是閉集。</li>
+                            <li><strong class="text-red-600">Thm 6.5:</strong> Compact + Hausdorff 必定推導出 Normal ($T_4$) 空間。(非常強大的結論)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">將微積分的「有界閉區間」概念，推廣到沒有距離的拓樸空間中。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「無限覆蓋，必有有限子覆蓋」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.7 局部緊緻 -->
+        <div id="sec-7" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.7</span> Locally Compact Spaces (局部緊緻空間)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    A topological space $X$ is <span class="highlight-yellow">locally compact</span> if, for each $p \in X$, there is an open set $W$ such that $p \in W$ and <span class="highlight-red">$\overline{W}$ is compact</span>.
+                    If $X$ is a locally compact Hausdorff space that is not compact, it can be extended to a compact space $Y = X \cup \{\infty\}$ called the <span class="highlight-yellow">one-point compactification</span>.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    空間整體可能發散到無限遠（如 $\mathbb{R}$），但「局部」每個點周圍都有緊緻鄰居。數學家發明了一個魔法：把所有「跑向無限遠」的方向捏在一起打結，補上一個「無限遠點 $\{\infty\}$」，空間就能瞬間升級成完美的緊緻空間。
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">處理整體發散但局部完美的空間，並學習「單點緊緻化」為空間補洞。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「把無限遠打個結」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.8-9 連通 -->
+        <div id="sec-8" class="section-grid scroll-mt-32 mb-16">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.8-2.9</span> Connectedness (連通性)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    A topological space $X$ is <span class="highlight-yellow">connected</span> if $X$ <span class="highlight-green">cannot be expressed as a disjoint union of two nonempty subsets that are both open and closed</span>. 
+                    A space $X$ is <span class="highlight-yellow">path-connected</span> if, for every pair of points, there is a <span class="highlight-red">continuous path $\gamma: [0,1] \to X$</span> joining them. 
+                    <span class="highlight-red">Path-connected implies connected</span>, but the converse is not true.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    • <strong>連通 (Connected)：</strong> 在拓樸中代表你「找不到」方法把它切成兩塊既開又閉的集合。<br>
+                    • <strong>路徑連通 (Path-connected)：</strong> 直觀幾何上，任何兩點都能畫出連續線段相連。<br>
+                    這兩者的關係非常愛考：能畫線連起來肯定切不開（路徑連通 $\Rightarrow$ 連通）。但反之不一定成立！
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900">📚 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside mt-1 text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 8.2 & 8.3:</strong> 只要有「交集」，連通集的聯集依然連通。</li>
+                            <li><strong>Thm 9.1 & 9.2:</strong> 路徑連通必定推導出連通。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 mt-2 rounded-r-lg shadow-sm">
+                    <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2"><span>🎯</span> 經典習題引導</h4>
+                    <p class="text-sm text-slate-700 mb-2"><strong>[Exercise 9.7] 拓樸學家的正弦曲線 (Topologist's Sine Curve)</strong></p>
+                    <p class="text-xs text-indigo-700 bg-indigo-100 p-2 rounded"><strong>💡 破題引導：</strong>證明垂直線段加上正弦曲線的圖形「連通但非路徑連通」。因為曲線在 $x \to 0$ 無限震盪，你無法畫出有限時間參數的連續路徑跨越空隙。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">區分代數拓樸定義（切不開）與幾何直覺（能連線）的差異。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「切不開就是連通，能連線就是路徑連通」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PART III: 空間映射 (Spatial Mappings)      -->
+        <!-- ========================================== -->
+        <div class="theme-header text-white p-8 rounded-2xl shadow-lg mb-12 flex flex-col md:flex-row items-center gap-6">
+            <div class="text-5xl font-black text-blue-400 opacity-90">III</div>
+            <div>
+                <h1 class="text-3xl font-bold mb-2">空間映射 (Spatial Mappings)</h1>
+                <p class="text-slate-300 text-lg leading-relaxed">
+                    建立完結構與特性後，我們終於能探討不同拓樸宇宙之間的「橋樑」。在拓樸學中，只要變換過程不會撕裂「開集」的結構，我們就稱之為連續。而雙向且完美的連續變換（同胚），則是判斷兩個空間是否「本質上完全相同」的終極指標。幾乎所有的空間特性（連通、緊緻）都能透過這些映射安全地傳遞。
+                </p>
+            </div>
+        </div>
+
+        <!-- 2.3 連續與同胚 -->
+        <div id="sec-3" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.3</span> Continuous Functions (連續函數與同胚)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    A function $f$ from one topological space $X$ to another $Y$ is <span class="highlight-yellow">continuous</span> if <span class="highlight-red">$f^{-1}(V)$ is open in $X$ whenever $V$ is an open subset of $Y$</span>. 
+                    A <span class="highlight-yellow">homeomorphism</span> is a function $f: X \to Y$ that is <span class="highlight-purple">one-to-one and onto</span>, such that $U$ is open in $X$ if and only if $f(U)$ is open in $Y$. 
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    對於目標空間 $Y$ 裡的「任何一個開集」，沿著函數退回去找反像，如果在出發空間 $X$ 裡「保證也是開集」，那這個函數就是連續的。<br>
+                    如果函數雙向對應（一對一且映成），且正反向都連續，稱兩個空間「同胚 (Homeomorphism)」，這代表它們在拓樸上完全等價（例如咖啡杯等價於甜甜圈）。
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900">📚 完整定理地圖（映射與特性保持）：</strong>
+                        <ul class="list-disc list-inside mt-1 text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 3.2:</strong> 兩個連續函數的合成 $g \circ f$ 依然連續。</li>
+                            <li><strong>Thm 6.6:</strong> 緊緻性在連續函數映射下保持不變。</li>
+                            <li><strong>Thm 8.1 & 8.4:</strong> 連通性與路徑連通性在連續函數映射下保持不變。</li>
+                            <li><strong>Thm 6.7:</strong> 從緊緻空間到 Hausdorff 空間的連續雙射，自動升級為同胚！</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 mt-2 rounded-r-lg shadow-sm">
+                    <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2"><span>🎯</span> 經典習題引導</h4>
+                    <p class="text-sm text-slate-700 mb-2"><strong>[Exercise 3.4 & 3.5] 區間的同胚</strong><br>
+                    證明所有開區間同胚；且所有有限開區間與無限開區間 $\mathbb{R}$ 也同胚。</p>
+                    <p class="text-xs text-indigo-700 bg-indigo-100 p-2 rounded"><strong>💡 破題引導：</strong>對於有限區間用線性縮放平移 $f(x) = ax+b$。若是有限到無限（如 $(-1, 1) \to \mathbb{R}$），用 $f(x) = x / (1 - |x|)$ 或 $\tan(x)$ 構造連續雙射。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">將微積分中的連續性概念，昇華為「保持拓樸結構（開集）」的映射關係。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「開集的反像必為開集」</p>
+                    <p class="text-xs text-slate-500 mt-1">同胚 = 拓樸界的「全等」。</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>
