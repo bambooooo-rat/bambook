@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8051 單晶片微電腦系統：學習地圖與期中考特訓</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: #faf9f6; }
+        .font-mono-en { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+        
+        /* 學習維度高亮 */
+        .highlight-yellow { background-color: #fef08a; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-weight: 600; color: #854d0e; } /* 核心概念/硬體 */
+        .highlight-red { background-color: #fecaca; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-weight: 600; color: #991b1b; } /* 指令/語法 */
+        .highlight-blue { background-color: #bfdbfe; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-weight: 600; color: #1e3a8a; } /* 暫存器/記憶體 */
+        .highlight-green { background-color: #bbf7d0; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-weight: 600; color: #166534; } /* 易錯點/陷阱 */
+        .highlight-purple { background-color: #e9d5ff; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-weight: 600; color: #6b21a8; } /* 跨界連結 */
+        
+        .zh-block { background-color: #f0ece2; border-left: 4px solid #64748b; }
+        .annotation-card { background-color: #ffffff; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .anno-border-yellow { border-left: 4px solid #eab308; }
+        .anno-border-red { border-left: 4px solid #ef4444; }
+        .anno-border-blue { border-left: 4px solid #3b82f6; }
+        
+        .section-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-bottom: 3rem; }
+        @media (min-width: 1024px) {
+            .section-grid { grid-template-columns: 2fr 1fr; }
+        }
+        
+        .theme-header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .asm-code { background-color: #1e293b; color: #e2e8f0; padding: 1.25rem; border-radius: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; line-height: 1.6; overflow-x: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+        .asm-comment { color: #64748b; font-style: italic; }
+        
+        /* 期中考挖空特效 */
+        .blank-spot { color: #f87171; border-bottom: 2px dashed #f87171; font-weight: bold; padding: 0 4px; background-color: rgba(248, 113, 113, 0.1); border-radius: 2px; }
+        .blank-label { font-size: 0.75rem; color: #f87171; vertical-align: super; margin-left: 2px; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- 1. 頂部導覽列 -->
+    <header class="sticky top-0 z-50 bg-slate-900 text-white shadow-md border-b-4 border-blue-500">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-xl font-bold tracking-wide">8051 Microcontroller Architecture & Programming</h1>
+                <p class="text-sm text-slate-400">單晶片微電腦系統 | 組合語言與期中考挖空特訓</p>
+            </div>
+            <div class="flex flex-wrap gap-3 text-xs font-semibold">
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-yellow-300 inline-block"></span>硬體架構</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-300 inline-block"></span>組合指令</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-300 inline-block"></span>暫存器/記憶體</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>必考挖空</span>
+            </div>
+        </div>
+        
+        <!-- 主題式導航條 -->
+        <nav class="bg-slate-800 border-t border-slate-700 overflow-x-auto whitespace-nowrap scrollbar-hide">
+            <div class="max-w-7xl mx-auto px-6 py-2 text-sm flex items-center">
+                <a href="#ch1" class="text-slate-300 hover:text-white transition mr-6">Ch1/2. 硬體架構</a>
+                <a href="#ch3" class="text-slate-300 hover:text-white transition mr-6">Ch3. 基礎指令與記憶體</a>
+                <a href="#ch4" class="text-slate-300 hover:text-white transition mr-6">Ch4. 分支與跳躍</a>
+                <a href="#ch5" class="text-slate-300 hover:text-white transition mr-6">Ch5. I/O 埠控制</a>
+                <a href="#ch6" class="text-slate-300 hover:text-white transition mr-6">Ch6. 定址模式</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+
+        <!-- 宏觀導讀 -->
+        <div class="theme-header text-white p-8 rounded-2xl shadow-lg mb-12 flex flex-col md:flex-row items-center gap-6 mt-4">
+            <div class="text-5xl font-black text-blue-400 opacity-90">CPU</div>
+            <div>
+                <h1 class="text-3xl font-bold mb-2">宏觀導讀：把自己當作一顆 8051</h1>
+                <p class="text-slate-300 text-base leading-relaxed">
+                    學習 8051 的核心在於了解資源的匱乏。你只有 <strong>8 位元</strong>（一次只能算 0~255 的數字），極小的記憶體（128 Bytes RAM），以及幾根腳位。組合語言不是在寫邏輯，而是在做<strong>「搬運工」</strong>：把資料從記憶體搬到暫存器，用算術邏輯單元 (ALU) 運算後，再搬回記憶體或丟到 I/O 腳位上點亮 LED。<br>
+                    <strong>記住黃金法則：</strong>所有的資料流動，幾乎都必須經過「累積器 (Accumulator, A)」這個專屬工作台。
+                </p>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- Ch 1 & 2: Introduction & The 8051         -->
+        <!-- ========================================== -->
+        <div id="ch1" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">Ch 1-2</span> Microcontroller vs. Microprocessor
+                </h2>
+                <div class="font-mono-en text-slate-700 leading-relaxed">
+                    A <span class="highlight-purple">Microprocessor (CPU)</span> requires external RAM, ROM, and I/O ports to be functional. In contrast, a <span class="highlight-yellow">Microcontroller (MCU)</span> contains a CPU, fixed amount of RAM, ROM, Timers, and I/O ports all embedded on a single chip. It is a <span class="highlight-yellow">System on a Chip (SoC)</span>.
+                    The classic 8051 has an <span class="highlight-yellow">8-bit ALU</span>, <span class="highlight-blue">4K Bytes of On-chip ROM</span>, <span class="highlight-blue">128 Bytes of On-chip RAM</span>, two timers, one serial port, and 4 I/O ports (each 8 bits wide).
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    • <strong>微處理器 (Microprocessor)：</strong> 像電腦的 Intel CPU，只有運算大腦，記憶體 (RAM/ROM) 和 I/O 都要外接，適合大數據處理。<br>
+                    • <strong>微控制器 (Microcontroller, MCU)：</strong> 把 CPU、記憶體、定時器、I/O 腳位全部塞進「同一顆 IC 裡面」，就像一台微型電腦。8051 就是典型的 MCU。<br>
+                    • <strong>8051 基礎體質：</strong> 它是 8 位元架構。內建 4KB 的 ROM（存程式碼）、128 Bytes 的 RAM（存變數）、以及 4 個 8-bit 的對外溝通腳位 (Port 0~3)。
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">理解單晶片為什麼適合用在「嵌入式系統 (Embedded Systems)」(如遙控器、微波爐) 而非個人電腦。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「MCU = 包含五臟六腑的微型一體機」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- Ch 3: 8051 Assembly Language Programming   -->
+        <!-- ========================================== -->
+        <div id="ch3" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">Ch 3</span> 組合語言基礎與內部記憶體 (Registers & RAM)
+                </h2>
+                <div class="font-mono-en text-slate-700 leading-relaxed">
+                    The most widely used registers are <span class="highlight-blue">A (Accumulator), B, R0-R7, DPTR, and PC</span>. 
+                    The instruction <span class="highlight-red">MOV dest, source</span> copies data from source to destination. <span class="highlight-green">Never use `MOV R0, R1`</span> (moving data between two generic registers is invalid in 8051).
+                    The <span class="highlight-blue">PSW (Program Status Word)</span> contains vital status flags like <span class="highlight-yellow">CY (Carry)</span> and <span class="highlight-yellow">OV (Overflow)</span>.
+                    The <span class="highlight-blue">Stack Pointer (SP)</span> is an 8-bit register that points to the top of the stack. It defaults to `07H` upon reset.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    • <strong>核心暫存器：</strong> `A` (最重要的累積器，幾乎所有運算都要靠它)、`B` (乘除法專用)、`R0~R7` (通用變數)、`DPTR` (16位元，用來指到 ROM 抓資料)、`PC` (程式計數器，指著下一行要執行的程式碼)。<br>
+                    • <strong>搬移指令 MOV：</strong> 永遠是 `MOV 目的地, 來源` (右邊搬到左邊)。不能把資料直接從 R1 搬到 R2，一定要透過 A 轉手。<br>
+                    • <strong>記憶體地圖 (128 Bytes RAM)：</strong><br>
+                    　1. `00H~1FH`：分為 4 組 Bank，每組有 R0~R7 暫存器 (預設使用 Bank 0)。<br>
+                    　2. `20H~2FH`：可位元定址區 (Bit-addressable)，可以單獨控制某一個 Bit (如控制單顆 LED)。<br>
+                    　3. `30H~7FH`：一般用途的草稿區 (Scratch pad)，堆疊 (Stack) 通常在此。
+                </div>
+                
+                <!-- 期中考挖空熱區 -->
+                <div class="mt-6 border-l-4 border-red-500 pl-4">
+                    <h3 class="text-lg font-bold text-red-700 flex items-center gap-2 mb-2">
+                        <span>🚨</span> 簡報程式碼：期中考挖空熱區 (Stack & PSW)
+                    </h3>
+                    <p class="text-sm text-slate-700 mb-3"><strong>考點分析：</strong> 考試極愛考 PUSH/POP 的順序（LIFO 先進後出），以及加法運算後的 PSW 旗標狀態（特別是 CY 進位與 AC 輔助進位）。</p>
+                    
+                    <div class="asm-code">
+                        <span class="text-yellow-400">ORG</span> <span class="blank-spot">0000H<span class="blank-label">1</span></span>       <span class="asm-comment">; 1. 挖空: 程式進入點必定是 0000H</span><br>
+                        <span class="text-pink-400">MOV</span> R6, #25H<br>
+                        <span class="text-pink-400">MOV</span> R1, #12H<br>
+                        <span class="text-pink-400">PUSH</span> <span class="blank-spot">06<span class="blank-label">2</span></span>         <span class="asm-comment">; 2. 挖空: 陷阱！PUSH 不能接暫存器名稱(如 R6)，只能接記憶體直接地址(06H 代表 Bank0 的 R6)</span><br>
+                        <span class="text-pink-400">PUSH</span> <span class="blank-spot">01<span class="blank-label">3</span></span>         <span class="asm-comment">; 3. 挖空: 存入 R1 的直接地址 01H</span><br>
+                        <span class="text-pink-400">POP</span>  <span class="blank-spot">01<span class="blank-label">4</span></span>         <span class="asm-comment">; 4. 挖空: LIFO (後進先出)，最後推入的 01H 要最先彈出來</span><br>
+                        <span class="text-pink-400">POP</span>  <span class="blank-spot">06<span class="blank-label">5</span></span>         <span class="asm-comment">; 5. 挖空: 再彈出 06H</span><br><br>
+                        <span class="asm-comment">; --- PSW 旗標考題 ---</span><br>
+                        <span class="text-pink-400">MOV</span> A, #38H<br>
+                        <span class="text-pink-400">ADD</span> A, <span class="blank-spot">#2FH<span class="blank-label">6</span></span>     <span class="asm-comment">; 6. 挖空: # 字號代表立即數。 38H + 2FH = 67H</span><br>
+                        <span class="asm-comment">; 運算後：</span><br>
+                        <span class="asm-comment">; CY (Carry) = 0  (沒有超過 8 bits 的進位)</span><br>
+                        <span class="asm-comment">; AC (Aux Carry) = 1 (低半位元 8+F=17產生進位到高半位元)</span><br>
+                        <span class="asm-comment">; P (Parity) = 1  (67H = 01100111B，有 5 個 1，奇數所以 P=1)</span><br>
+                        <span class="text-yellow-400">END</span>              <span class="asm-comment">; 程式結尾</span>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 解題思維</h3>
+                    <p class="text-sm text-slate-700">看到 `PUSH`/`POP` 的題目，一定要先在紙上畫一個堆疊。記住 `SP` 預設在 `07H`，每 `PUSH` 一次 `SP` 先加 1，再把資料放進去。彈出時順序必須完全顛倒！</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-red">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 致命陷阱</h3>
+                    <p class="text-sm text-slate-700"><strong>PUSH R0 是非法的！</strong> 這點極常出現在選擇題或改錯題。組合語言規定堆疊指令只能使用「記憶體絕對位址 (Direct address)」，所以必須寫成 `PUSH 00H`。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- Ch 4: Branch Instructions                 -->
+        <!-- ========================================== -->
+        <div id="ch4" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">Ch 4</span> 分支與跳躍 (Branch Instructions)
+                </h2>
+                <div class="font-mono-en text-slate-700 leading-relaxed">
+                    Looping is typically done using <span class="highlight-red">DJNZ reg, label</span> (Decrement and Jump if Not Zero).
+                    Conditional jumps include <span class="highlight-red">JZ</span> (Jump if A is Zero), <span class="highlight-red">JNC</span> (Jump if No Carry), and <span class="highlight-red">CJNE</span> (Compare and Jump if Not Equal). Note that conditional jumps are all <span class="highlight-yellow">Short Jumps</span> (relative offset -128 to +127 bytes).
+                    For subroutines, use <span class="highlight-red">LCALL</span> (Long Call, 3-byte instruction targeting 64K space). It pushes the <span class="highlight-blue">PC</span> onto the stack. <span class="highlight-red">RET</span> pops the stack back into the PC.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    組合語言沒有 `for` 迴圈，全靠「跳躍指令」改變 PC 的值來達成。<br>
+                    • <strong>迴圈神指令 DJNZ：</strong> 讓某個暫存器減 1，如果不為 0 就跳回標籤處。用來寫計數迴圈超好用。<br>
+                    • <strong>條件跳躍 JZ/JNZ/JC：</strong> 根據 A 是否為 0，或是 CY 旗標是否有進位來決定要不要跳躍。<br>
+                    • <strong>呼叫副程式 LCALL/RET：</strong> 呼叫副程式時，CPU 會先把「下一行程式的地址 (PC)」推進去堆疊裡面保管。當副程式執行到 `RET` 時，再把地址從堆疊彈出來，回到主程式。
+                </div>
+                
+                <!-- 期中考挖空熱區 -->
+                <div class="mt-6 border-l-4 border-red-500 pl-4">
+                    <h3 class="text-lg font-bold text-red-700 flex items-center gap-2 mb-2">
+                        <span>🚨</span> 簡報程式碼：期中考挖空熱區 (Delay Loop)
+                    </h3>
+                    <p class="text-sm text-slate-700 mb-3"><strong>考點分析：</strong> 雙層（或三層）延遲迴圈是必考題。考卷會挖空標籤跳躍的位置，測試你是否懂「內層先跑完，再跑外層」的邏輯。</p>
+                    
+                    <div class="asm-code">
+                        <span class="asm-comment">; 產生延遲時間的副程式 (Nested Loop)</span><br>
+                        <span class="text-yellow-400">DELAY:</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">MOV</span> R2, <span class="blank-spot">#200<span class="blank-label">1</span></span>     <span class="asm-comment">; 1. 挖空: 外層迴圈計數器 (最高只能寫 255 或 #0FFH)</span><br>
+                        <span class="text-yellow-400">AGAIN:</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">MOV</span> R3, <span class="blank-spot">#250<span class="blank-label">2</span></span>     <span class="asm-comment">; 2. 挖空: 內層迴圈計數器</span><br>
+                        <span class="text-yellow-400">HERE:</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">NOP</span>               <span class="asm-comment">; 消耗 1 個機器週期 (Machine Cycle)</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">DJNZ</span> R3, <span class="blank-spot">HERE<span class="blank-label">3</span></span>    <span class="asm-comment">; 3. 挖空: 內層要先扣到 0，所以跳回最近的 HERE 標籤</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">DJNZ</span> R2, <span class="blank-spot">AGAIN<span class="blank-label">4</span></span>   <span class="asm-comment">; 4. 挖空: 內層跑完一輪後，外層扣 1，跳回 AGAIN 重新設定內層</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="blank-spot">RET<span class="blank-label">5</span></span>              <span class="asm-comment">; 5. 挖空: 副程式結束，必定使用 RET 返回主程式</span>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 解題思維</h3>
+                    <p class="text-sm text-slate-700">看到 `DJNZ` 就要聯想到迴圈。填空時，最下面的 `DJNZ` 往往跳回最上面的標籤（外層），而倒數第二個 `DJNZ` 跳回中間的標籤（內層），就像洋蔥一樣一層包一層。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「DJNZ 是迴圈之王；CALL 必配 RET」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- Ch 5: I/O Port Programming                -->
+        <!-- ========================================== -->
+        <div id="ch5" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">Ch 5</span> 輸出入埠規劃 (I/O Port Programming)
+                </h2>
+                <div class="font-mono-en text-slate-700 leading-relaxed">
+                    The 8051 has 4 I/O ports: <span class="highlight-blue">P0, P1, P2, and P3</span>. Upon reset, all ports are configured as inputs (<span class="highlight-yellow">default logic 1</span>).
+                    To use a port as an input, you must first write a <span class="highlight-red">1</span> to it. 
+                    <span class="highlight-green">Port 0 is open-drain</span> and requires external 10K ohm pull-up resistors to function as a normal I/O port.
+                    Ports are bit-addressable (e.g., <span class="highlight-red">SETB P1.2</span> or <span class="highlight-red">CLR P2.7</span>).
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    • <strong>輸入/輸出切換原理：</strong> 開機時預設腳位都是 High (1)。<span class="text-red-600 font-bold">若要當作輸入讀取外接按鈕，必須先對該腳位寫入 '1'</span>，這樣才不會因為內部電路把電位拉低而讀錯。<br>
+                    • <strong>P0 埠的缺陷 (極常考)：</strong> Port 0 的硬體設計是「開汲極 (Open-Drain)」，內部沒有上拉電阻。如果拿來接 LED 或按鈕，必須要在外部電路接 10KΩ 的上拉電阻，否則送不出 High 訊號。<br>
+                    • <strong>位元操作：</strong> 用 `SETB` (設為 1) 或 `CLR` (清為 0) 來控制特定一根腳位。
+                </div>
+                
+                <!-- 期中考挖空熱區 -->
+                <div class="mt-6 border-l-4 border-red-500 pl-4">
+                    <h3 class="text-lg font-bold text-red-700 flex items-center gap-2 mb-2">
+                        <span>🚨</span> 簡報程式碼：期中考挖空熱區 (I/O Toggle & Switch)
+                    </h3>
+                    <p class="text-sm text-slate-700 mb-3"><strong>考點分析：</strong> 考卷喜歡讓你實作「按下按鈕，LED 亮起」的邏輯。注意讀取腳位狀態前要先寫入 1，以及 `JB` (Jump if Bit = 1) / `JNB` (Jump if Bit = 0) 的使用。</p>
+                    
+                    <div class="asm-code">
+                        <span class="asm-comment">; 讀取 P1.2 的開關狀態，並顯示在 P2.7 的 LED 上</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">SETB</span> <span class="blank-spot">P1.2<span class="blank-label">1</span></span>       <span class="asm-comment">; 1. 挖空: 關鍵！要把 P1.2 當輸入，必須先寫 1 給它</span><br>
+                        <span class="text-yellow-400">CHECK:</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="blank-spot">JNB<span class="blank-label">2</span></span> P1.2, <span class="text-yellow-400">TURN_ON</span> <span class="asm-comment">; 2. 挖空: 假設按鈕按下是接地(0)，JNB 代表「如果是 0 就跳」</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">CLR</span> <span class="blank-spot">P2.7<span class="blank-label">3</span></span>       <span class="asm-comment">; 3. 挖空: 沒按下時，關閉 LED (輸出 0)</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">SJMP</span> <span class="text-yellow-400">CHECK</span>        <span class="asm-comment">; 無窮迴圈繼續檢查</span><br>
+                        <span class="text-yellow-400">TURN_ON:</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">SETB</span> P2.7         <span class="asm-comment">; 按下時，打開 LED (輸出 1)</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="blank-spot">SJMP<span class="blank-label">4</span></span> <span class="text-yellow-400">CHECK</span>       <span class="asm-comment">; 4. 挖空: 短跳躍，回到 CHECK 重新檢查</span><br><br>
+                        <span class="asm-comment">; --- I/O 反相(Toggle)考題 ---</span><br>
+                        <span class="text-yellow-400">TOGGLE:</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="blank-spot">CPL<span class="blank-label">5</span></span> P1.5         <span class="asm-comment">; 5. 挖空: CPL (Complement) 是將腳位 0變1、1變0 的專用指令，常搭配方波產生</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">ACALL</span> <span class="text-yellow-400">DELAY</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">SJMP</span> <span class="text-yellow-400">TOGGLE</span>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 解題思維</h3>
+                    <p class="text-sm text-slate-700">看到「接上 Switch (開關)」的題目，反射動作就是尋找有沒有先設定 `SETB Px.x`！另外，題目常要求用 `CPL` 來產生特定頻率的方波。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「讀入必先寫一，方波必用 CPL」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- Ch 6: Addressing Modes                    -->
+        <!-- ========================================== -->
+        <div id="ch6" class="section-grid scroll-mt-32 mb-16">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">Ch 6</span> 定址模式 (Addressing Modes)
+                </h2>
+                <div class="font-mono-en text-slate-700 leading-relaxed">
+                    1. <span class="highlight-yellow">Immediate:</span> `#` directly follows the value (`MOV A, #25H`).<br>
+                    2. <span class="highlight-yellow">Register:</span> Using Rn (`MOV A, R0`).<br>
+                    3. <span class="highlight-yellow">Direct:</span> Using memory address directly (`MOV A, 40H`). SFRs (like P0, SP) must be accessed directly.<br>
+                    4. <span class="highlight-yellow">Register Indirect:</span> Using `@` as a pointer (`MOV A, @R0`). R0 or R1 holds the RAM address.<br>
+                    5. <span class="highlight-yellow">Indexed:</span> Used for reading lookup tables from ROM (`MOVC A, @A+DPTR`).
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    • <strong>立即 (Immediate) vs 直接 (Direct)：</strong> `#` 代表常數。`MOV A, #40H` 是把數字 40H 放進 A。沒有 `#` 的 `MOV A, 40H` 是把記憶體第 40 號抽屜的東西拿出來放進 A。<br>
+                    • <strong>間接定址 (Indirect)：</strong> 用 `@R0` 或 `@R1` 把暫存器當作 C 語言的「指標」。要跑迴圈搬移連續記憶體資料 (Array) 時必定用這招。<br>
+                    • <strong>索引定址 (Indexed)：</strong> 專門用來去 ROM (程式記憶體) 查表。因為 ROM 超過 256 Bytes，必須用 16-bit 的 DPTR 搭配 A 來當地址，指令是 `MOVC`。
+                </div>
+                
+                <!-- 期中考挖空熱區 -->
+                <div class="mt-6 border-l-4 border-red-500 pl-4">
+                    <h3 class="text-lg font-bold text-red-700 flex items-center gap-2 mb-2">
+                        <span>🚨</span> 簡報程式碼：期中考挖空熱區 (Block Transfer & Lookup)
+                    </h3>
+                    <p class="text-sm text-slate-700 mb-3"><strong>考點分析：</strong> 記憶體區塊搬移（Block Transfer）是定址模式的集大成者。考題會要求你把一塊 RAM 複製到另一塊 RAM，這一定會挖空指標符號 `@` 與指標遞增指令 `INC`。</p>
+                    
+                    <div class="asm-code">
+                        <span class="asm-comment">; 將 RAM 中 20H 開始的 10 個 Bytes，搬移到 60H 開始的位置</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">MOV</span> R0, <span class="blank-spot">#20H<span class="blank-label">1</span></span>     <span class="asm-comment">; 1. 挖空: 來源指標的起點 (注意要加 #)</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">MOV</span> R1, <span class="blank-spot">#60H<span class="blank-label">2</span></span>     <span class="asm-comment">; 2. 挖空: 目的指標的起點</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">MOV</span> R2, #10       <span class="asm-comment">; 計數器設為 10</span><br>
+                        <span class="text-yellow-400">BACK:</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">MOV</span> A, <span class="blank-spot">@R0<span class="blank-label">3</span></span>       <span class="asm-comment">; 3. 挖空: 用間接定址法(@)，把 R0 指向的內容抓到 A (永遠靠 A 中轉)</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">MOV</span> <span class="blank-spot">@R1<span class="blank-label">4</span></span>, A       <span class="asm-comment">; 4. 挖空: 把 A 的資料存進 R1 指向的地址</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="blank-spot">INC<span class="blank-label">5</span></span> R0           <span class="asm-comment">; 5. 挖空: 來源指標往下一格移動 (Increment)</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="blank-spot">INC<span class="blank-label">6</span></span> R1           <span class="asm-comment">; 6. 挖空: 目的指標往下一格移動</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">DJNZ</span> R2, <span class="text-yellow-400">BACK</span>     <span class="asm-comment">; 迴圈判定</span><br><br>
+                        <span class="asm-comment">; --- 查表法考題 (讀取 ROM 資料) ---</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">MOV</span> DPTR, <span class="blank-spot">#MYDATA<span class="blank-label">7</span></span> <span class="asm-comment">; 7. 挖空: 設定 DPTR 指向資料表的起始標籤</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">MOV</span> A, #0<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="blank-spot">MOVC<span class="blank-label">8</span></span> A, <span class="blank-spot">@A+DPTR<span class="blank-label">9</span></span>  <span class="asm-comment">; 8/9. 挖空: C 代表 Code(ROM)，這是唯一能讀取 ROM 內容的指令！</span><br>
+                        <span class="text-yellow-400">MYDATA:</span> <span class="text-yellow-400">DB</span> 'H', 'E', 'L', 'L', 'O'
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 解題思維</h3>
+                    <p class="text-sm text-slate-700">看到「搬移多筆資料 (Block Transfer)」的題目，一定會用到 <code>@R0</code> 或 <code>@R1</code>。如果題目是要把查表資料 (Lookup table) 送到某個 Port，就會看到 <code>DPTR</code> 和 <code>MOVC A, @A+DPTR</code> 連用的黃金組合！</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-green">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 語法陷阱</h3>
+                    <p class="text-sm text-slate-700"><strong>忘記加 # 字號：</strong> 這是初學者最常犯的錯。原本想寫 `MOV A, #05H` 讓 A 變成 5，結果漏打 # 寫成 `MOV A, 05H`，CPU 會跑去記憶體位址 `05H` 把裡面的垃圾資料讀進來！</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>
