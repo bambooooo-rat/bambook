@@ -272,6 +272,136 @@
             </div>
         </div>
 
+        <!-- 2.7 局部緊緻 -->
+        <div id="sec-7" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.7</span> Locally Compact Spaces (局部緊緻空間)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    A topological space $X$ is <span class="highlight-yellow">locally compact</span> if, for each $p \in X$, there is an open set $W$ such that $p \in W$ and <span class="highlight-red">$\overline{W}$ is compact</span>.
+                    If $X$ is a locally compact Hausdorff space that is not compact, it can be extended to a compact space $Y = X \cup \{\infty\}$ called the <span class="highlight-yellow">one-point compactification</span>.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    空間整體可能發散到無限遠（如 $\mathbb{R}$），但「局部」每個點周圍都有緊緻的鄰居。數學家發明了一個魔法：把所有「跑向無限遠」的方向捏在一起打結，補上一個「無限遠點 $\{\infty\}$」，空間就能瞬間升級成完美的緊緻空間。
+
+                    <!-- 核心定義解析區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>🏷️</span> 核心定義解析：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-slate-700">
+                            <li><strong>局部緊緻 (Locally compact)：</strong> 空間中每一個點 $p$，都能找到一個包含它的開集 $W$，且其「閉包 $\overline{W}$」是緊緻的。直觀上，不管整體多龐大，每個點周圍都存在一個完美的緊緻「小宇宙」。</li>
+                            <li><strong>緊緻化 (Compactification)：</strong> 將原空間 $X$ 嵌入到一個更大的緊緻空間 $Y$ 中，使得 $X$ 在 $Y$ 裡面是稠密的 ($\overline{X} = Y$)。</li>
+                            <li><strong>單點緊緻化 (One-point compactification)：</strong> 對於一個局部緊緻但非緊緻的 Hausdorff 空間 $X$，人為增加一個點 $\infty$ 形成新空間 $Y = X \cup \{\infty\}$。新空間 $Y$ 被賦予特殊拓樸使其成為緊緻空間。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 經典範例與反例區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed bg-emerald-50 border-l-4 border-emerald-400 p-3 rounded-r-lg">
+                        <strong class="text-emerald-900 flex items-center gap-2 mb-2"><span>🌟</span> 經典範例與反例：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-emerald-800">
+                            <li><strong>$\mathbb{R}^n$ 是局部緊緻的：</strong> 儘管無界，但空間內任意點都可以被一個有限半徑的閉圓盤（緊緻集）包圍。</li>
+                            <li><strong>有理數集 $\mathbb{Q}$ 不是局部緊緻的：</strong> 任何包含有理數點的閉區間 $\overline{W}$ 都會有「無理數的漏洞」，無法具備緊緻性。</li>
+                            <li><strong>無窮維度 Banach 空間不是局部緊緻的：</strong> 在無窮維度中，閉單位球是不緊緻的（無法被有限個小球覆蓋）。這突顯了局部緊緻性在泛函分析中判斷維度的重要性。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>📚</span> 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 7.1:</strong> 單點緊緻化構造出的空間 $Y = X \cup \{\infty\}$ 具有唯一的拓樸，使其必定是一個緊緻 Hausdorff 空間。在其中，包含 $\infty$ 的開集形式為 $Y \setminus K$ (其中 $K$ 為 $X$ 中的緊緻集)。</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 經典習題引導 -->
+                <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 mt-2 rounded-r-lg shadow-sm">
+                    <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2"><span>🎯</span> 經典習題引導</h4>
+                    <p class="text-sm text-slate-700 mb-1"><strong>[Exercise 7.7] $\mathbb{R}^n$ 的單點緊緻化</strong></p>
+                    <p class="text-xs text-slate-600 mb-2">證明 $n$ 維歐氏空間 $\mathbb{R}^n$ 的單點緊緻化，同胚於 $n$ 維球面 $S^n$。</p>
+                    <p class="text-xs text-indigo-700 bg-indigo-100 p-2 rounded"><strong>✨ 這題為什麼重要？</strong><br>這是單點緊緻化最完美的幾何展現！利用球極平面投影法 (Stereographic Projection)，將球面最高點（北極）對應到 $\infty$ 點，剩餘的球面完美展開為 $\mathbb{R}^n$。這個映射展現了把 $\mathbb{R}^n$ 中無限延伸的四周「向上拉起」並打結成封閉球面的拓樸意象。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">處理整體發散但局部完美的空間，並學習「單點緊緻化」為空間補洞。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「把無限遠打個結，變成球面」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.8-9 連通 -->
+        <div id="sec-8" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.8-2.9</span> Connectedness & Path Connectedness (連通性)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    A topological space $X$ is <span class="highlight-yellow">connected</span> if $X$ <span class="highlight-green">cannot be expressed as a disjoint union of two nonempty subsets that are both open and closed</span>. 
+                    A space $X$ is <span class="highlight-yellow">path-connected</span> if, for every pair of points, there is a <span class="highlight-red">continuous path $\gamma: [0,1] \to X$</span> joining them. 
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    • <strong>連通 (Connected)：</strong> 在拓樸中代表你「找不到」方法把它切成兩塊既開又閉的集合。<br>
+                    • <strong>路徑連通 (Path-connected)：</strong> 直觀幾何上，任何兩點都能畫出連續線段相連。<br>
+
+                    <!-- 核心定義解析區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>🏷️</span> 核心定義解析：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-slate-700">
+                            <li><strong>連通空間 (Connected space)：</strong> 一個空間 $X$，如果無法找到一個非空且非全體的子集 $U$，使得 $U$ 同時是「開集」與「閉集」，則稱 $X$ 連通。直觀上代表該結構無法被乾淨俐落地切成兩半。</li>
+                            <li><strong>連通分支 (Connected component) $C(x)$：</strong> 包含點 $x$ 的「最大」連通子集。空間可唯一劃分為多個不相交的連通分支。</li>
+                            <li><strong>路徑 (Path) $\gamma$：</strong> 從實數單位閉區間 $[0,1]$ 到空間 $X$ 的「連續函數」。$\gamma(0)$ 與 $\gamma(1)$ 即為起終點。</li>
+                            <li><strong>路徑連通 (Path-connected space)：</strong> 空間中任意兩點，都能找到一條路徑 $\gamma$ 將它們相連。其條件比「連通」更加嚴格。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 經典範例與反例區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed bg-emerald-50 border-l-4 border-emerald-400 p-3 rounded-r-lg">
+                        <strong class="text-emerald-900 flex items-center gap-2 mb-2"><span>🌟</span> 經典範例與反例：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-emerald-800">
+                            <li><strong>路徑連通 $\implies$ 連通。</strong> 能畫線連起來肯定切不開。</li>
+                            <li><strong>連通 $\not\implies$ 路徑連通：</strong> 見下方經典習題「拓樸學家的正弦曲線」。</li>
+                            <li><strong>完全不連通 (Totally disconnected)：</strong> 有理數集 $\mathbb{Q}$ 是完全不連通的，它的每一個連通分支都只包含「單一個點」，因為任何兩個相異有理數之間都有無理數把它們切開。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>📚</span> 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 8.2 & 8.3:</strong> 只要有「交集」，一堆連通集的聯集依然連通。</li>
+                            <li><strong>Thm 8.4:</strong> 實數線 $\mathbb{R}$ 中的區間必定是連通的。</li>
+                            <li><strong>Thm 9.1 & 9.2:</strong> 路徑連通必定推導出連通。</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 經典習題引導 -->
+                <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 mt-2 rounded-r-lg shadow-sm">
+                    <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2"><span>🎯</span> 經典習題引導</h4>
+                    <p class="text-sm text-slate-700 mb-1"><strong>[Exercise 9.7] 拓樸學家的正弦曲線 (Topologist's Sine Curve)</strong></p>
+                    <p class="text-xs text-slate-600 mb-2">給定集合包含垂直線段 $E = \{(0,y): -1 \le y \le 1\}$ 與曲線 $F = \{(x, \sin(1/x)): 0 < x \le 1\}$。證明 $E \cup F$ 是「連通但非路徑連通」。</p>
+                    <p class="text-xs text-indigo-700 bg-indigo-100 p-2 rounded"><strong>✨ 這題為什麼重要？</strong><br>這是區分代數拓樸與幾何直覺的終極反例。因為 $E$ 落在 $F$ 的極限點內（閉包），依據連通的性質 $E \cup F$ 無法被乾淨切開，故依然連通。但因為曲線在 $x \to 0$ 處做無限次瘋狂震盪，你無法用「有限時間」的連續參數路徑跨越空隙連到 $y$ 軸，因此沒有路徑能從 $F$ 連到 $E$。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">區分代數拓樸定義（切不開）與幾何直覺（能連線）的差異。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「切不開就是連通，能連線就是路徑連通」</p>
+                </div>
+            </div>
+        </div>
+
         <!-- 2.10 有限積空間 -->
         <div id="sec-10" class="section-grid scroll-mt-32">
             <div class="space-y-4">
@@ -352,6 +482,69 @@
                 <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
                     <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
                     <p class="text-sm text-slate-700">掌握非構造性證明。處理不可數、無窮維度時用來「召喚」極大物件。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.11 Zorn引理 -->
+        <div id="sec-11" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.11</span> Set Theory and Zorn's Lemma (集合論與 Zorn 引理)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    <span class="highlight-red">Zorn's Lemma</span>: Let $\mathcal{S}$ be a partially ordered set. If <span class="highlight-yellow">each totally ordered subset of $\mathcal{S}$ has an upper bound</span>, then $\mathcal{S}$ has a <span class="highlight-purple">maximal element</span>.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    這是在進入「無窮維度」前必須裝備的純集合論武器（等價於選擇公理）。它告訴我們：要在無窮大的系統裡尋找某個「無法再被超越的極大值」，只要證明系統中每一條單向往上的鏈，頂端都有個上界即可。
+
+                    <!-- 核心定義解析區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>🏷️</span> 核心定義解析：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-slate-700">
+                            <li><strong>偏序集 (Partially ordered set) $\mathcal{S}$：</strong> 配備了一個關係 $\le$ 的集合，滿足自反性、反對稱性以及遞移性。拓樸中最常見的偏序集是「包含關係 $\subset$」下的子集家族。</li>
+                            <li><strong>全序子集 (Totally ordered subset) / 鏈 (Chain)：</strong> $\mathcal{S}$ 中的一個子集，內部任意兩個元素都可以比較大小 (要麼 $x \le y$ 要麼 $y \le x$)。</li>
+                            <li><strong>上界 (Upper bound)：</strong> 對於某個子集 $T \subset \mathcal{S}$，如果在 $\mathcal{S}$ 中存在一個元素 $u$，比 $T$ 中所有元素都大 ($x \le u, \forall x \in T$)，則稱 $u$ 是 $T$ 的上界。</li>
+                            <li><strong>極大元素 (Maximal element)：</strong> $\mathcal{S}$ 中的元素 $m$，使得「沒有任何其他元素比它嚴格更大」。若 $m \le y$，則必然 $m=y$。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 經典範例與反例區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed bg-emerald-50 border-l-4 border-emerald-400 p-3 rounded-r-lg">
+                        <strong class="text-emerald-900 flex items-center gap-2 mb-2"><span>🌟</span> 經典範例與反例：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-emerald-800">
+                            <li><strong>實數 $\mathbb{R}$：</strong> 它本身是一個全序集，但它**沒有**極大元素（因為它沒有上界）。這說明了 Zorn 引理中「每條鏈都要有上界」的前提是絕對必要的。</li>
+                            <li><strong>集合的冪集 $2^S$：</strong> 在包含關係下，最大元素就是宇集 $S$ 本身。</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>📚</span> 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-1 text-slate-700">
+                            <li><strong>Zorn's Lemma:</strong> 如果偏序集 $\mathcal{S}$ 的每一個全序子集(鏈)都有上界，則 $\mathcal{S}$ 必定包含至少一個極大元素。</li>
+                            <li><strong>推論:</strong> 任意向量空間必定存在一組基底 (Basis)。</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 經典習題引導 -->
+                <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 mt-2 rounded-r-lg shadow-sm">
+                    <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2"><span>🎯</span> 經典習題引導</h4>
+                    <p class="text-sm text-slate-700 mb-1"><strong>[Exercise 11.3] 利用 Zorn's Lemma 擴充基底</strong></p>
+                    <p class="text-xs text-slate-600 mb-2">給定向量空間 $V$ 及其內部的一個線性獨立集 $A$。證明必定存在一組包含 $A$ 的基底 $B$。</p>
+                    <p class="text-xs text-indigo-700 bg-indigo-100 p-2 rounded"><strong>✨ 這題為什麼重要？</strong><br>這是應用 Zorn's Lemma 的標準範本！考慮所有「包含 $A$ 且為線性獨立的子集」構成家族 $\mathcal{F}$。任取一條鏈，其聯集依然線性獨立（有上界）。由 Zorn's Lemma 得到極大元素 $B$。若 $B$ 不能生成全空間，則必定可以再加入一個向量仍保持獨立，這與 $B$ 是「極大」矛盾，故 $B$ 必定是基底。這個推論法在泛函分析中無所不在。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">掌握非構造性證明。處理不可數、無窮維度時用來「召喚」極大物件。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「有鏈必有界，有界必有極大」</p>
                 </div>
             </div>
         </div>
@@ -788,6 +981,151 @@
                     <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-3 rounded">
                         使用反證法與序列緊緻性。假設不存在這樣的 $\delta$，代表對於任何 $\delta_n = 1/n$，都能找到一個直徑小於 $1/n$ 的集合 $C_n$，它無法被單一開集包住。從每個 $C_n$ 挑一個點 $x_n$ 形成序列。因為空間緊緻（在度量空間中等價於序列緊緻），必有一子序列收斂到某點 $x$。點 $x$ 必然落在某個開集 $U$ 中，由於 $U$ 是開的，它包含一個以 $x$ 為中心的開球。當 $n$ 夠大時，$C_n$ 的直徑夠小且離 $x$ 夠近，必定會被整個「吸入」這個開球（進而被吸入 $U$），這與 $C_n$ 的假設產生矛盾。
                     </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PART III: 空間映射 (Spatial Mappings)      -->
+        <!-- ========================================== -->
+        <div class="theme-header text-white p-8 rounded-2xl shadow-lg mb-12 flex flex-col md:flex-row items-center gap-6 mt-16">
+            <div class="text-5xl font-black text-blue-400 opacity-90">III</div>
+            <div>
+                <h1 class="text-3xl font-bold mb-2">空間映射 (Spatial Mappings)</h1>
+                <p class="text-slate-300 text-lg leading-relaxed">
+                    建立完結構與特性後，我們終於能探討不同拓樸宇宙之間的「橋樑」。在拓樸學中，只要變換過程不會撕裂「開集」的結構，我們就稱之為連續。而雙向且完美的連續變換（同胚），則是判斷兩個空間是否「本質上完全相同」的終極指標。幾乎所有的空間特性都能透過這些映射安全地傳遞，而商空間技術更允許我們隨心所欲地將空間折疊、黏合，創造出無窮變化的拓樸結構。
+                </p>
+            </div>
+        </div>
+
+        <!-- 2.3 連續與同胚 -->
+        <div id="sec-3" class="section-grid scroll-mt-32">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.3</span> Continuous Functions (連續函數與同胚)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    A function $f$ from one topological space $X$ to another $Y$ is <span class="highlight-yellow">continuous</span> if <span class="highlight-red">$f^{-1}(V)$ is open in $X$ whenever $V$ is an open subset of $Y$</span>. 
+                    A <span class="highlight-yellow">homeomorphism</span> is a function $f: X \to Y$ that is <span class="highlight-purple">one-to-one and onto</span>, such that $U$ is open in $X$ if and only if $f(U)$ is open in $Y$. 
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    對於目標空間 $Y$ 裡的「任何一個開集」，沿著函數退回去找反像，如果在出發空間 $X$ 裡「保證也是開集」，那這個函數就是連續的。如果函數一對一且映成，且正反向都連續，稱兩個空間「同胚」，代表它們在拓樸上完全等價。
+
+                    <!-- 核心定義解析區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>🏷️</span> 核心定義解析：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-slate-700">
+                            <li><strong>連續函數 (Continuous function) $f: X \to Y$：</strong> 若對 $Y$ 中任意「開集」 $V$，其「反像」 $f^{-1}(V)$ 在 $X$ 中必定是開集。這是拓樸學取代微積分 $\epsilon-\delta$ 定義的核心概念。</li>
+                            <li><strong>點的連續 (Continuous at $x$)：</strong> 對於包含 $f(x)$ 的任意開鄰域 $V$，存在一個包含 $x$ 的開鄰域 $U$，使得 $f(U) \subset V$。</li>
+                            <li><strong>同胚 (Homeomorphism)：</strong> 一個雙射函數 (1對1且映成)，並且正反向 ($f$ 與 $f^{-1}$) 皆連續。</li>
+                            <li><strong>拓樸性質 (Topological property)：</strong> 在同胚變換下會保持不變的空間性質（例如緊緻、連通）。長度、角度等度量性質則不是拓樸性質。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 經典範例與反例區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed bg-emerald-50 border-l-4 border-emerald-400 p-3 rounded-r-lg">
+                        <strong class="text-emerald-900 flex items-center gap-2 mb-2"><span>🌟</span> 經典範例與反例：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-emerald-800">
+                            <li><strong>所有開區間都是同胚的：</strong> 無論是有限區間 $(0,1)$ 或無限區間 $(1, \infty)$ 甚至是全體實數 $\mathbb{R}$，在拓樸學家眼中都是同一個形狀（可以透過 $f(x) = 1/x$ 或 $\tan(x)$ 互相拉扯變形）。</li>
+                            <li><strong>連續且雙射，但「不是同胚」的反例：</strong> 將半開區間 $[0, 2\pi)$ 纏繞到圓 $S^1$ 的映射 $f(t) = (\cos t, \sin t)$。它是連續雙射，但反函數在 $(1,0)$ 處會瞬間斷裂回 $0$ 與 $2\pi$，故反函數不連續，這兩者不同胚！</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>📚</span> 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 3.2:</strong> 兩個連續函數的合成 $g \circ f$ 依然連續。</li>
+                            <li><strong>Thm 6.6:</strong> 緊緻性在連續函數映射下保持不變。</li>
+                            <li><strong>Thm 8.1 & 8.4:</strong> 連通性在連續函數映射下保持不變。</li>
+                            <li><strong class="text-red-600">Thm 6.7:</strong> 從緊緻空間打到 Hausdorff 空間的連續雙射，自動免費升級為同胚！</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 經典習題引導 -->
+                <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 mt-2 rounded-r-lg shadow-sm">
+                    <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2"><span>🎯</span> 經典習題引導</h4>
+                    <p class="text-sm text-slate-700 mb-1"><strong>[Exercise 3.14] 連續函數空間的完備性</strong></p>
+                    <p class="text-xs text-slate-600 mb-2">令 $BC(X)$ 為定義在拓樸空間 $X$ 上所有有界連續實函數的集合，配備 supremum metric $d(f,g) = \sup|f(x)-g(x)|$。證明 $BC(X)$ 是一個完備度量空間。</p>
+                    <p class="text-xs text-indigo-700 bg-indigo-100 p-2 rounded"><strong>✨ 這題為什麼重要？</strong><br>這題展現了「拓樸學與實分析」的強大火力展示。透過這題，我們將函數本身視為空間中的一個點。證明過程利用了 Cauchy 序列點態收斂的極限函數，再利用經典的 $\epsilon/3$ 三角不等式拆解法，完美證明了「均勻收斂的連續函數極限，必然也是連續函數」。這為後續的泛函分析打下堅實基礎。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">將微積分中的連續性概念，昇華為「保持拓樸結構（開集）」的映射關係。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「開集的反像必為開集」</p>
+                    <p class="text-xs text-slate-500 mt-1">同胚 = 拓樸界的「全等」。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.13 商空間 -->
+        <div id="sec-13" class="section-grid scroll-mt-32 mb-16">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 border-b-2 border-slate-200 pb-2">
+                    <span class="text-slate-400 mr-2">2.13</span> Quotient Spaces (商空間)
+                </h2>
+                <div class="font-serif-en text-lg text-slate-700">
+                    Let $X$ be a set and let "$\sim$" be an equivalence relation on $X$. The set of equivalence classes will be denoted by $X/\sim$ and called the <span class="highlight-yellow">quotient set</span>.
+                    The <span class="highlight-yellow">quotient topology</span> for $X/\sim$ consists of all sets $U \subset X/\sim$ such that <span class="highlight-red">$\pi^{-1}(U)$ is open in $X$</span>.
+                </div>
+                <hr class="border-t border-slate-300 my-2">
+                <div class="zh-block p-4 text-slate-800 text-base leading-relaxed">
+                    <strong>重點譯文與精煉：</strong><br>
+                    將一個空間中的某些點「黏合」在一起（等價類），就形成了商空間。為了讓從原空間投影到新空間的過程（$\pi$）連續，我們定義商空間裡的開集，必須滿足它在原空間的「反像」也是開集。
+
+                    <!-- 核心定義解析區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>🏷️</span> 核心定義解析：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-slate-700">
+                            <li><strong>投影映射 (Projection map) $\pi$：</strong> $\pi: X \to X/\sim$，將點映射到其所屬的等價類。</li>
+                            <li><strong>商拓樸 (Quotient Topology)：</strong> 為了使 $\pi$ 連續所能設定的「最精細（包含最多開集）」的拓樸結構。也就是說 $U \subset X/\sim$ 是開集 $\iff \pi^{-1}(U)$ 在 $X$ 中是開集。</li>
+                            <li><strong>商空間 (Quotient Space)：</strong> 配備了商拓樸的等價類集合。這是拓樸學中製造新流形、幾何曲面的最強大工具。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 經典範例與反例區塊 -->
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed bg-emerald-50 border-l-4 border-emerald-400 p-3 rounded-r-lg">
+                        <strong class="text-emerald-900 flex items-center gap-2 mb-2"><span>🌟</span> 經典範例與反例：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-2 text-emerald-800">
+                            <li><strong>從線段到圓 $S^1$：</strong> 將 $[0,1]$ 空間中的 $0$ 和 $1$ 視為同一個點（黏合兩端），得到的商空間同胚於圓圈。</li>
+                            <li><strong>從正方形到環面 (Torus)：</strong> 將正方形紙片的上下對邊黏合（變圓柱），再將左右開口彎曲黏合，得到的商空間同胚於甜甜圈。</li>
+                            <li><strong>性質不遺傳反例：</strong> 大多數性質（如 Hausdorff）<strong>不一定</strong>能傳遞給商空間。把 $\mathbb{R}$ 將所有無理數黏成一個點，結果將不再是 Hausdorff。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-t border-slate-300 border-dashed">
+                        <strong class="text-slate-900 flex items-center gap-2 mb-2"><span>📚</span> 完整定理地圖：</strong>
+                        <ul class="list-disc list-inside text-sm space-y-1 text-slate-700">
+                            <li><strong>Thm 13.1:</strong> 商拓樸是讓 $\pi$ 連續的「最大拓樸」。</li>
+                            <li><strong>Thm 13.2:</strong> 函數從商空間打出去連續 $\iff$ 先在原空間投影再打出去連續。</li>
+                            <li><strong class="text-red-600">Thm 13.4:</strong> 若 $X, Y$ 皆為緊緻 Hausdorff 空間且有連續滿射 $f: X \to Y$。將 $f$ 映射到同一點的元素視為等價，則商空間 $X/\sim$ 必同胚於 $Y$。</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 經典習題引導 -->
+                <div class="bg-indigo-50 border-l-4 border-indigo-400 p-4 mt-2 rounded-r-lg shadow-sm">
+                    <h4 class="font-bold text-indigo-800 mb-2 flex items-center gap-2"><span>🎯</span> 經典習題引導</h4>
+                    <p class="text-sm text-slate-700 mb-1"><strong>[Exercise 13.8] 實射影空間 Real Projective Space $P^n$</strong></p>
+                    <p class="text-xs text-slate-600 mb-2">定義 $n$ 維球面 $S^n$ 上的等價關係：將所有對蹠點 (Antipodal points) $x$ 與 $-x$ 視為等價。證明其商空間 $P^n$ 是一個緊緻的 Hausdorff 空間。</p>
+                    <p class="text-xs text-indigo-700 bg-indigo-100 p-2 rounded"><strong>✨ 這題為什麼重要？</strong><br>這是幾何拓樸學中最核心的建構之一！它展示了商空間不僅僅是「黏合邊界」，甚至可以把整個球面上的對稱點全部「對摺」。這構造出了無法嵌回原低維空間的奇特流形（如克萊因瓶、莫比烏斯環等），展現了商空間能無中生有創造出新宇宙結構的強大魔力。</p>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="annotation-card p-5 anno-border-yellow mt-14 lg:mt-0">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">① 學習目標</h3>
+                    <p class="text-sm text-slate-700">掌握拓樸學中「黏合與摺疊」的藝術，學習如何利用商拓樸構造全新的空間結構。</p>
+                </div>
+                <div class="annotation-card p-5 anno-border-blue">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">② 記憶錨點</h3>
+                    <p class="text-base font-semibold text-slate-800">「商空間就是拓樸學的摺紙魔術」</p>
                 </div>
             </div>
         </div>
