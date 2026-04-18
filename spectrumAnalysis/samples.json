@@ -1,0 +1,42 @@
+[
+    {
+        "name": "SQAM - Female Speech (EN).flac",
+        "path": "sample/SQAM - Female Speech (EN).flac"
+    },
+    {
+        "name": "Steely Dan - Aja.flac",
+        "path": "sample/Steely Dan - Aja.flac"
+    },
+    {
+        "name": "Steely Dan - Peg.flac",
+        "path": "sample/Steely Dan - Peg.flac"
+    },
+    {
+        "name": "Michael Jackson - Billie Jean.flac",
+        "path": "sample/Michael Jackson - Billie Jean.flac"
+    },
+    {
+        "name": "SQAM - Viola (arpegio;melodious phrase).flac",
+        "path": "sample/SQAM - Viola (arpegio;melodious phrase).flac"
+    },
+    {
+        "name": "SQAM - Trumpet (arpegio;melodious phrase).flac",
+        "path": "sample/SQAM - Trumpet (arpegio;melodious phrase).flac"
+    },
+    {
+        "name": "SQAM - Male Speech (EN).flac",
+        "path": "sample/SQAM - Male Speech (EN).flac"
+    },
+    {
+        "name": "SQAM - Glockenspiel (arpegio;melodious phrase).flac",
+        "path": "sample/SQAM - Glockenspiel (arpegio;melodious phrase).flac"
+    },
+    {
+        "name": "SQAM - Vibraphone (arpegio).flac",
+        "path": "sample/SQAM - Vibraphone (arpegio).flac"
+    },
+    {
+        "name": "Chromatic Scale (piano).mp3",
+        "path": "sample/Chromatic Scale (piano).mp3"
+    }
+]
