@@ -368,6 +368,10 @@ window.COURSE_DATA = {
                 {
                     "title": "工程數學-姚賀騰老師",
                     "url": "https://youtube.com/playlist?list=PLEw7l19rPmyTm6BAfssyB5xjRrk77tRM5&si=hYQEWRPEVDHMfSt0"
+                },
+                {
+                    "title": "頻譜分析-參數等化器",
+                    "url": "https://bambooooo-rat.github.io/bambook/spectrumAnalysis/index.html"
                 }
             ],
             "exams": [],
