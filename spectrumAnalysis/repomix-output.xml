@@ -1583,9 +1583,8 @@ if __name__ == "__main__":
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Audio 動態頻譜與參數等化器 (PEQ)</title>
+    <title>動態頻譜與參數等化器</title>
     <link rel="stylesheet" href="assets/css/style.css">
-    <script src="assets/js/main.js"></script>
 </head>
 <body>
 
@@ -1695,6 +1694,7 @@ if __name__ == "__main__":
             
         </div>
     </div>
+    <script src="assets/js/main.js"></script>
 </body>
 </html>
 </file>

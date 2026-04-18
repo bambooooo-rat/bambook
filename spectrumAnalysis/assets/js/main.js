@@ -23,7 +23,6 @@
         const presetDesc = document.getElementById('presetDesc');
         const canvasOverlay = document.getElementById('canvasOverlay');
 
-        // 音訊下拉選單 DOM
         const audioDropdownContainer = document.getElementById('audioDropdownContainer');
         const audioDropdownBtn = document.getElementById('audioDropdownBtn');
         const sampleListContainer = document.getElementById('sampleListContainer');
@@ -40,8 +39,6 @@
         let isInitialized = false;
         let isEqBypassed = false;
         let isLogScale = true; 
-        
-        // 記錄載入音檔時，該音檔的整體基礎音量增益
         let trackBaseGain = 1.0;
 
         let waveformBufferCanvas = document.createElement('canvas');
@@ -60,24 +57,16 @@
         let currentMousePos = { x: -100, y: -100 };
         const knobControllers = [];
 
-        // ==========================================
-        // 頻率對應邏輯 (支援 Log 與 Linear)
-        // ==========================================
+        // 頻率與座標對應
         function freqToX(freq, width) {
             const f = Math.max(MIN_FREQ, Math.min(MAX_FREQ, freq));
-            if (isLogScale) {
-                return ((Math.log10(f) - LOG_MIN) / (LOG_MAX - LOG_MIN)) * width;
-            } else {
-                return ((f - MIN_FREQ) / (MAX_FREQ - MIN_FREQ)) * width;
-            }
+            if (isLogScale) return ((Math.log10(f) - LOG_MIN) / (LOG_MAX - LOG_MIN)) * width;
+            return ((f - MIN_FREQ) / (MAX_FREQ - MIN_FREQ)) * width;
         }
         function xToFreq(x, width) {
             const ratio = Math.max(0, Math.min(1, x / width));
-            if (isLogScale) {
-                return Math.pow(10, LOG_MIN + ratio * (LOG_MAX - LOG_MIN));
-            } else {
-                return MIN_FREQ + ratio * (MAX_FREQ - MIN_FREQ);
-            }
+            if (isLogScale) return Math.pow(10, LOG_MIN + ratio * (LOG_MAX - LOG_MIN));
+            return MIN_FREQ + ratio * (MAX_FREQ - MIN_FREQ);
         }
         function gainToY(gain, height) {
             const g = Math.max(-MAX_GAIN, Math.min(MAX_GAIN, gain));
@@ -88,49 +77,29 @@
             return Math.max(-MAX_GAIN, Math.min(MAX_GAIN, ratio * MAX_GAIN));
         }
 
-        // ==========================================
-        // 核心邏輯：靜態數學估算補償 (無即時運算消耗)
-        // 此函式僅在「參數改變」或「音檔載入」瞬間觸發
-        // ==========================================
         function updateStaticAutoGain() {
             if (!isInitialized || filters.length === 0) return;
-
-            // 1. 估算 EQ 曲線所造成的整體能量增減幅度
             const sampleCount = 100;
             const freqs = new Float32Array(sampleCount);
-            for (let i = 0; i < sampleCount; i++) {
-                freqs[i] = Math.pow(10, LOG_MIN + (i / (sampleCount - 1)) * (LOG_MAX - LOG_MIN));
-            }
+            for (let i = 0; i < sampleCount; i++) freqs[i] = Math.pow(10, LOG_MIN + (i / (sampleCount - 1)) * (LOG_MAX - LOG_MIN));
 
             const totalMag = new Float32Array(sampleCount).fill(1.0);
             filters.forEach(filter => {
                 const magResponse = new Float32Array(sampleCount);
                 const phaseResponse = new Float32Array(sampleCount);
                 filter.getFrequencyResponse(freqs, magResponse, phaseResponse);
-                for (let i = 0; i < sampleCount; i++) {
-                    totalMag[i] *= magResponse[i];
-                }
+                for (let i = 0; i < sampleCount; i++) totalMag[i] *= magResponse[i];
             });
 
             let avgMag = 0;
-            for (let i = 0; i < sampleCount; i++) {
-                avgMag += totalMag[i];
-            }
+            for (let i = 0; i < sampleCount; i++) avgMag += totalMag[i];
             avgMag /= sampleCount;
 
-            // 2. 算出 EQ 的反向補償係數 (避免音量爆走)
             const eqCompensation = Math.max(0.25, Math.min(4.0, 1 / (avgMag || 1)));
-
-            // 3. 結合「載入時算出的音軌基礎增益」與「當前 EQ 補償」
             const finalGain = isEqBypassed ? trackBaseGain : trackBaseGain * eqCompensation;
-
-            // 使用平滑過渡設定音量，不消耗 CPU 逐幀運算
             outputGainNode.gain.setTargetAtTime(finalGain, audioCtx.currentTime, 0.05);
         }
 
-        // ==========================================
-        // 系統預設狀態 (全 Bell 平坦化)
-        // ==========================================
         const defaultEqBands = [
             { id: 'band1', type: 'peaking', label: 'Band 1', freq: 60,   q: 1.0, gain: 0, color: '#ff4d4d', toggleType: 'highpass' },
             { id: 'band2', type: 'peaking', label: 'Band 2', freq: 230,  q: 1.0, gain: 0, color: '#ffa64d' },
@@ -142,89 +111,25 @@
         let eqBands = JSON.parse(JSON.stringify(defaultEqBands));
 
         const freqRegions = [
-            { 
-                name: "Sub-bass", min: 20, max: 60, color: "236, 72, 153", 
-                desc1: "〈超低頻〉重量、震動感、氣氛，讓你感覺到低頻", 
-                desc2: "大鼓最底部、貝斯的最低音、電子合成器低音、管風琴低音" 
-            },
-            { 
-                name: "Bass", min: 60, max: 250, color: "245, 158, 11",
-                desc1: "〈低頻〉音樂的厚度、暖度、衝擊力，是低音主體", 
-                desc2: "貝斯吉他、低音提琴、大鼓 body、男聲基音下緣、鋼琴左手低音" 
-            },
-            { 
-                name: "Low mids", min: 250, max: 1000, color: "16, 185, 129", 
-                desc1: "〈低中頻〉身體感、厚薄、混濁感也常在這裡出現", 
-                desc2: "男/女聲胸腔共鳴、吉他本體、鋼琴中低音、嗵鼓、木管樂器" 
-            },
-            { 
-                name: "Presence", min: 1000, max: 5000, color: "59, 130, 246",
-                desc1: "〈中高頻〉清晰度、存在感、咬字、樂器輪廓", 
-                desc2: "人聲咬字、電吉他存在感、軍鼓敲擊、鋼琴擊弦感、弦樂擦弦感、銅管亮度" 
-            },
-            { 
-                name: "Air", min: 5000, max: 20000, color: "139, 92, 246", 
-                desc1: "〈高頻〉亮度、空氣感、細節、空間感", 
-                desc2: "鈸、hi-hat、沙鈴、齒音、人聲空氣感、弦樂泛音、打擊樂細節" 
-            }
+            { name: "Sub-bass", min: 20, max: 60, color: "236, 72, 153", desc1: "〈超低頻〉重量、震動感、氣氛", desc2: "大鼓最底部、貝斯的最低音" },
+            { name: "Bass", min: 60, max: 250, color: "245, 158, 11", desc1: "〈低頻〉音樂的厚度、暖度", desc2: "貝斯吉他、男聲基音下緣" },
+            { name: "Low mids", min: 250, max: 1000, color: "16, 185, 129", desc1: "〈低中頻〉身體感、厚薄感", desc2: "男女聲胸腔共鳴、吉他本體" },
+            { name: "Presence", min: 1000, max: 5000, color: "59, 130, 246", desc1: "〈中高頻〉清晰度、存在感", desc2: "人聲咬字、電吉他存在感" },
+            { name: "Air", min: 5000, max: 20000, color: "139, 92, 246", desc1: "〈高頻〉亮度、空氣感、細節", desc2: "鈸、齒音、弦樂泛音" }
         ];
 
         const eqPresets = [
-            {
-                name: '去混濁',
-                desc: '清掉「糊糊的、悶悶的」中低頻，樂器分離度更好',
-                bands: [
-                    { type: 'peaking', freq: 80,   q: 0.8, gain: 0 },
-                    { type: 'peaking', freq: 180,  q: 1.1, gain: -3 },
-                    { type: 'peaking', freq: 350,  q: 1.2, gain: -4 },
-                    { type: 'peaking', freq: 1600, q: 1.0, gain: 1 },
-                    { type: 'peaking', freq: 10000,q: 0.7, gain: 1 }
-                ]
-            },
-            {
-                name: '人聲增強',
-                desc: '人聲更靠前、更清楚，字頭和咬字會更突出',
-                bands: [
-                    { type: 'highpass', freq: 75,   q: 0.7, gain: -12 },
-                    { type: 'peaking',  freq: 200,  q: 1.0, gain: -2 },
-                    { type: 'peaking',  freq: 1200, q: 1.0, gain: 1 },
-                    { type: 'peaking',  freq: 3500, q: 1.0, gain: 4 },
-                    { type: 'peaking',  freq: 10000,q: 0.7, gain: 2 }
-                ]
-            },
-            {
-                name: '修飾刺耳',
-                desc: '可壓掉尖銳、刺耳、聽久會累的區域',
-                bands: [
-                    { type: 'peaking', freq: 80,   q: 0.8, gain: 0 },
-                    { type: 'peaking', freq: 250,  q: 1.0, gain: 1 },
-                    { type: 'peaking', freq: 2500, q: 1.2, gain: -3 },
-                    { type: 'peaking', freq: 4500, q: 1.4, gain: -4 },
-                    { type: 'peaking', freq: 12000,q: 0.8, gain: -1 }
-                ]
-            },
-            {
-                name: '空氣感',
-                desc: '高頻更亮、更開，會有「通透、發亮」的感覺',
-                bands: [
-                    { type: 'highpass', freq: 150,  q: 0.7, gain: -12 },
-                    { type: 'peaking',  freq: 250,  q: 1.0, gain: -1 },
-                    { type: 'peaking',  freq: 2000, q: 1.0, gain: 1 },
-                    { type: 'peaking',  freq: 8000, q: 0.8, gain: 3 },
-                    { type: 'peaking',  freq: 14000,q: 0.7, gain: 4 }
-                ]
-            },
-            {
-                name: '老收音機',
-                desc: '模擬早期電話筒或收音機的極窄帶通音色',
-                bands: [
-                    { type: 'highpass', freq: 300,  q: 0.7, gain: -12 },
-                    { type: 'peaking',  freq: 500,  q: 1.0, gain: -2 },
-                    { type: 'peaking',  freq: 1000, q: 1.0, gain: 3 },
-                    { type: 'peaking',  freq: 2500, q: 1.0, gain: 2 },
-                    { type: 'lowpass',  freq: 3400, q: 0.7, gain: -12 }
-                ]
-            }
+            { name: '去混濁', desc: '清掉「糊糊的、悶悶的」中低頻，樂器分離度更好', bands: [ { type: 'peaking', freq: 80, q: 0.8, gain: 0 }, { type: 'peaking', freq: 180, q: 1.1, gain: -3 }, { type: 'peaking', freq: 350, q: 1.2, gain: -4 }, { type: 'peaking', freq: 1600, q: 1.0, gain: 1 }, { type: 'peaking', freq: 10000,q: 0.7, gain: 1 } ] },
+            { name: '人聲增強', desc: '人聲更靠前、更清楚，字頭和咬字會更突出', bands: [ { type: 'highpass', freq: 75, q: 0.7, gain: -12 }, { type: 'peaking', freq: 200, q: 1.0, gain: -2 }, { type: 'peaking', freq: 1200, q: 1.0, gain: 1 }, { type: 'peaking', freq: 3500, q: 1.0, gain: 4 }, { type: 'peaking', freq: 10000,q: 0.7, gain: 2 } ] },
+            { name: '修飾刺耳', desc: '可壓掉尖銳、刺耳、聽久會累的區域', bands: [ { type: 'peaking', freq: 80, q: 0.8, gain: 0 }, { type: 'peaking', freq: 250, q: 1.0, gain: 1 }, { type: 'peaking', freq: 2500, q: 1.2, gain: -3 }, { type: 'peaking', freq: 4500, q: 1.4, gain: -4 }, { type: 'peaking', freq: 12000,q: 0.8, gain: -1 } ] },
+            { name: '空氣感', desc: '高頻更亮、更開，會有「通透、發亮」的感覺', bands: [ { type: 'highpass', freq: 150, q: 0.7, gain: -12 }, { type: 'peaking', freq: 250, q: 1.0, gain: -1 }, { type: 'peaking', freq: 2000, q: 1.0, gain: 1 }, { type: 'peaking', freq: 8000, q: 0.8, gain: 3 }, { type: 'peaking', freq: 14000,q: 0.7, gain: 4 } ] },
+            { name: '老收音機', desc: '模擬早期電話筒或收音機的極窄帶通音色', bands: [ { type: 'highpass', freq: 300, q: 0.7, gain: -12 }, { type: 'peaking', freq: 500, q: 1.0, gain: -2 }, { type: 'peaking', freq: 1000, q: 1.0, gain: 3 }, { type: 'peaking', freq: 2500, q: 1.0, gain: 2 }, { type: 'lowpass', freq: 3400, q: 0.7, gain: -12 } ] }
+        ];
+
+        const fallbackSamples = [
+            { "name": "SQAM - Female Speech (EN).flac", "path": "sample/SQAM - Female Speech (EN).flac" },
+            { "name": "Michael Jackson - Billie Jean.flac", "path": "sample/Michael Jackson - Billie Jean.flac" },
+            { "name": "Chromatic Scale (piano).mp3", "path": "sample/Chromatic Scale (piano).mp3" }
         ];
 
         function initAudio() {
@@ -239,7 +144,6 @@
             sourceNode = audioCtx.createMediaElementSource(audioPlayer);
             
             let prevNode = sourceNode;
-
             eqBands.forEach((band) => {
                 let filter = audioCtx.createBiquadFilter();
                 filter.type = band.type; 
@@ -251,17 +155,13 @@
                 prevNode = filter;
             });
 
-            // 無論是否 Bypass，最後統一接入 outputGainNode 來控制基礎音量與補償
             prevNode.connect(outputGainNode);
             outputGainNode.connect(analyser); 
             analyser.connect(audioCtx.destination);
             
             sourceNode.disconnect();
-            if (isEqBypassed) {
-                sourceNode.connect(outputGainNode);
-            } else {
-                sourceNode.connect(filters[0]);
-            }
+            if (isEqBypassed) sourceNode.connect(outputGainNode);
+            else sourceNode.connect(filters[0]);
 
             isInitialized = true;
             canvasOverlay.style.display = 'none'; 
@@ -277,9 +177,6 @@
         }
         window.addEventListener('resize', resizeCanvas);
 
-        // ==========================================
-        // 下拉選單行為邏輯 (讀取 JSON / 本機檔案)
-        // ==========================================
         audioDropdownBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             audioDropdownContainer.classList.toggle('open');
@@ -287,43 +184,36 @@
         });
 
         document.addEventListener('click', (e) => {
-            if (!presetDropdownContainer.contains(e.target)) {
-                presetDropdownContainer.classList.remove('open');
-            }
-            if (!audioDropdownContainer.contains(e.target)) {
-                audioDropdownContainer.classList.remove('open');
-            }
+            if (!presetDropdownContainer.contains(e.target)) presetDropdownContainer.classList.remove('open');
+            if (!audioDropdownContainer.contains(e.target)) audioDropdownContainer.classList.remove('open');
         });
+
+        function renderSampleList(samples) {
+            sampleListContainer.innerHTML = '';
+            if (samples.length === 0) {
+                sampleListContainer.innerHTML = '<div class="audio-dropdown-item" style="color:var(--text-muted); font-size: 0.8rem; pointer-events:none;">無內建音頻</div>';
+                return;
+            }
+            samples.sort((a, b) => a.name.localeCompare(b.name));
+            samples.forEach(sample => {
+                const item = document.createElement('div');
+                item.className = 'audio-dropdown-item';
+                item.innerHTML = `🎵 ${sample.name}`;
+                item.title = sample.name;
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    loadAudio(sample.path, sample.name, false);
+                    audioDropdownContainer.classList.remove('open');
+                });
+                sampleListContainer.appendChild(item);
+            });
+        }
 
         function fetchSampleList() {
             fetch('samples.json')
-                .then(res => {
-                    if (!res.ok) throw new Error('samples.json not found');
-                    return res.json();
-                })
-                .then(samples => {
-                    sampleListContainer.innerHTML = '';
-                    if (samples.length === 0) {
-                        sampleListContainer.innerHTML = '<div class="audio-dropdown-item" style="color:var(--text-muted); font-size: 0.8rem; pointer-events:none;">無內建音頻</div>';
-                        return;
-                    }
-                    samples.sort((a, b) => a.name.localeCompare(b.name));
-                    samples.forEach(sample => {
-                        const item = document.createElement('div');
-                        item.className = 'audio-dropdown-item';
-                        item.innerHTML = `🎵 ${sample.name}`;
-                        item.title = sample.name;
-                        item.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            loadAudio(sample.path, sample.name, false);
-                            audioDropdownContainer.classList.remove('open');
-                        });
-                        sampleListContainer.appendChild(item);
-                    });
-                })
-                .catch(err => {
-                    sampleListContainer.innerHTML = '<div class="audio-dropdown-item" style="color:var(--text-muted); font-size: 0.8rem; pointer-events:none;">未找到 samples.json</div>';
-                });
+                .then(res => res.ok ? res.json() : fallbackSamples)
+                .catch(() => fallbackSamples)
+                .then(samples => renderSampleList(samples));
         }
 
         function formatTime(seconds) {
@@ -352,20 +242,14 @@
                 source.arrayBuffer()
                     .then(buffer => audioCtx.decodeAudioData(buffer))
                     .then(audioBuffer => renderWaveformBuffer(audioBuffer))
-                    .catch(err => {
-                        console.error("波形解析錯誤:", err);
-                        waveformLoading.innerText = "波形解析失敗";
-                    });
+                    .catch(err => { console.error(err); waveformLoading.innerText = "波形解析失敗"; });
             } else {
                 audioPlayer.src = source;
                 fetch(source)
                     .then(response => response.arrayBuffer())
                     .then(buffer => audioCtx.decodeAudioData(buffer))
                     .then(audioBuffer => renderWaveformBuffer(audioBuffer))
-                    .catch(err => {
-                        console.error("波形解析錯誤:", err);
-                        waveformLoading.innerText = "波形解析失敗";
-                    });
+                    .catch(err => { console.error(err); waveformLoading.innerText = "波形解析失敗"; });
             }
         }
 
@@ -376,9 +260,6 @@
             audioDropdownContainer.classList.remove('open');
         });
 
-        // ==========================================
-        // 預設效果 (Presets) 自訂下拉選單邏輯
-        // ==========================================
         function initPresets() {
             presetDropdownList.innerHTML = '';
             eqPresets.forEach((preset, index) => {
@@ -407,9 +288,7 @@
         }
 
         function applyPreset(presetIndex) {
-            document.querySelectorAll('.custom-dropdown-item').forEach((el, idx) => {
-                el.classList.toggle('active', idx === presetIndex);
-            });
+            document.querySelectorAll('.custom-dropdown-item').forEach((el, idx) => el.classList.toggle('active', idx === presetIndex));
             presetDropdownSelected.innerText = eqPresets[presetIndex].name;
             presetDropdownSelected.style.color = 'var(--text-title)';
             presetDesc.innerText = eqPresets[presetIndex].desc;
@@ -440,35 +319,20 @@
                     else { gainKnobWrapper.style.opacity = '0.3'; gainKnobWrapper.style.pointerEvents = 'none'; }
                 }
             });
-            updateStaticAutoGain(); // 套用預設參數後觸發更新
+            updateStaticAutoGain(); 
         }
 
         function renderWaveformBuffer(audioBuffer) {
             const rawData = audioBuffer.getChannelData(0); 
-            
-            // 載入時：直接掃描整個音軌時域數據，計算 RMS 整體能量
             let sumSquares = 0;
-            for (let i = 0; i < rawData.length; i++) {
-                sumSquares += rawData[i] * rawData[i];
-            }
+            for (let i = 0; i < rawData.length; i++) sumSquares += rawData[i] * rawData[i];
             const trackRMS = Math.sqrt(sumSquares / rawData.length);
-            
-            // 設定基準 RMS (例如 0.15 是一個較為適中的響度標準)
             const targetRMS = 0.15; 
             
-            // 依據音軌能量算出基礎增益，避免音頻本身過大或過小
-            if (trackRMS > 0.0001) {
-                trackBaseGain = targetRMS / trackRMS;
-                // 限制補償倍率，避免極度安靜的檔案被拉到破音
-                trackBaseGain = Math.max(0.1, Math.min(trackBaseGain, 5.0)); 
-            } else {
-                trackBaseGain = 1.0;
-            }
-            
-            // 觸發音量設定
+            if (trackRMS > 0.0001) trackBaseGain = Math.max(0.1, Math.min(targetRMS / trackRMS, 5.0)); 
+            else trackBaseGain = 1.0;
             updateStaticAutoGain();
 
-            // 繪製視覺波形
             const w = waveformWrapper.clientWidth * 2; 
             const h = waveformWrapper.clientHeight * 2;
             waveformBufferCanvas.width = w; waveformBufferCanvas.height = h;
@@ -508,18 +372,37 @@
             }
         }
 
+        // --- Waveform Interaction (Mouse + Touch 整合) ---
         let isDraggingWaveform = false;
-        function seekWaveform(e) {
+        function seekWaveform(clientX) {
             if (!audioPlayer.duration || !isWaveformReady) return;
             const rect = waveformWrapper.getBoundingClientRect();
-            let x = e.clientX - rect.left; x = Math.max(0, Math.min(x, rect.width));
+            let x = clientX - rect.left; 
+            x = Math.max(0, Math.min(x, rect.width));
             const percentage = x / rect.width;
             audioPlayer.currentTime = percentage * audioPlayer.duration;
             drawWaveformProgress();
         }
-        waveformWrapper.addEventListener('mousedown', (e) => { if (!isWaveformReady) return; isDraggingWaveform = true; seekWaveform(e); });
-        window.addEventListener('mousemove', (e) => { if (isDraggingWaveform) seekWaveform(e); });
+
+        waveformWrapper.addEventListener('mousedown', (e) => { if (!isWaveformReady) return; isDraggingWaveform = true; seekWaveform(e.clientX); });
+        waveformWrapper.addEventListener('touchstart', (e) => { 
+            if (!isWaveformReady) return; 
+            isDraggingWaveform = true; 
+            if(e.cancelable) e.preventDefault();
+            seekWaveform(e.touches[0].clientX); 
+        }, { passive: false });
+        
+        window.addEventListener('mousemove', (e) => { if (isDraggingWaveform) seekWaveform(e.clientX); });
+        window.addEventListener('touchmove', (e) => { 
+            if (isDraggingWaveform) { 
+                if(e.cancelable) e.preventDefault(); 
+                seekWaveform(e.touches[0].clientX); 
+            } 
+        }, { passive: false });
+        
         window.addEventListener('mouseup', () => { isDraggingWaveform = false; });
+        window.addEventListener('touchend', () => { isDraggingWaveform = false; });
+
         playPauseBtn.addEventListener('click', () => { if (audioPlayer.paused) audioPlayer.play(); else audioPlayer.pause(); });
         audioPlayer.addEventListener('play', () => { if (!isInitialized) initAudio(); if (audioCtx.state === 'suspended') audioCtx.resume(); playPauseBtn.innerHTML = iconPause; });
         audioPlayer.addEventListener('pause', () => { playPauseBtn.innerHTML = iconPlay; });
@@ -532,12 +415,9 @@
             if (isEqBypassed) previewBtn.classList.add('bypassed'); else previewBtn.classList.remove('bypassed');
             if (isInitialized) {
                 sourceNode.disconnect();
-                if (isEqBypassed) {
-                    sourceNode.connect(outputGainNode);
-                } else {
-                    sourceNode.connect(filters[0]);
-                }
-                updateStaticAutoGain(); // 切換 Bypass 時也一併更新
+                if (isEqBypassed) sourceNode.connect(outputGainNode);
+                else sourceNode.connect(filters[0]);
+                updateStaticAutoGain(); 
             }
         });
 
@@ -556,7 +436,7 @@
                     gainKnobWrapper.style.opacity = '1'; gainKnobWrapper.style.pointerEvents = 'auto';
                 }
             });
-            updateStaticAutoGain(); // 重置參數後觸發更新
+            updateStaticAutoGain();
         });
 
         scaleBtn.addEventListener('click', () => {
@@ -564,10 +444,11 @@
             scaleBtn.innerText = `Scale: ${isLogScale ? 'Log' : 'Linear'}`;
         });
 
+        // --- Knob Interaction (Mouse + Touch 整合) ---
         let activeKnob = null; 
-        window.addEventListener('mousemove', (e) => {
+        function handleGlobalKnobMove(clientY) {
             if (activeKnob) {
-                const deltaY = activeKnob.startY - e.clientY; 
+                const deltaY = activeKnob.startY - clientY; 
                 let newVal;
                 if (activeKnob.isLog) {
                     const logStart = Math.log10(activeKnob.startVal);
@@ -580,14 +461,26 @@
                 }
                 newVal = Math.max(activeKnob.min, Math.min(activeKnob.max, newVal));
                 activeKnob.updateUI(newVal); activeKnob.onChange(newVal);
-                updateStaticAutoGain(); // 旋轉旋鈕時觸發更新
+                updateStaticAutoGain(); 
             }
-        });
+        }
+        
+        window.addEventListener('mousemove', (e) => handleGlobalKnobMove(e.clientY));
+        window.addEventListener('touchmove', (e) => { 
+            if(activeKnob) { 
+                if(e.cancelable) e.preventDefault(); // 阻擋操作旋鈕時網頁跟著上下滾動
+                handleGlobalKnobMove(e.touches[0].clientY); 
+            } 
+        }, { passive: false });
+        
         window.addEventListener('mouseup', () => { if(activeKnob) activeKnob = null; });
+        window.addEventListener('touchend', () => { if(activeKnob) activeKnob = null; });
 
         function setupKnob(container, min, max, step, initVal, color, isLog, onChange, formatFunc) {
+            const base = container.querySelector('.knob-base'); // 精確綁定到本體避免誤觸
             const dial = container.querySelector('.knob-dial');
             const valDisplay = container.querySelector('.knob-val');
+            
             let currentVal = initVal;
             function updateUI(v) {
                 currentVal = Math.max(min, Math.min(max, v));
@@ -597,7 +490,15 @@
                 const angle = -135 + (ratio * 270); dial.style.transform = `rotate(${angle}deg)`;
                 valDisplay.innerText = formatFunc(currentVal);
             }
-            container.addEventListener('mousedown', (e) => { activeKnob = { min, max, step, updateUI, onChange, isLog, currentVal, startY: e.clientY, startVal: currentVal }; e.preventDefault(); });
+            
+            function onKnobDown(clientY, e) {
+                if(e && e.cancelable) e.preventDefault(); 
+                activeKnob = { min, max, step, updateUI, onChange, isLog, currentVal, startY: clientY, startVal: currentVal }; 
+            }
+            
+            base.addEventListener('mousedown', (e) => onKnobDown(e.clientY, e));
+            base.addEventListener('touchstart', (e) => onKnobDown(e.touches[0].clientY, e), { passive: false });
+            
             updateUI(initVal); return { updateUI };
         }
 
@@ -630,7 +531,7 @@
                         clearPresetActive(); 
                         if (newType === 'peaking') { band.type = 'peaking'; switchOptPeaking.classList.add('active'); switchOptPass.classList.remove('active'); gainKnobWrapper.style.opacity = '1'; gainKnobWrapper.style.pointerEvents = 'auto'; if (filters[index]) filters[index].type = band.type; }
                         else { band.type = band.toggleType; switchOptPass.classList.add('active'); switchOptPeaking.classList.remove('active'); gainKnobWrapper.style.opacity = '0.3'; gainKnobWrapper.style.pointerEvents = 'none'; band.gain = 0; knobControllers[index].gain.updateUI(0); if (filters[index]) { filters[index].type = band.type; filters[index].gain.value = 0; } }
-                        updateStaticAutoGain(); // 切換濾波器類型觸發更新
+                        updateStaticAutoGain(); 
                     }
                     switchOptPeaking.addEventListener('click', () => setFilterType('peaking')); switchOptPass.addEventListener('click', () => setFilterType(band.toggleType));
                 }
@@ -641,28 +542,110 @@
             });
         }
 
-        function getMousePos(evt) { const rect = canvas.getBoundingClientRect(); return { x: evt.clientX - rect.left, y: evt.clientY - rect.top }; }
-        canvas.addEventListener('mousedown', (e) => { const pos = getMousePos(e); for (let i = 0; i < eqBands.length; i++) { const px = freqToX(eqBands[i].freq, canvas.width); const py = gainToY(eqBands[i].gain, canvas.height); const dist = Math.sqrt((pos.x - px)**2 + (pos.y - py)**2); if (dist <= 15) { draggingBandIndex = i; break; } } });
-        canvas.addEventListener('mousemove', (e) => {
-            const pos = getMousePos(e); currentMousePos = pos;
-            hoverBandIndex = -1; for (let i = 0; i < eqBands.length; i++) { const px = freqToX(eqBands[i].freq, canvas.width); const py = gainToY(eqBands[i].gain, canvas.height); if (Math.sqrt((pos.x - px)**2 + (pos.y - py)**2) <= 15) { hoverBandIndex = i; break; } }
-            hoverRegionIndex = -1; if (pos.y <= 24 && draggingBandIndex === -1) { const freqAtMouse = xToFreq(pos.x, canvas.width); hoverRegionIndex = freqRegions.findIndex(r => freqAtMouse >= r.min && freqAtMouse <= r.max); }
-            if (hoverRegionIndex !== -1) canvas.style.cursor = 'help'; else if (hoverBandIndex !== -1 || draggingBandIndex !== -1) canvas.style.cursor = (draggingBandIndex !== -1) ? 'grabbing' : 'grab'; else canvas.style.cursor = 'crosshair';
+        // --- Canvas Interaction (Mouse + Touch 完美整合) ---
+        function getEventPos(canvas, evt) { 
+            const rect = canvas.getBoundingClientRect(); 
+            let clientX = evt.clientX; 
+            let clientY = evt.clientY;
+            
+            // 安全提取觸控座標，避免 undefined 錯誤
+            if (evt.touches && evt.touches.length > 0) { 
+                clientX = evt.touches[0].clientX; 
+                clientY = evt.touches[0].clientY; 
+            } else if (evt.changedTouches && evt.changedTouches.length > 0) {
+                clientX = evt.changedTouches[0].clientX; 
+                clientY = evt.changedTouches[0].clientY; 
+            }
+            return { x: clientX - rect.left, y: clientY - rect.top }; 
+        }
+
+        function onCanvasPointerDown(e) {
+            const isTouch = e.type.startsWith('touch');
+            const hitRadius = isTouch ? 40 : 15; // 手指觸控範圍加大至 40px
+            const pos = getEventPos(canvas, e); 
+            
+            for (let i = 0; i < eqBands.length; i++) { 
+                const px = freqToX(eqBands[i].freq, canvas.width); 
+                const py = gainToY(eqBands[i].gain, canvas.height); 
+                if (Math.hypot(pos.x - px, pos.y - py) <= hitRadius) { 
+                    draggingBandIndex = i; 
+                    if(e.cancelable) e.preventDefault(); // 確實抓到點時，才鎖住網頁防止滾動
+                    break; 
+                } 
+            } 
+        }
+
+        function onCanvasPointerMove(e) {
+            if (activeKnob) return; 
+            if (draggingBandIndex !== -1 && e.cancelable) e.preventDefault(); // 拖曳點的過程中持續鎖定滾動
+
+            const pos = getEventPos(canvas, e); 
+            currentMousePos = pos;
+            
+            const isTouch = e.type.startsWith('touch');
+            const hitRadius = isTouch ? 40 : 15;
+            hoverBandIndex = -1; 
+            
+            for (let i = 0; i < eqBands.length; i++) { 
+                const px = freqToX(eqBands[i].freq, canvas.width); 
+                const py = gainToY(eqBands[i].gain, canvas.height); 
+                if (Math.hypot(pos.x - px, pos.y - py) <= hitRadius) { hoverBandIndex = i; break; } 
+            }
+            
+            hoverRegionIndex = -1; 
+            // 行動裝置不顯示區域 Hover 提示以保持乾淨
+            if (pos.y <= 24 && draggingBandIndex === -1 && !isTouch) { 
+                const freqAtMouse = xToFreq(pos.x, canvas.width); 
+                hoverRegionIndex = freqRegions.findIndex(r => freqAtMouse >= r.min && freqAtMouse <= r.max); 
+            }
+            
+            if (hoverRegionIndex !== -1) canvas.style.cursor = 'help'; 
+            else if (hoverBandIndex !== -1 || draggingBandIndex !== -1) canvas.style.cursor = (draggingBandIndex !== -1) ? 'grabbing' : 'grab'; 
+            else canvas.style.cursor = 'crosshair';
+            
             if (draggingBandIndex !== -1) {
                 clearPresetActive(); 
                 let newFreq = xToFreq(pos.x, canvas.width); let newGain = yToGain(pos.y, canvas.height);
                 const isPassFilter = eqBands[draggingBandIndex].type === 'highpass' || eqBands[draggingBandIndex].type === 'lowpass';
+                
                 newFreq = Math.max(MIN_FREQ, Math.min(MAX_FREQ, newFreq)); newGain = Math.max(-15, Math.min(15, newGain));
                 if (isPassFilter) newGain = 0;
+                
                 eqBands[draggingBandIndex].freq = newFreq; eqBands[draggingBandIndex].gain = newGain;
-                if (filters[draggingBandIndex]) { filters[draggingBandIndex].frequency.value = newFreq; if(!isPassFilter) filters[draggingBandIndex].gain.value = newGain; }
+                
+                if (filters[draggingBandIndex]) { 
+                    filters[draggingBandIndex].frequency.value = newFreq; 
+                    if(!isPassFilter) filters[draggingBandIndex].gain.value = newGain; 
+                }
+                
                 knobControllers[draggingBandIndex].freq.updateUI(newFreq); knobControllers[draggingBandIndex].gain.updateUI(newGain);
                 
-                updateStaticAutoGain(); // 在畫布拖曳點改變參數時觸發更新
+                updateStaticAutoGain(); 
             }
+        }
+
+        function onCanvasPointerUp() { 
+            draggingBandIndex = -1; 
+            if (hoverRegionIndex !== -1) canvas.style.cursor = 'help'; 
+            else if (hoverBandIndex !== -1) canvas.style.cursor = 'grab'; 
+            else canvas.style.cursor = 'crosshair'; 
+        }
+
+        canvas.addEventListener('mousedown', onCanvasPointerDown);
+        canvas.addEventListener('touchstart', onCanvasPointerDown, { passive: false });
+        
+        canvas.addEventListener('mousemove', onCanvasPointerMove);
+        canvas.addEventListener('touchmove', onCanvasPointerMove, { passive: false });
+        
+        window.addEventListener('mouseup', onCanvasPointerUp);
+        window.addEventListener('touchend', onCanvasPointerUp);
+        
+        canvas.addEventListener('mouseleave', () => { 
+            draggingBandIndex = -1; hoverBandIndex = -1; hoverRegionIndex = -1; 
+            currentMousePos = { x: -100, y: -100 }; 
+            canvas.style.cursor = 'crosshair'; 
         });
-        window.addEventListener('mouseup', () => { draggingBandIndex = -1; if (hoverRegionIndex !== -1) canvas.style.cursor = 'help'; else if (hoverBandIndex !== -1) canvas.style.cursor = 'grab'; else canvas.style.cursor = 'crosshair'; });
-        canvas.addEventListener('mouseleave', () => { draggingBandIndex = -1; hoverBandIndex = -1; hoverRegionIndex = -1; currentMousePos = { x: -100, y: -100 }; canvas.style.cursor = 'crosshair'; });
+        canvas.addEventListener('touchcancel', onCanvasPointerUp);
 
         // ==========================================
         // 核心頻譜繪製

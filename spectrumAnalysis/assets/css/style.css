@@ -34,8 +34,8 @@
             -webkit-overflow-scrolling: touch;
             display: flex;
             flex-direction: column;
-            height: 100vh; 
-            overflow: hidden; 
+            height: 100vh; /* 桌面端鎖定高度 */
+            overflow: hidden; /* 桌面端無捲軸 */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
@@ -214,6 +214,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            min-width: 0;
         }
 
         .track-meta {
@@ -361,7 +362,7 @@
             height: 100%; 
             background-color: #1e293b; 
             display: block;
-            touch-action: none;
+            /* 移除 touch-action: none，保留讓使用者可以在沒有控制點的區域滑動頁面 */
         }
         
         /* 底部參數控制區塊 */
@@ -374,7 +375,7 @@
             align-items: stretch; 
         }
 
-        /* --- 左側 Preset 預設效果選單 (自訂下拉式) --- */
+        /* --- 左側 Preset 預設效果選單 --- */
         .preset-sidebar {
             width: 180px;
             border-right: 1px solid var(--border-color);
@@ -397,7 +398,7 @@
             margin-bottom: 2px;
         }
 
-        /* 自訂下拉選單 UI (向上展開) */
+        /* 自訂下拉選單 UI (預設向上展開) */
         .custom-dropdown-container {
             position: relative;
             width: 100%;
@@ -471,19 +472,9 @@
             border-bottom: 1px solid var(--bg-hover);
         }
 
-        .custom-dropdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .custom-dropdown-item:hover {
-            background: var(--bg-hover);
-            color: var(--color-accent);
-        }
-
-        .custom-dropdown-item.active {
-            background: var(--color-header-blue);
-            color: #fff;
-        }
+        .custom-dropdown-item:last-child { border-bottom: none; }
+        .custom-dropdown-item:hover { background: var(--bg-hover); color: var(--color-accent); }
+        .custom-dropdown-item.active { background: var(--color-header-blue); color: #fff; }
 
         /* 聽感說明框 */
         .preset-desc-box {
@@ -590,6 +581,7 @@
             position: relative;
             cursor: ns-resize; 
             border: 1px solid #cbd5e1;
+            touch-action: none; /* 旋鈕保持阻擋原生的滾動行為 */
         }
 
         .knob-base:active { cursor: grabbing; }
@@ -600,6 +592,7 @@
             border-radius: 50%;
             position: absolute;
             transform-origin: center;
+            pointer-events: none;
         }
 
         .knob-indicator {
@@ -625,4 +618,141 @@
             color: var(--text-primary);
             font-family: monospace;
             font-weight: 600;
+        }
+
+        /* =========================================================
+           移動端 (Mobile) UI 優化：解除固定高度、自適應排列與大小
+           ========================================================= */
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                min-height: 100dvh;
+                overflow-y: auto; /* 解除桌面端的限制，讓移動端可以上下捲動 */
+            }
+            .container {
+                padding: 10px;
+                display: block; 
+            }
+            .content-card {
+                display: block;
+                height: auto;
+                min-height: auto;
+                border-radius: 8px;
+            }
+
+            .daw-top-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px;
+                gap: 15px;
+            }
+            .daw-left {
+                justify-content: space-between;
+                width: 100%;
+            }
+            .header-title {
+                font-size: 1.1rem;
+            }
+            .daw-center {
+                max-width: 100%;
+                width: 100%;
+                flex-direction: row; 
+            }
+            .waveform-wrapper {
+                height: 44px; /* 加大觸控區域 */
+            }
+            .track-name {
+                max-width: 180px;
+            }
+            .daw-right {
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            .btn-group {
+                flex: 1;
+            }
+            .control-btn {
+                flex: 1;
+                padding: 10px 0; /* 加大按鈕 */
+            }
+            .btn-scale {
+                width: auto;
+                padding: 0 15px;
+            }
+
+            .eq-module {
+                display: block;
+                height: auto;
+            }
+            #spectrumCanvas {
+                height: 240px; /* 給定手機版固定高度 */
+                width: 100%;
+            }
+            .eq-bottom-panel {
+                flex-direction: column;
+                border-top: none;
+            }
+            
+            .preset-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                padding: 12px;
+                gap: 10px;
+            }
+            .preset-title {
+                width: auto;
+                margin-bottom: 0;
+            }
+            .custom-dropdown-container {
+                flex: 1;
+                min-width: 150px;
+            }
+            .preset-desc-box {
+                width: 100%;
+                min-height: auto;
+                padding: 8px;
+                margin-top: 0;
+                font-size: 0.75rem;
+            }
+            
+            .custom-dropdown-list {
+                bottom: auto;
+                top: 100%;
+                margin-bottom: 0;
+                margin-top: 6px;
+                transform: translateY(-10px);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                z-index: 300; 
+            }
+            .custom-dropdown-container.open .custom-dropdown-selected::after {
+                transform: rotate(0deg); 
+            }
+
+            .eq-layout {
+                padding: 15px 10px;
+                overflow-y: visible; 
+                gap: 15px;
+                justify-content: space-evenly;
+            }
+            .band-card {
+                width: calc(50% - 15px); /* 兩兩並排 */
+                min-width: 145px;
+                padding: 15px 5px;
+            }
+            .knob-base {
+                width: 44px; /* 加大旋鈕更方便手指觸控 */
+                height: 44px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .band-card {
+                width: 100%; /* 極小螢幕單排 */
+                max-width: 280px;
+            }
         }
