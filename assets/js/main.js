@@ -7,7 +7,7 @@ const SiteIcons = {
                     <path d="M19 16h-12a2 2 0 0 0 -2 2" />
                     <path d="M9 8h6" />
                 </svg>`,
-    semester: ` <svg xmlns="http://www.w3.org/2000/svg" width="1.6em" height="1.6em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l-8 4l8 4l8 -4l-8 -4" />
+    semester: ` <svg style="vertical-align: -0.3em;" xmlns="http://www.w3.org/2000/svg" width="1.6em" height="1.6em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l-8 4l8 4l8 -4l-8 -4" />
                     <path d="M4 14l8 4l8 -4" />
                 </svg>`,
     schedule: `<svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
