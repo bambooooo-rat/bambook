@@ -101,7 +101,7 @@ final_audio = np.concatenate([
 final_audio = final_audio / np.max(np.abs(final_audio)) 
 
 # 使用 soundfile 輸出為 FLAC 檔案
-output_filename = "12 equal temperament (piano).flac"
+output_filename = "Piano (12 tone, C, F, Em, cluster).flac"
 sf.write(output_filename, final_audio, sample_rate)
 
 print(f"成功！已生成音檔並儲存於目前目錄: {output_filename}")
