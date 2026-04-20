@@ -16,7 +16,20 @@
             <div class="daw-top-bar">
                 
                 <div class="daw-left">
-                    <h1 class="header-title">🎛️ Parametric EQ</h1>
+                    <h1 class="header-title" style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="custom-svg-icon" style="margin: 0;">
+                            <path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M6 4v4" />
+                            <path d="M6 12v8" />
+                            <path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M12 4v10" />
+                            <path d="M12 18v2" />
+                            <path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M18 4v1" />
+                            <path d="M18 9v11" />
+                        </svg>
+                        <span>Parametric EQ</span>
+                    </h1>
                     
                     <!-- 載入音軌：下拉式選單 -->
                     <div class="audio-dropdown-container" id="audioDropdownContainer">
@@ -31,7 +44,13 @@
                         <div class="audio-dropdown-list" id="audioDropdownList">
                             <!-- 本機上傳 -->
                             <label for="audioFile" class="audio-dropdown-item allow-select" style="margin:0; width:100%;">
-                                📂 上傳本機檔案...
+                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="custom-svg-icon">
+                                <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                                <path d="M12 11v6" />
+                                <path d="M9.5 13.5l2.5 -2.5l2.5 2.5" />
+                            </svg>
+                                上傳本機檔案...
                             </label>
                             <div class="audio-dropdown-divider"></div>
                             <!-- JS 動態生成的 sample 列表容器 -->
