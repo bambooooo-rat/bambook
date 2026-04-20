@@ -112,8 +112,9 @@ function updateStaticAutoGain() {
     for (let i = 0; i < sampleCount; i++) avgMag += totalMag[i];
     avgMag /= sampleCount;
 
-    const eqCompensation = Math.max(0.25, Math.min(4.0, 1 / (avgMag || 1)));
-    const finalGain = isEqBypassed ? trackBaseGain : trackBaseGain * eqCompensation;
+    const eqCompensation = Math.max(0.25, Math.min(2.0, 1 / (avgMag || 1)));
+    let finalGain = isEqBypassed ? trackBaseGain : trackBaseGain * eqCompensation;
+    finalGain = Math.min(finalGain, 1.2);
     outputGainNode.gain.setTargetAtTime(finalGain, audioCtx.currentTime, 0.05);
 }
 
@@ -219,7 +220,8 @@ function renderSampleList(samples) {
         item.title = sample.name;
         item.addEventListener('click', (e) => {
             e.stopPropagation();
-            loadAudio(sample.path, sample.name, false);
+            // ★ 將包含預先計算 (rms, peaks) 的 sample 物件傳遞進去
+            loadAudio(sample.path, sample.name, false, sample);
             audioDropdownContainer.classList.remove('open');
         });
         sampleListContainer.appendChild(item);
@@ -239,7 +241,8 @@ function formatTime(seconds) {
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
-function loadAudio(source, name, isFile = true) {
+// ★ 新增 sampleData 參數以接收後端預先算好的資料
+function loadAudio(source, name, isFile = true, sampleData = null) {
     trackNameEl.innerText = name;
     trackNameEl.style.color = 'var(--text-title)';
     playPauseBtn.disabled = false;
@@ -254,6 +257,7 @@ function loadAudio(source, name, isFile = true) {
     isWaveformReady = false;
 
     if (isFile) {
+        // 使用者上傳：維持原本的動態解析邏輯
         const objectUrl = URL.createObjectURL(source);
         audioPlayer.src = objectUrl;
         source.arrayBuffer()
@@ -261,12 +265,20 @@ function loadAudio(source, name, isFile = true) {
             .then(audioBuffer => renderWaveformBuffer(audioBuffer))
             .catch(err => { console.error(err); waveformLoading.innerText = "波形解析失敗"; });
     } else {
+        // 預設清單：設定 src
         audioPlayer.src = source;
-        fetch(source)
-            .then(response => response.arrayBuffer())
-            .then(buffer => audioCtx.decodeAudioData(buffer))
-            .then(audioBuffer => renderWaveformBuffer(audioBuffer))
-            .catch(err => { console.error(err); waveformLoading.innerText = "波形解析失敗"; });
+        
+        // ★ 如果有預先計算好的資料，直接套用，不再浪費 CPU 去 fetch + decodeAudioData
+        if (sampleData && sampleData.peaks && sampleData.rms !== undefined) {
+            applyPrecalculatedData(sampleData);
+        } else {
+            // 舊版或無預先計算資料的 Fallback
+            fetch(source)
+                .then(response => response.arrayBuffer())
+                .then(buffer => audioCtx.decodeAudioData(buffer))
+                .then(audioBuffer => renderWaveformBuffer(audioBuffer))
+                .catch(err => { console.error(err); waveformLoading.innerText = "波形解析失敗"; });
+        }
     }
 }
 
@@ -339,12 +351,53 @@ function applyPreset(presetIndex) {
     updateStaticAutoGain(); 
 }
 
+// ★ 新增：直接從 JSON 資料渲染波形與計算 Gain (極速，免 decode)
+function applyPrecalculatedData(sampleData) {
+    // 1. 設定 Base Gain (使用預先計算好的 RMS)
+    const trackRMS = sampleData.rms;
+    const targetRMS = 0.05;
+    
+    if (trackRMS > 0.0001) trackBaseGain = Math.max(0.1, Math.min(targetRMS / trackRMS, 5.0)); 
+    else trackBaseGain = 1.0;
+    updateStaticAutoGain();
+
+    // 2. 準備繪製波形
+    const w = waveformWrapper.clientWidth * 2; 
+    const h = waveformWrapper.clientHeight * 2;
+    waveformBufferCanvas.width = w; waveformBufferCanvas.height = h;
+    waveformCanvas.width = w; waveformCanvas.height = h;
+    
+    waveformBufferCtx.clearRect(0, 0, w, h);
+    waveformBufferCtx.fillStyle = '#cbd5e1'; 
+    
+    const peaks = sampleData.peaks;
+    const numPeaks = peaks.length;
+    const amp = h / 2;
+
+    // 將 1000 個點的資料映射到 Canvas 寬度上
+    for (let i = 0; i < w; i++) {
+        const peakIndex = Math.floor((i / w) * numPeaks);
+        const [min, max] = peaks[peakIndex] || [0.0, 0.0];
+        
+        const y = (1 + min) * amp; 
+        const height = Math.max(1, (max - min) * amp); 
+        waveformBufferCtx.fillRect(i, y, 1, height);
+    }
+    
+    // 3. UI 狀態更新
+    isWaveformReady = true;
+    waveformWrapper.classList.add('loaded');
+    waveformLoading.classList.remove('active');
+    drawWaveformProgress(); 
+}
+
+// (原有的客戶端 decode 計算邏輯，保留給使用者上傳檔案時使用)
 function renderWaveformBuffer(audioBuffer) {
     const rawData = audioBuffer.getChannelData(0); 
     let sumSquares = 0;
     for (let i = 0; i < rawData.length; i++) sumSquares += rawData[i] * rawData[i];
     const trackRMS = Math.sqrt(sumSquares / rawData.length);
-    const targetRMS = 0.15; 
+    const targetRMS = 0.05; 
     
     if (trackRMS > 0.0001) trackBaseGain = Math.max(0.1, Math.min(targetRMS / trackRMS, 5.0)); 
     else trackBaseGain = 1.0;
