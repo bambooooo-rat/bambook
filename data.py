@@ -5,7 +5,7 @@ import json
 ASSETS_DIR = 'assets'
 OUTPUT_FILE = 'course_data.js'
 
-EXCLUDE_DIRS = {'css', 'fonts', 'js', 'static', '.git', '.vscode'}
+EXCLUDE_DIRS = {'css', 'fonts', 'js', 'static', '.git', '.vscode', 'icons'}
 
 def format_path(path):
     """將 Windows 路徑 (\) 轉換為 Web 路徑 (/)"""

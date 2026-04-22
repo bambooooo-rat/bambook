@@ -314,6 +314,10 @@ window.COURSE_DATA = {
                     {
                         "name": "ch03_High order ODEs",
                         "path": "assets/工程數學/slide/師大工教114學年上課講義/ch03_High order ODEs.pdf"
+                    },
+                    {
+                        "name": "ch06_Laplace transforms",
+                        "path": "assets/工程數學/slide/師大工教114學年上課講義/ch06_Laplace transforms.pdf"
                     }
                 ]
             },
