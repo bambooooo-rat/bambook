@@ -1,0 +1,89 @@
+[
+  {
+    "date": "2026-03-05 [cite: 3]",
+    "title": "Handout 1 [cite: 3]",
+    "speaker": "H.-J. SU [cite: 29]",
+    "items": [
+      "微分方程式之簡介、分類與解的定義(共同) [cite: 4]",
+      "可分離變數型(Separable) 微分方程與齊次型 ODEs (共同) [cite: 5]",
+      "偏導數與全微分(補充) [cite: 6]",
+      "正合(Exact)微分方程及其積分因子法(共同) [cite: 7]"
+    ]
+  },
+  {
+    "date": "2026-03-12 [cite: 8]",
+    "title": "Handout 2 [cite: 8]",
+    "speaker": "H.-J. SU [cite: 29]",
+    "items": [
+      "一階線性微分方程與積分因子法(共同) [cite: 9]",
+      "伯努利方程(Bernoulli Equation)的線性化處理(電機) [cite: 10]",
+      "二階齊次線性 ODEs 之降階法(Reduction of Order)(共同) [cite: 11]",
+      "柯西-尤拉方程式(Euler-Cauchy Equation)之特徵解(共同) [cite: 12]"
+    ]
+  },
+  {
+    "date": "2026-03-19 [cite: 13]",
+    "title": "Handout 3 [cite: 13]",
+    "speaker": "H.-J. SU [cite: 29]",
+    "items": [
+      "n階線性 ODEs 之解的結構與線性組合性質(共同) [cite: 14]",
+      "線性獨立性判別、Wronskian 行列式與特徵函數概念(共同) [cite: 15]",
+      "二階與高階常係數齊次線性 ODEs之通用解法(共同) [cite: 16]",
+      "初始值問題(IVP)與邊界值問題(BVP)(共同) [cite: 17]"
+    ]
+  },
+  {
+    "date": "2026-03-26 [cite: 18]",
+    "title": "Handout 4 [cite: 18]",
+    "speaker": "H.-J. SU [cite: 29]",
+    "items": [
+      "常係數階線性非齊次微分方程式(共同) [cite: 19]",
+      "待定係數法(Method of Undetermined Coefficients)(共同) [cite: 20]",
+      "參數變換法(Method of Variation of Parameters)(共同) [cite: 21]",
+      "非齊次微分方程之初始值與邊界值問題討論(共同) [cite: 22]"
+    ]
+  },
+  {
+    "date": "2026-04-09 [cite: 23]",
+    "title": "Handout 5 [cite: 23]",
+    "speaker": "H.-J. SU [cite: 29]",
+    "items": [
+      "微分方程組之簡介與狀態空間(State-Space) 表示法(工教) [cite: 24]",
+      "特徵值與特徵向量(補充)(工教) [cite: 25]",
+      "齊次與非齊次微分方程組的解決方法(參數變換法)(工教) [cite: 26]",
+      "相平面分析(Phase Plane)與二維系統之穩定性判斷(工教) [cite: 27]"
+    ]
+  },
+  {
+    "date": "2026-04-23 [cite: 31]",
+    "title": "Handout 6 [cite: 31]",
+    "speaker": "H.-J. SU [cite: 33]",
+    "items": [
+      "函數之冪級數表示法與泰勒級數(補充) [cite: 34]",
+      "內積、正交基底與投影(補充) [cite: 35]",
+      "傅立葉級數(Fourier Series)之定義、展開與收斂性(補充)(電機) [cite: 36]",
+      "複數型傅立葉級數、傅立葉變換與頻譜(補充) [cite: 37]"
+    ]
+  },
+  {
+    "date": "2026-05-07 [cite: 38]",
+    "title": "Handout 7 [cite: 38]",
+    "speaker": "H.-J. SU [cite: 33]",
+    "items": [
+      "拉普拉斯變換 (Laplace Transform)之定義與收斂條件(共同) [cite: 39]",
+      "常用訊號與運算:單位步階、脈衝函數與卷積運算(共同) [cite: 40]",
+      "基本函數之拉氏變換與運算性質(共同) [cite: 41]"
+    ]
+  },
+  {
+    "date": "2026-05-14 [cite: 42]",
+    "title": "Handout 8 [cite: 42]",
+    "speaker": "H.-J. SU [cite: 33]",
+    "items": [
+      "拉普拉斯逆變換(Inverse Laplace Transform) (共同) [cite: 43]",
+      "部分分式展開 (Partial Fraction Decomposition)(補充) [cite: 44]",
+      "利用拉普拉斯變換求解微分方程問題(共同) [cite: 45]",
+      "極點與零點(Pole-Zero)之直觀物理意義(補充) [cite: 46]"
+    ]
+  }
+]

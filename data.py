@@ -12,10 +12,10 @@ def format_path(path):
     return path.replace('\\', '/')
 
 def parse_syllabus(semester_path):
-    """解析課程大綱：尋找課程根目錄下的 syllabus.pdf (不分大小寫)"""
+    """解析課程大綱：尋找課程根目錄下的 syllabus.json (不分大小寫)"""
     if os.path.exists(semester_path):
         for f in os.listdir(semester_path):
-            if f.lower() == 'syllabus.pdf' and os.path.isfile(os.path.join(semester_path, f)):
+            if f.lower() == 'syllabus.json' and os.path.isfile(os.path.join(semester_path, f)):
                 return format_path(os.path.join(semester_path, f))
     return None
 

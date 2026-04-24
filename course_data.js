@@ -242,7 +242,7 @@ window.COURSE_DATA = {
         }
     },
     "工程數學": {
-        "syllabus": "assets/工程數學/syllabus.pdf",
+        "syllabus": "assets/工程數學/syllabus.json",
         "textbooks": [
             {
                 "title": "Advanced Engineering Mathematics",
