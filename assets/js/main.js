@@ -151,19 +151,91 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 以下為各區塊的 HTML 生成器 ---
 
-    function getSyllabusHTML(syllabusPath) {
-        if (!syllabusPath) return '';
+function generateSyllabusTable(data) {
+    if (!Array.isArray(data) || data.length === 0) {
+        return `<div style="color: var(--text-muted); padding: 10px;">目前尚無課綱排程。</div>`;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return data.map((entry, index) => {
+        const isLast = index === data.length - 1;
+        const items = entry.items || [];
+        
+        const eventDate = new Date(entry.date);
+        const isPast = !isNaN(eventDate) && eventDate < today;
+
+        // 簡化顏色邏輯：過去的事件全部統一變淡，未來的事件日期使用次要文字色
+        const dotColor = isPast ? 'var(--text-muted, #a0aec0)' : 'var(--color-accent)';
+        const dateColor = isPast ? 'var(--text-muted, #a0aec0)' : 'var(--color-accent)';
+        const titleColor = isPast ? 'var(--text-muted, #a0aec0)' : 'var(--text-title)';
+        const nodeOpacity = isPast ? 'opacity: 0.7;' : 'opacity: 1;';
         
         return `
-        <div class="content-card" style="padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--color-accent);">
-            <div style="font-weight: 600; font-size: 1.1rem; color: var(--text-title); display: flex; align-items: center; gap: 8px;">
-                ${SiteIcons.schedule} 研討期程
-            </div>
-            <div class="action-group">
-                <a href="${syllabusPath}" class="btn btn-primary" target="_blank">${SiteIcons.pdf}</a>
+        <div class="timeline-node" style="position: relative; padding-left: 28px; padding-bottom: 20px; transition: opacity 0.3s; ${nodeOpacity}">
+            ${!isLast ? `<div style="position: absolute; left: 9px; top: 24px; bottom: 0; width: 2px; background: #edf2f7;"></div>` : ''}
+            
+            <div style="position: absolute; left: 4px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: ${dotColor}; border: 2px solid var(--bg-card, #fff); box-shadow: 0 0 0 1px #e2e8f0; z-index: 2;"></div>
+            
+            <div style="background: transparent; padding: 2px 0 0 4px;">
+                <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-bottom: 6px;">
+                    <span style="font-weight: 600; color: ${titleColor}; font-size: 1rem;">
+                        ${entry.title || '-'}
+                    </span>
+                    <span style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 1rem; color: ${dateColor}; background-color: #f3f4f6; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(0, 0, 0, 0.05); display: inline-block; line-height: 1.2; letter-spacing: -0.02em;">
+                        ${entry.date || '-'}
+                    </span>
+                </div>
+                
+                <ul style="margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                    ${items.map(item => `<li style="margin-bottom: 3px;">${item}</li>`).join('')}
+                </ul>
             </div>
         </div>`;
-    }
+    }).join('');
+}
+
+function getSyllabusHTML(syllabusPath) {
+    if (!syllabusPath) return '';
+
+    const containerId = 'syllabus-container-' + Date.now();
+
+    // 執行非同步抓取
+    fetch(syllabusPath)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById(containerId);
+            if (container) container.innerHTML = generateSyllabusTable(data);
+        })
+        .catch(error => {
+            console.error('Syllabus Fetch Error:', error);
+            const container = document.getElementById(containerId);
+            if (container) container.innerHTML = `<div style="color: #ff4d4f; padding: 15px;">⚠️ 無法載入 JSON 資料。</div>`;
+        });
+
+    // 根據需求設計獨立的樣式
+    // 外層 slide-accordion-group 負責容器邊距與背景
+    // slide-accordion-header 承載你要求的 flex 樣式與左側粗邊框
+    return `
+    <div class="slide-accordion-group" style="margin-bottom: 24px; background: var(--bg-card, #fff); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;">
+        <div class="slide-accordion-header" onclick="toggleSlide(this)" 
+             style="padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--color-accent); cursor: pointer; user-select: none;">
+            
+            <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-title); display: flex; align-items: center; gap: 12px;">
+                ${SiteIcons.schedule || '📅'} 研討期程
+            </div>
+            
+            <span class="slide-toggle-icon" style="transition: transform 0.3s ease; color: var(--text-muted); font-size: 0.75rem;">▼</span>
+        </div>
+        
+        <div class="slide-accordion-body" style="padding: 0 25px 20px 25px; border-top: 1px solid rgba(0,0,0,0.04);">
+            <div id="${containerId}" style="padding-top: 20px;">
+                <div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">同步雲端課綱中...</div>
+            </div>
+        </div>
+    </div>`;
+}
 
     function getTextbooksHTML(textbooks) {
         if (!textbooks || textbooks.length === 0) return '';
