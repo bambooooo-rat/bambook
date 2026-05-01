@@ -290,12 +290,12 @@ window.COURSE_DATA = {
             },
             {
                 "title": "handout7",
-                "blank": null,
+                "blank": "assets/工程數學/handout/handout7_填空版.pdf",
                 "sol": "assets/工程數學/handout/handout7_解答版.pdf"
             },
             {
                 "title": "handout8",
-                "blank": null,
+                "blank": "assets/工程數學/handout/handout8_填空版.pdf",
                 "sol": "assets/工程數學/handout/handout8_解答版.pdf"
             }
         ],
