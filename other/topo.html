@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拓樸期末</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    :root{--paper:#fbfaf6;--ink:#1f2937;--muted:#64748b;--line:#e2e8f0;--blue:#2563eb;--red:#dc2626;--amber:#d97706;--green:#059669;--purple:#7c3aed;}
+    body{background:var(--paper);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;}
+    .card{background:white;border:1px solid var(--line);border-radius:1rem;box-shadow:0 8px 22px rgba(15,23,42,.06)}
+    .subcard{background:#fff;border:1px solid var(--line);border-radius:.85rem;box-shadow:0 3px 10px rgba(15,23,42,.035)}
+    .tag{display:inline-flex;align-items:center;border-radius:999px;padding:.18rem .55rem;font-size:.75rem;font-weight:800;line-height:1.2;white-space:nowrap}
+    .tagA{background:#fee2e2;color:#991b1b}.tagB{background:#fef3c7;color:#92400e}.tagC{background:#e2e8f0;color:#334155}.tagBlue{background:#dbeafe;color:#1e40af}.tagGreen{background:#dcfce7;color:#166534}.tagPurple{background:#ede9fe;color:#5b21b6}
+    .side{position:sticky;top:6rem;align-self:start}.detail-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem}.outline{background:#f8fafc;border-left:4px solid #2563eb}.trap{background:#fef2f2;border-left:4px solid #ef4444}.method{background:#ecfdf5;border-left:4px solid #10b981}.memory{background:#fffbeb;border-left:4px solid #f59e0b}.defbox{background:#f5f3ff;border-left:4px solid #7c3aed}.defterm{font-weight:900;color:#4c1d95}
+    .step{border-left:3px solid #cbd5e1;padding-left:.9rem}.hide{display:none!important}.checkrow input{width:1rem;height:1rem;accent-color:#2563eb}.math-note{font-family:Georgia,"Times New Roman",serif}.toc a{display:block;padding:.35rem .5rem;border-radius:.5rem;color:#475569}.toc a:hover{background:#e2e8f0;color:#0f172a}.smallcaps{letter-spacing:.08em;text-transform:uppercase}.qcard{scroll-margin-top:7rem}
+    
+    /* 強制確保 MathJax 渲染出的行內 LaTeX 公式不換行 */
+    mjx-container:not([display="true"]) {
+      display: inline-block !important;
+      white-space: nowrap !important;
+    }
+
+    @media (min-width:1024px){.detail-grid{grid-template-columns:minmax(0,1fr) 330px}}
+    @media print{header,#toolbar,.no-print{display:none!important}body{background:white}.card,.subcard{box-shadow:none;break-inside:avoid}.qcard{break-inside:avoid}.print-break{break-before:page}}
+  </style>
+</head>
+<body>
+<header class="sticky top-0 z-50 bg-slate-950 text-white border-b-4 border-blue-500 no-print">
+  <div class="max-w-7xl mx-auto px-5 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div>
+      <div class="text-xs text-blue-300 font-black smallcaps">General Topology Final Exam</div>
+      <h1 class="text-xl md:text-2xl font-black">拓樸期末</h1>
+      <p class="text-sm text-slate-300 mt-1">主欄詳細推導，右欄提供快速重點大綱。</p>
+    </div>
+    <nav class="flex flex-wrap gap-2 text-xs font-bold">
+      <a class="tag tagBlue" href="#strategy">總策略</a><a class="tag tagA" href="#q26">2.6 緊緻</a><a class="tag tagB" href="#q27">2.7 局部緊緻</a><a class="tag tagGreen" href="#connected">連通與積空間</a><a class="tag tagPurple" href="#q31">3.1 基本群</a><a class="tag tagC" href="#definitions-index">名詞總表</a><a class="tag tagC" href="#drill">閉卷演練</a>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-5 py-8">
+  <section id="strategy" class="card p-6 md:p-8 mb-8">
+    <div class="grid lg:grid-cols-[1fr_340px] gap-6">
+      <div>
+        <h2 class="text-3xl font-black mb-3">讀法總原則：從「會被要求證什麼」反推「必須知道什麼」</h2>
+        <p class="leading-8 text-slate-700">這份期末題庫不是概念問答，而是標準證明題庫。準備時應先把每題拆成四層：第一層是定義，例如 compact、limit point compact、sequentially compact、locally compact、connected、path-connected、quotient topology、path-homotopy、fundamental group；第二層是可直接引用的前置定理，例如 compact subset of Hausdorff is closed、continuous image of compact is compact、compact-to-Hausdorff continuous bijection is homeomorphism；第三層是證明中的構造，例如從 open cover 抽 finite subcover、從 first-countable local base 抽 convergent subsequence、從 quotient map 定義 induced map；第四層是考場書寫時不能省略的量詞與驗證。</p>
+        <p class="leading-8 text-slate-700 mt-3">你的期中經驗顯示，老師能接受短證明，但不接受關鍵步驟跳躍。尤其遇到 compactness，不能只寫「by compactness」；必須寫清楚「哪一族 open sets cover 哪個集合」、「抽出哪幾個 finite members」、「如何把它們 union 或 intersection 得到最後的 open neighborhoods」。遇到 quotient 或 fundamental group，不能只說「well-defined is obvious」；要至少明確指出等價類代表元改變時函數值不變，或 homotopy class 改變時運算結果仍在同一類。</p>
+      </div>
+      <aside class="subcard p-5 outline">
+        <h3 class="font-black text-blue-900 mb-2">快速大綱</h3>
+        <p class="text-sm leading-7 text-slate-700">本網頁的主欄是詳細說明，右欄是考前快速掃描用。每題的最低準備標準是：能說出定義、能列出證明骨架、能指出一個易扣分點。A 題必須閉卷重寫，B 題至少能口頭重建，C 題掌握結論與關鍵構造即可。</p>
+        <div class="mt-3 space-y-2 text-sm">
+          <div><span class="tag tagA">A 必會</span> 2.6、2.7 第一題、2.13、基本群結構。</div>
+          <div><span class="tag tagB">B 重要</span> Baire、單點緊緻化、連通反例。</div>
+          <div><span class="tag tagC">C 補強</span> 任意積、contractible 等價、重參數化。</div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="toolbar" class="card p-4 mb-8 no-print">
+    <div class="grid lg:grid-cols-[1fr_auto_auto] gap-3 items-center">
+      <input id="search" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-400" placeholder="搜尋：compact、Baire、connected、quotient、fundamental group、homotopy、緊緻、連通、商空間……" />
+      <select id="priority" class="border border-slate-300 rounded-xl px-4 py-3 bg-white"><option value="all">全部優先度</option><option value="A">A 必會</option><option value="B">B 重要</option><option value="C">C 補強</option></select>
+      <button id="resetChecks" class="rounded-xl px-4 py-3 bg-slate-900 text-white font-bold">重置勾選</button>
+    </div>
+  </section>
+
+  <div class="grid lg:grid-cols-[270px_1fr] gap-8">
+    <aside class="side hidden lg:block no-print">
+      <div class="card p-4 toc">
+        <h3 class="font-black mb-2">頁面索引</h3>
+        <a href="#q26">2.6 緊緻性三型態</a>
+        <a href="#q27">2.7 局部緊緻、Baire、單點緊緻化</a>
+        <a href="#connected">2.8 / 2.10 / 2.12 連通與積空間</a>
+        <a href="#q213">2.13 商空間與同胚</a>
+        <a href="#q31">3.1 路徑同倫與基本群</a>
+        <a href="#definitions-index">名詞定義總表</a>
+        <a href="#drill">閉卷演練計畫</a>
+      </div>
+    </aside>
+
+    <div class="space-y-8">
+      <section id="q26" class="card p-6 qcard" data-priority="A" data-keywords="compact limit point compact sequential compact first-countable second-countable 緊緻 序列緊緻 極限點">
+        <div class="flex flex-wrap items-center gap-2 mb-3"><span class="tag tagA">A 必會</span><span class="tag tagBlue">Question 2.6</span><h2 class="text-2xl font-black">緊緻性、極限點緊緻、序列緊緻</h2></div>
+        <div class="detail-grid">
+          <div class="space-y-5">
+            <div class="subcard p-5 defbox">
+              <h3 class="font-black text-purple-900 mb-3">本節名詞定義：緊緻性相關</h3>
+              <p class="leading-8 text-slate-700"><span class="defterm">Open cover（開覆蓋）</span>：若 \(X\) 是拓樸空間，\(A\subset X\)，一族 open sets \(\mathcal C=\{U_\alpha\}_{\alpha\in I}\) 稱為 \(A\) 的 open cover，表示每個 \(U_\alpha\) 都是 \(X\) 中的開集，且 \(A\subset\bigcup_{\alpha\in I}U_\alpha\)。若 \(A=X\)，就稱為 \(X\) 的 open cover。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Finite subcover（有限子覆蓋）</span>：若 \(\mathcal C=\{U_\alpha\}_{\alpha\in I}\) 是 \(A\) 的 open cover，存在有限多個指標 \(\alpha_1,\ldots,\alpha_n\in I\)，使得 \(A\subset U_{\alpha_1}\cup\cdots\cup U_{\alpha_n}\)，則 \(\{U_{\alpha_1},\ldots,U_{\alpha_n}\}\) 是 finite subcover。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Compact（緊緻）</span>：拓樸空間 \(X\) compact，表示 \(X\) 的每一個 open cover 都有 finite subcover。子集 \(K\subset X\) compact，嚴格說是 \(K\) 配備 subspace topology 後為 compact；等價地，在許多考題中可寫成：每個覆蓋 \(K\) 的 \(X\)-open cover 都有 finite subcover。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Limit point（極限點／聚點）</span>：若 \(E\subset X\)，點 \(x\in X\) 是 \(E\) 的 limit point，表示對每個包含 \(x\) 的 open neighborhood \(U\)，都有 \((U\setminus\{x\})\cap E\ne\varnothing\)。這個定義允許 \(x\) 本身屬於或不屬於 \(E\)。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Limit point compact（極限點緊緻）</span>：拓樸空間 \(X\) limit point compact，表示每個無限子集 \(E\subset X\) 都至少有一個 limit point in \(X\)。考場上要特別注意它不是 compact 的定義，而是另一種以無限子集描述的緊緻性。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Convergent sequence（收斂序列）</span>：序列 \((x_n)\) 收斂到 \(x\)，記為 \(x_n\to x\)，表示對每個 open neighborhood \(U\) of \(x\)，存在 \(N\in\mathbb N\)，使得 \(n\ge N\Rightarrow x_n\in U\)。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Sequentially compact（序列緊緻）</span>：拓樸空間 \(X\) sequentially compact，表示 \(X\) 中每個序列 \((x_n)\) 都存在一個收斂子序列 \((x_{n_k})\)，且其極限仍在 \(X\) 中。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">First-countable（第一可數）</span>：對每個 \(x\in X\)，存在可數個 neighborhoods \(B_1,B_2,\ldots\)，使得對任意 open neighborhood \(U\) of \(x\)，存在某個 \(B_n\) 滿足 \(x\in B_n\subset U\)。這些 \(B_n\) 稱為 \(x\) 的 countable local base。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Second-countable（第二可數）</span>：整個拓樸空間 \(X\) 有一組可數 base \(\mathcal B=\{B_1,B_2,\ldots\}\)，使得每個 open set 都可以寫成 \(\mathcal B\) 中某些元素的聯集。這比 first-countable 強。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 1：compact implies limit point compact</h3>
+              <p class="leading-8 text-slate-700">要證明若拓樸空間 \((X,\mathcal U_X)\) compact，則它 limit point compact。這裡的 limit point compact 通常表示任一無限子集 \(E\subset X\) 至少有一個極限點。證明主線是反證法：假設有無限子集 \(E\) 沒有極限點，則對每個 \(x\in X\)，可以找到一個 open neighborhood \(U_x\)，使得 \(U_x\cap E\) 至多只有有限個點；若 \(x\notin E\)，則可取 \(U_x\cap E=\varnothing\) 或至少不含某些局部點；若 \(x\in E\)，因為 \(x\) 不是 \(E\) 的極限點，所以存在 \(U_x\) 使得 \((U_x\setminus\{x\})\cap E=\varnothing\)，因此 \(U_x\cap E\subset\{x\}\)。這些 \(U_x\) cover \(X\)，compactness 給出有限子覆蓋 \(U_{x_1},\ldots,U_{x_n}\)。於是 \(E\subset \bigcup_{i=1}^n (U_{x_i}\cap E)\)，右側是有限集合的有限聯集，推出 \(E\) 有限，矛盾。</p>
+              <div class="method p-4 rounded-lg mt-3"><strong>考場模板：</strong>「Assume that \(E\subset X\) is infinite and has no limit point. For each \(x\in X\), choose an open neighborhood \(U_x\) such that \(U_x\cap E\) is finite. Since \(X\) is compact, \(\{U_x:x\in X\}\) has a finite subcover. Hence \(E\) is finite, contradiction.」這段可以寫，但要補一句為何 \(U_x\cap E\) finite。</div>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 2：first-countable Hausdorff 中，limit point compactness implies sequential compactness</h3>
+              <p class="leading-8 text-slate-700">這題要把「無限集合有極限點」轉成「任意序列有收斂子序列」。給一個序列 \((x_n)\)。若序列中某個值出現無限多次，則直接抽出常值子序列，收斂到該點。若沒有任何值出現無限多次，則集合 \(E=\{x_n:n\in\mathbb N\}\) 是無限集合。由 limit point compactness，\(E\) 有極限點 \(x\)。因為空間 first-countable，存在 \(x\) 的可數局部基底 \(B_1,B_2,\ldots\)。可把它改造成遞減基底 \(C_k=B_1\cap\cdots\cap B_k\)。每個 \(C_k\) 都是 \(x\) 的 open neighborhood，且因為 \(x\) 是 \(E\) 的極限點，每個 \(C_k\) 都含有 \(E\setminus\{x\}\) 中的點。遞迴挑 \(n_k>n_{k-1}\)，使得 \(x_{n_k}\in C_k\) 且避開前面已挑過的有限點。此時對任意 \(x\) 的 open neighborhood \(U\)，因為 \(C_k\) 是局部基底，存在 \(K\) 使得 \(C_K\subset U\)，而對 \(k\ge K\)，\(x_{n_k}\in C_k\subset C_K\subset U\)，所以 \(x_{n_k}\to x\)。</p>
+              <p class="leading-8 text-slate-700 mt-2">Hausdorff 的作用在不同課本寫法中可能用來處理極限唯一性或避免有限集合的閉包問題；考場上可以保留題目條件並在證明中指出「first-countability is used to produce a countable decreasing neighborhood base」。真正不能少的是可數局部基底與遞迴抽子序列。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 3：second-countable 中，sequential compactness implies compactness</h3>
+              <p class="leading-8 text-slate-700">要證明 compact，從任意 open cover \(\mathcal V\) 出發，目標是抽出有限子覆蓋。second-countable 給出可數基底 \(\mathcal B=\{B_1,B_2,\ldots\}\)。先把 \(\mathcal V\) 精煉成一個可數 open cover：收集所有滿足「存在 \(V\in\mathcal V\) 使 \(B_j\subset V\)」的基底元素 \(B_j\)，它們仍 cover \(X\)，因為每個點 \(x\) 先落在某個 \(V\in\mathcal V\)，再由基底性找到 \(x\in B_j\subset V\)。</p>
+              <p class="leading-8 text-slate-700 mt-2">接著證明可數 cover 必有有限子覆蓋。假設 \(B_{j_1},B_{j_2},\ldots\) 沒有有限子覆蓋，則可對每個 \(n\) 選 \(x_n\notin B_{j_1}\cup\cdots\cup B_{j_n}\)。由 sequential compactness，\((x_n)\) 有子序列 \(x_{n_k}\to x\)。因為可數 cover 覆蓋 \(X\)，存在某個 \(m\) 使 \(x\in B_{j_m}\)。由 \(B_{j_m}\) open，收斂子序列最後會落入 \(B_{j_m}\)。但當 \(n_k\ge m\) 時，\(x_{n_k}\notin B_{j_m}\)，矛盾。因此可數精煉 cover 有有限子覆蓋；再把每個被選中的 \(B_j\) 放回包含它的原 \(V\in\mathcal V\)，得到原 cover 的有限子覆蓋。</p>
+            </div>
+          </div>
+          <aside class="space-y-4">
+            <div class="subcard p-4 outline"><h3 class="font-black text-blue-900">快速重點</h3><p class="text-sm leading-7">這組題的主軸是「cover 版本」與「sequence 版本」的轉換。compact 到 limit point compact 用 open cover 反證；limit point compact 到 sequential compact 用 first-countable 抽子序列；sequential compact 到 compact 用 second-countable 把任意 cover 壓成可數 cover。</p></div>
+            <div class="subcard p-4 trap"><h3 class="font-black text-red-900">易扣分點</h3><p class="text-sm leading-7">不能把三種緊緻性直接說成等價。它們在一般拓樸空間不等價，題目每個額外條件都要用到或至少交代其角色。</p></div>
+            <label class="checkrow flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-id="q26">我能閉卷重寫 2.6 三題</label>
+          </aside>
+        </div>
+      </section>
+
+      <section id="q27" class="card p-6 qcard" data-priority="A" data-keywords="locally compact Hausdorff Baire category theorem one-point compactification compactification 局部緊緻 單點緊緻化">
+        <div class="flex flex-wrap items-center gap-2 mb-3"><span class="tag tagA">A/B 混合</span><span class="tag tagBlue">Question 2.7</span><h2 class="text-2xl font-black">局部緊緻、Baire category theorem、單點緊緻化</h2></div>
+        <div class="detail-grid">
+          <div class="space-y-5">
+            <div class="subcard p-5 defbox">
+              <h3 class="font-black text-purple-900 mb-3">本節名詞定義：局部緊緻、Baire、緊緻化</h3>
+              <p class="leading-8 text-slate-700"><span class="defterm">Hausdorff / \(T_2\)（豪斯多夫）</span>：若任意兩個相異點 \(x\ne y\) 都存在 disjoint open neighborhoods \(U,V\)，使得 \(x\in U\)、\(y\in V\)、\(U\cap V=\varnothing\)，則 \(X\) 是 Hausdorff。這個條件常用來推出 compact subsets are closed，以及 compact Hausdorff implies normal。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Locally compact（局部緊緻）</span>：常用嚴格版本是：對每個 \(x\in X\)，存在 open neighborhood \(U\) of \(x\)，使得 \(\overline U\) compact。某些書也先定義成每點有 compact neighborhood；在 Hausdorff 情境下，常可轉成題庫所需的 \(x\in V\subset\overline V\subset U\) 形式。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Dense（稠密）</span>：子集 \(A\subset X\) dense in \(X\)，表示 \(\overline A=X\)。等價地，每個非空 open set \(U\subset X\) 都滿足 \(U\cap A\ne\varnothing\)。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Nowhere dense（無處稠密）</span>：子集 \(A\subset X\) nowhere dense，表示 \(\operatorname{Int}(\overline A)=\varnothing\)。直觀上，\(A\) 即使取閉包，也不包含任何非空 open set。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">First category / meagre（第一類／貧集）</span>：若 \(A\) 可以寫成可數多個 nowhere dense sets 的聯集，即 \(A=\bigcup_{n=1}^{\infty}A_n\) 且每個 \(A_n\) nowhere dense，則 \(A\) 是 first category 或 meagre。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Baire space（貝爾空間）</span>：若每個可數個 open dense sets 的交集仍 dense，則稱 \(X\) 是 Baire space。等價表述是：非空 open set 不能是 meagre。Baire category theorem 就是在說 complete metric spaces 或 locally compact Hausdorff spaces 是 Baire spaces。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Compactification（緊緻化）</span>：\(Y\) 是 \(X\) 的 compactification，通常表示 \(Y\) compact Hausdorff，且存在 embedding \(i:X\to Y\)，使得 \(i(X)\) dense in \(Y\)。若把 \(X\) 視為 \(Y\) 的子空間，則要求 \(X\) dense in \(Y\)。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">One-point compactification（單點緊緻化）</span>：對 locally compact non-compact Hausdorff space \(X\)，令 \(Y=X\cup\{\infty\}\)。\(Y\) 的開集包含兩類：原本 \(X\) 中的開集，以及所有形如 \(Y\setminus K\) 的集合，其中 \(K\subset X\) compact。新增點 \(\infty\) 代表「所有無限遠方向」。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 1：局部緊緻 Hausdorff 空間中的縮小鄰域</h3>
+              <p class="leading-8 text-slate-700">命題是：若 \((X,\mathcal U_X)\) 是 locally compact Hausdorff，則對任意 \(x\in X\) 與任意 open neighborhood \(U\) of \(x\)，存在 open set \(V\) with compact closure，使得 \(x\in V\subset \overline V\subset U\)。這題是期末最值得背熟的標準證明之一，因為它把局部緊緻、Hausdorff、compactness、regular-like separation 全部串起來。</p>
+              <p class="leading-8 text-slate-700 mt-2">證明思路如下。由 locally compact，先取 \(x\) 的一個 open neighborhood \(W\)，使得 \(\overline W\) compact。令 \(K=\overline W\setminus U\)。因為 \(\overline W\) compact 且 Hausdorff，所以 \(\overline W\) 作為子空間是 compact Hausdorff，因此 normal。集合 \(K\) 在 \(\overline W\) 中 closed，且 \(x\notin K\)。在 \(\overline W\) 中用 normal 或 compact Hausdorff 的正規性，把點 \(x\) 與 closed set \(K\) 分離，得到相對開集 \(O\ni x\) 與 \(P\supset K\)，且 \(O\cap P=\varnothing\)。接著在 \(X\) 中取 open set \(V\) 使 \(x\in V\subset O\cap W\)。因為 \(V\subset W\)，所以 \(\overline V\subset\overline W\)，因此 \(\overline V\) 是 compact set 的 closed subset，故 compact。又因為 \(O\) 避開 \(K=\overline W\setminus U\)，可推出 \(\overline V\subset U\)。</p>
+              <div class="memory p-4 rounded-lg mt-3"><strong>記憶句：</strong>先用 locally compact 找到「小宇宙」\(\overline W\) compact，再在這個 compact Hausdorff 小宇宙內使用 normality，把 \(x\) 從 \(\overline W\setminus U\) 分離出去。</div>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 2：Baire category theorem</h3>
+              <p class="leading-8 text-slate-700">常見敘述是：在 locally compact Hausdorff space 或 complete metric space 的版本中，若 \(X\) 是適當的 Baire space，則可數個 open dense sets 的交集仍然 dense。等價地，\(X\) 不能寫成可數個 nowhere dense sets 的聯集。依照本題庫前後脈絡，老師很可能期待的是 locally compact Hausdorff 版本，因為它緊接在 locally compact spaces 後面。</p>
+              <p class="leading-8 text-slate-700 mt-2">證明骨架：令 \(G_1,G_2,\ldots\) 是 open dense sets。要證明 \(\bigcap_{n=1}^{\infty}G_n\) dense，只需取任意非空 open set \(U_0\)，證明 \(U_0\cap\bigcap_n G_n\ne\varnothing\)。利用上一題的縮小鄰域技巧，遞迴構造非空 open sets \(U_n\)，使 \(\overline{U_n}\) compact，且 \(\overline{U_n}\subset U_{n-1}\cap G_n\)。因為 \(G_n\) dense，所以 \(U_{n-1}\cap G_n\) 非空 open；再由局部緊緻縮小鄰域定理取 \(U_n\)。如此得到遞減的非空 compact closed sets \(\overline{U_1}\supset\overline{U_2}\supset\cdots\)。compactness 的 finite intersection property 給出 \(\bigcap_n \overline{U_n}\ne\varnothing\)。任取其中一點，便落在每個 \(G_n\) 與原本的 \(U_0\) 中。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 3：one-point compactification theorem 與陷阱問題</h3>
+              <p class="leading-8 text-slate-700">單點緊緻化的標準敘述：若 \(X\) 是 locally compact non-compact Hausdorff space，則令 \(Y=X\cup\{\infty\}\)。定義 \(Y\) 的 open sets 為兩類：第一類是原本 \(X\) 中的 open sets；第二類是形如 \(Y\setminus K\) 的集合，其中 \(K\subset X\) compact。則 \(Y\) 是 compact Hausdorff，且 \(X\) 在 \(Y\) 中 dense，因此 \(Y\) 是 \(X\) 的 compactification。</p>
+              <p class="leading-8 text-slate-700 mt-2">題庫特別問：如果原本的 \(X\) 已經 compact，而不是 locally compact non-compact，照樣做這個 construction，\(Y\) 是否仍是 \(X\) 的 compactification？通常答案是「不是通常意義下的 compactification」。原因是 compactification要求 \(X\) 嵌入到 compact Hausdorff space \(Y\) 且 \(X\) 在 \(Y\) 中 dense。若 \(X\) 已 compact，在 Hausdorff compactification 中 \(X\) 會是 closed；加入的新點 \(\infty\) 不會落在 \(\overline X\) 中，所以 \(X\) 不 dense in \(Y\)。更直觀地說，單點緊緻化是把「無限遠」補成一點；如果 \(X\) 原本已經緊緻，沒有需要補的無限遠。</p>
+            </div>
+          </div>
+          <aside class="space-y-4">
+            <div class="subcard p-4 outline"><h3 class="font-black text-blue-900">快速重點</h3><p class="text-sm leading-7">2.7 的核心不是背名詞，而是會做「縮小 open neighborhood 並控制 closure」。Baire 的遞迴構造靠這個命題。單點緊緻化要記得 non-compact 是為了讓 \(X\) dense。</p></div>
+            <div class="subcard p-4 trap"><h3 class="font-black text-red-900">易扣分點</h3><p class="text-sm leading-7">單點緊緻化中，包含 \(\infty\) 的開集不是任意集合，而是 \(Y\setminus K\)，其中 \(K\) 是 \(X\) 的 compact subset。不要寫成 closed subset。</p></div>
+            <label class="checkrow flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-id="q27">我能寫出 2.7 的三個 theorem statement</label>
+          </aside>
+        </div>
+      </section>
+
+      <section id="connected" class="card p-6 qcard" data-priority="A" data-keywords="connected path-connected product compact topologist sine curve interval 連通 路徑連通 積空間">
+        <div class="flex flex-wrap items-center gap-2 mb-3"><span class="tag tagA">A/B 混合</span><span class="tag tagGreen">Question 2.8 / 2.10 / 2.12</span><h2 class="text-2xl font-black">連通性、路徑連通性、有限與任意積空間</h2></div>
+        <div class="detail-grid">
+          <div class="space-y-5">
+            <div class="subcard p-5 defbox">
+              <h3 class="font-black text-purple-900 mb-3">本節名詞定義：連通、路徑連通、積空間</h3>
+              <p class="leading-8 text-slate-700"><span class="defterm">Separation（分離）</span>：拓樸空間 \(X\) 的 separation 是一對非空 subsets \(U,V\subset X\)，使得 \(U\) 與 \(V\) 在 \(X\) 中相對開、\(U\cap V=\varnothing\)，且 \(X=U\cup V\)。等價地，也可用兩個非空 disjoint clopen subsets 分開整個空間。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Connected（連通）</span>：若 \(X\) 不存在 separation，則 \(X\) connected。對子集 \(A\subset X\)，\(A\) connected 指的是 \(A\) 配備 subspace topology 後 connected。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Clopen（既開又閉）</span>：集合 \(A\subset X\) 同時是 open 與 closed。空間 connected 等價於唯一的 clopen subsets 只有 \(\varnothing\) 與 \(X\)。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Interval（區間）</span>：非空子集 \(I\subset\mathbb R\) 是 interval，表示若 \(a,b\in I\) 且 \(a<c<b\)，則 \(c\in I\)。singleton \(\{x\}\) 通常也可視為退化區間，但題庫特別將 singleton 與 interval 分開敘述。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Path（路徑）</span>：從 \(p\) 到 \(q\) 的 path 是 continuous map \(\gamma:[0,1]\to X\)，使得 \(\gamma(0)=p\) 且 \(\gamma(1)=q\)。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Path-connected（路徑連通）</span>：若對任意 \(p,q\in X\)，都存在一條 path \(\gamma\) from \(p\) to \(q\)，則 \(X\) path-connected。path-connected 一定 connected，但 connected 不一定 path-connected。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Product topology（乘積拓樸）</span>：有限乘積 \(X_1\times\cdots\times X_n\) 的 base 由 \(U_1\times\cdots\times U_n\) 組成，其中每個 \(U_j\) open in \(X_j\)。任意乘積 \(\prod_{\alpha\in I}X_\alpha\) 的基本開集只允許有限多個座標被限制成 proper open sets，其餘座標必須是整個 \(X_\alpha\)。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Tube lemma（管狀引理）</span>：若 \(Y\) compact，且 open set \(N\subset X\times Y\) 包含 slice \(\{x_0\}\times Y\)，則存在 \(x_0\) 的 open neighborhood \(W\subset X\)，使得 \(W\times Y\subset N\)。有限積 compactness 的證明通常靠它。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 1：若 \(A\subset B\subset \overline A\) 且 \(A\) connected，則 \(B\) connected</h3>
+              <p class="leading-8 text-slate-700">這是連通性的標準閉包定理。證明用反證法。若 \(B\) 不連通，則存在 separation \(B=C\cup D\)，其中 \(C,D\) 是 \(B\) 中非空、互斥、相對開的集合。因為 \(A\subset B\) 且 \(A\) connected，所以 \(A\) cannot simultaneously hit \(C\) and \(D\)；否則 \(A=(A\cap C)\cup(A\cap D)\) 會被分離。因此不妨 \(A\subset C\)。由 \(B\subset\overline A\)，每個 \(b\in B\) 都在 \(A\) 的閉包內。若 \(D\) 非空，取 \(d\in D\)。因為 \(D\) 是 \(B\) 中相對開且含 \(d\)，它應該與 \(A\) 相交；但 \(A\subset C\)，而 \(C\cap D=\varnothing\)，矛盾。故 \(D\) 必空，\(B\) connected。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 2：實數線子集 connected iff singleton 或 interval</h3>
+              <p class="leading-8 text-slate-700">若 \(E\subset\mathbb R\) connected 且不是 singleton，則要證明它是 interval。interval 的判準是：若 \(a,b\in E\) 且 \(a<c<b\)，則 \(c\in E\)。反證若 \(c\notin E\)，則 \(E\) 被 \((-\infty,c)\cap E\) 與 \((c,\infty)\cap E\) 分成兩個非空、互斥、相對開集合，矛盾。因此 connected subset 必為 interval 或 singleton。反向則用實數線的 order completeness：若 interval 被分成兩個相對開分離集合，可取其中一側與另一側之間的 supremum，利用 interval 性質與相對開性導出矛盾。考場上可引用「intervals in \(\mathbb R\) are connected」，但若題目要求完整證明，要把 supremum 論證補上。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 3：connected but not path-connected 的反例</h3>
+              <p class="leading-8 text-slate-700">建議固定使用 topologist's sine curve。令 \(S=\{(x,\sin(1/x)):0<x\le 1\}\)，再令 \(T=\overline S=S\cup(\{0\}\times[-1,1])\)。因為 \((0,1]\) connected，連續映射 \(x\mapsto(x,\sin(1/x))\) 的像 \(S\) connected，而 connected set 的 closure 仍 connected，所以 \(T\) connected。它不是 path-connected，原因是若存在 path 從 \((0,0)\) 或垂直線段上的點連到 \(S\) 中某點，path 的第一個離開垂直線段的時間會迫使 \(\sin(1/x)\) 在 \(x\to0^+\) 時有極限，但它沒有極限，矛盾。考場寫 full details 時，不必把分析細節寫到論文等級，但要明確說明振盪曲線靠近 \(x=0\) 時無法由連續 path 穿越。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 4：有限積與任意積的 connectedness；有限積 compactness</h3>
+              <p class="leading-8 text-slate-700">有限積 connected 的證明可以先證兩個空間的情形。若 \(X,Y\) connected，則對固定 \(y_0\)，每個 \(X\times\{y\}\) connected，每個 \(\{x\}\times Y\) connected，且 \(X\times\{y_0\}\) 與 \(\{x\}\times Y\) 相交。利用「有共同交集或透過共同骨架連接的 connected sets 的聯集 connected」，推出 \(X\times Y\) connected。再用 induction 得到有限乘積。</p>
+              <p class="leading-8 text-slate-700 mt-2">任意積 connected 的常見證明是先固定一個 base point \(p=(p_\alpha)\)。考慮所有只在有限多個座標不同於 \(p\) 的點所構成的子集。這些有限座標變動的子空間都 connected，且彼此都含有 \(p\)，所以它們的聯集 connected。再證明這個聯集在整個 product space 中 dense，因為 product topology 的基本開集只限制有限多個座標。由 connected set 的 closure connected，整個任意積 connected。</p>
+              <p class="leading-8 text-slate-700 mt-2">有限積 compactness 可用 open cover 與 tube lemma 證明。若 \(X,Y\) compact，對 \(X\times Y\) 的 open cover，固定 \(x\)，切片 \(\{x\}\times Y\) compact，所以被有限多個 cover elements 蓋住；tube lemma 給出 \(x\) 的一個 open neighborhood \(N_x\)，使 \(N_x\times Y\) 被同一批有限 cover elements 蓋住。\(\{N_x:x\in X\}\) cover \(X\)，再由 \(X\) compact 抽有限個 \(N_{x_i}\)，合併所有有限批 cover elements 即得 \(X\times Y\) 的有限子覆蓋。</p>
+            </div>
+          </div>
+          <aside class="space-y-4">
+            <div class="subcard p-4 outline"><h3 class="font-black text-blue-900">快速重點</h3><p class="text-sm leading-7">連通題的關鍵字是 separation。積空間 connected 用「共同交集聯集」或「有限支撐 dense subset」。有限積 compact 用 tube lemma。</p></div>
+            <div class="subcard p-4 trap"><h3 class="font-black text-red-900">易扣分點</h3><p class="text-sm leading-7">connected 不等於 path-connected。反例題不能只寫名稱，必須證明 connected 與 not path-connected 兩邊。</p></div>
+            <label class="checkrow flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-id="connected">我能說明 topologist's sine curve</label>
+          </aside>
+        </div>
+      </section>
+
+      <section id="q213" class="card p-6 qcard" data-priority="A" data-keywords="quotient space quotient topology homeomorphism compact Hausdorff induced map 商空間 商拓樸 同胚">
+        <div class="flex flex-wrap items-center gap-2 mb-3"><span class="tag tagA">A 必會</span><span class="tag tagBlue">Question 2.13</span><h2 class="text-2xl font-black">商空間：由連續滿射得到同胚</h2></div>
+        <div class="detail-grid">
+          <div class="space-y-5">
+            <div class="subcard p-5 defbox">
+              <h3 class="font-black text-purple-900 mb-3">本節名詞定義：商空間與商拓樸</h3>
+              <p class="leading-8 text-slate-700"><span class="defterm">Equivalence relation（等價關係）</span>：關係 \(\sim\) 若滿足 reflexive \(x\sim x\)、symmetric \(x\sim y\Rightarrow y\sim x\)、transitive \(x\sim y\) 且 \(y\sim z\Rightarrow x\sim z\)，則為 equivalence relation。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Equivalence class（等價類）</span>：\([x]=\{y\in X:y\sim x\}\)。商集 \(X/\sim\) 是所有等價類的集合，而不是 \(X\) 的普通子集。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Quotient map（商映射）</span>：自然投影 \(\pi:X\to X/\sim\) 定義為 \(\pi(x)=[x]\)。更一般地，surjective map \(q:X\to Y\) 若滿足 \(V\subset Y\) open iff \(q^{-1}(V)\subset X\) open，則 \(q\) 是 quotient map。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Quotient topology（商拓樸）</span>：\(X/\sim\) 上的 quotient topology 定義為：\(O\subset X/\sim\) open iff \(\pi^{-1}(O)\) open in \(X\)。這是使自然投影 \(\pi\) continuous 的最大拓樸。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Induced map（誘導映射）</span>：若 \(f:X\to Y\) 對等價類為 constant，也就是 \(x\sim x'\Rightarrow f(x)=f(x')\)，則可定義 \(\tilde f:X/\sim\to Y\) by \(\tilde f([x])=f(x)\)。第一件事一定要證明 well-defined。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Homeomorphism（同胚）</span>：函數 \(h:X\to Y\) 是 homeomorphism，表示 \(h\) bijective、\(h\) continuous，且 \(h^{-1}\) continuous。兩空間同胚代表它們具有相同拓樸結構。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題</h3>
+              <p class="leading-8 text-slate-700">題目給 continuous onto map \(f:(X,\mathcal U_X)\to(Y,\mathcal U_Y)\)，其中 \(X\) compact、\(Y\) Hausdorff，並定義 \(x\sim_f x'\) iff \(f(x)=f(x')\)。要證明存在 homeomorphism \(\tilde f:X/\sim_f\to Y\)。</p>
+              <p class="leading-8 text-slate-700 mt-2">證明必須分成五步。第一，定義 \(\tilde f([x])=f(x)\)。第二，證明 well-defined：若 \([x]=[x']\)，則 \(x\sim_f x'\)，所以 \(f(x)=f(x')\)，因此 \(\tilde f([x])=\tilde f([x'])\)。第三，證明 bijective。Surjective 來自 \(f\) onto；injective 來自若 \(\tilde f([x])=\tilde f([x'])\)，則 \(f(x)=f(x')\)，故 \(x\sim_f x'\)，所以 \([x]=[x']\)。第四，證明 continuous。令 \(\pi:X\to X/\sim_f\) 是 quotient map，則 \(f=\tilde f\circ\pi\)。依 quotient topology 的 mapping property，只要 \(f\) continuous，就得到 \(\tilde f\) continuous。第五，因為 \(X\) compact，\(X/\sim_f\) 是 continuous image of compact under \(\pi\)，所以 compact；又 \(Y\) Hausdorff，故 continuous bijection \(\tilde f:X/\sim_f\to Y\) from compact to Hausdorff is a homeomorphism。</p>
+            </div>
+          </div>
+          <aside class="space-y-4">
+            <div class="subcard p-4 outline"><h3 class="font-black text-blue-900">快速重點</h3><p class="text-sm leading-7">這題是標準五步：define、well-defined、bijective、continuous、compact-to-Hausdorff。少任一步都會扣分。</p></div>
+            <div class="subcard p-4 trap"><h3 class="font-black text-red-900">易扣分點</h3><p class="text-sm leading-7">不要直接寫 \(X/\sim_f=Y\)。它們不是同一集合，而是透過 \(\tilde f\) 同胚。</p></div>
+            <label class="checkrow flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-id="q213">我能閉卷寫出商空間五步證明</label>
+          </aside>
+        </div>
+      </section>
+
+      <section id="q31" class="card p-6 qcard" data-priority="A" data-keywords="fundamental group path homotopy reparametrization base point topological invariant simply connected product contractible homotopy equivalence 基本群 路徑同倫 單連通">
+        <div class="flex flex-wrap items-center gap-2 mb-3"><span class="tag tagA">A/B 混合</span><span class="tag tagPurple">Question 3.1-</span><h2 class="text-2xl font-black">路徑同倫與基本群</h2></div>
+        <div class="detail-grid">
+          <div class="space-y-5">
+            <div class="subcard p-5 defbox">
+              <h3 class="font-black text-purple-900 mb-3">本節名詞定義：路徑同倫與基本群</h3>
+              <p class="leading-8 text-slate-700"><span class="defterm">Homotopy（同倫）</span>：兩個 continuous maps \(f,g:X\to Y\) homotopic，記為 \(f\simeq g\)，表示存在 continuous map \(H:X\times[0,1]\to Y\)，使得 \(H(x,0)=f(x)\) 且 \(H(x,1)=g(x)\)。可把 \(H\) 理解為從 \(f\) 連續變形到 \(g\)。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Path-homotopy（路徑同倫）</span>：兩條 path \(f,g:[0,1]\to X\) path-homotopic，表示存在 homotopy \(H:[0,1]\times[0,1]\to X\)，且端點固定：\(H(0,t)=f(0)=g(0)\)、\(H(1,t)=f(1)=g(1)\)。端點固定是基本群定義中不能省略的條件。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Loop（迴路）</span>：base point \(p\in X\) 處的 loop 是 path \(f:[0,1]\to X\)，使得 \(f(0)=f(1)=p\)。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Path concatenation（路徑接合）</span>：若 \(f(1)=g(0)\)，定義 \((f*g)(s)=f(2s)\) for \(0\le s\le 1/2\)，且 \((f*g)(s)=g(2s-1)\) for \(1/2\le s\le1\)。基本群乘法由接合 loop 給出。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Fundamental group（基本群）</span>：\(\pi_1(X,p)\) 是所有 based loops at \(p\) 的 path-homotopy classes 所成的集合，群運算為 \([f]\cdot[g]=[f*g]\)，單位元素是 constant loop 的同倫類 \([c_p]\)，反元素由反向路徑 \(\overline f(s)=f(1-s)\) 給出。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Simply connected（單連通）</span>：空間 \(X\) simply connected，表示 \(X\) path-connected，且對某個等價於任意 base point \(p\)，\(\pi_1(X,p)\) 是 trivial group。也就是每個 loop 都可在固定端點下縮到 constant loop。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Contractible（可縮）</span>：\(X\) contractible，表示 identity map \(\operatorname{id}_X\) homotopic to a constant map。直觀上，整個空間可連續縮到一點。contractible 會推出 simply connected，但 simply connected 不一定 contractible。</p>
+              <p class="leading-8 text-slate-700 mt-2"><span class="defterm">Homotopy equivalence（同倫等價）</span>：maps \(\varphi:X\to Y\) 與 \(\psi:Y\to X\) 若滿足 \(\psi\circ\varphi\simeq\operatorname{id}_X\) 且 \(\varphi\circ\psi\simeq\operatorname{id}_Y\)，則 \(X\) 與 \(Y\) homotopy equivalent。這比 homeomorphism 弱，但仍保留基本群到同構。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">基本定義：先把符號固定</h3>
+              <p class="leading-8 text-slate-700">path 是 continuous map \(f:[0,1]\to X\)。若 \(f(0)=p\) 且 \(f(1)=q\)，稱它從 \(p\) 到 \(q\)。loop at \(p\) 是起點與終點都等於 \(p\) 的 path。兩條端點相同的 path \(f,g\) path-homotopic，記為 \(f\simeq_p g\)，若存在 continuous map \(H:[0,1]\times[0,1]\to X\)，使 \(H(s,0)=f(s)\)、\(H(s,1)=g(s)\)，且對每個 \(t\)，端點 \(H(0,t)\) 與 \(H(1,t)\) 固定不動。基本群 \(\pi_1(X,p)\) 是所有 loop at \(p\) 的 path-homotopy classes，乘法由 path concatenation 定義，即 \([f][g]=[f*g]\)。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 1：reparametrization of a path is path-homotopic to original path</h3>
+              <p class="leading-8 text-slate-700">若 \(\phi:[0,1]\to[0,1]\) 是連續、遞增且 \(\phi(0)=0\)、\(\phi(1)=1\)，則 \(f\circ\phi\) 是 \(f\) 的 reparametrization。直接定義 homotopy \(H(s,t)=f((1-t)\phi(s)+ts)\)。當 \(t=0\) 得 \(f(\phi(s))\)，當 \(t=1\) 得 \(f(s)\)。端點因為 \(\phi(0)=0\) 與 \(\phi(1)=1\) 保持固定。這題短，但可以測你是否理解 path-homotopy 的定義。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 2：基本群運算的 associativity 與 identity</h3>
+              <p class="leading-8 text-slate-700">基本群的乘法不是嚴格意義上 path concatenation 完全相等的 associativity，而是在 homotopy class 上 associative。也就是 \((f*g)*h\) 與 \(f*(g*h)\) 只是重參數化不同，本質上走同一段路，因此 path-homotopic。identity 是 constant loop \(c_p\) 的同倫類，因為 \(c_p*f\) 與 \(f\) 只差一段停在 \(p\) 的等待時間，可由 reparametrization homotopy 得到 \([c_p][f]=[f]\) 與 \([f][c_p]=[f]\)。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 3：path-connected 時，基本群與 base point 無關</h3>
+              <p class="leading-8 text-slate-700">若 \(X\) path-connected，對任意 \(p,q\in X\)，取一條 path \(\alpha\) from \(q\) to \(p\)。定義 \(\Phi_\alpha:\pi_1(X,p)\to\pi_1(X,q)\) by \(\Phi_\alpha([f])=[\alpha*f*\overline\alpha]\)，其中 \(\overline\alpha\) 是反向路徑。這個 map 是 group isomorphism，反函數由 \(\overline\alpha\) 給出。要注意，這個同構依賴 path \(\alpha\)，所以嚴格說不是 canonical isomorphism；考場上說「independent up to isomorphism」比較精準。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 4：fundamental group is a topological invariant</h3>
+              <p class="leading-8 text-slate-700">若 \(h:X\to Y\) 是 homeomorphism，則它誘導 \(h_*:\pi_1(X,p)\to\pi_1(Y,h(p))\)，定義為 \(h_*([f])=[h\circ f]\)。well-defined 來自若 \(f\simeq_p g\)，則 \(h\circ f\simeq_{h(p)}h\circ g\)，homotopy 為 \(h\circ H\)。因為 \(h^{-1}\) 也連續，\((h^{-1})_*\) 是反函數，所以 \(h_*\) 是 group isomorphism。這證明基本群在同胚下不變。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 5：simply connected 的等價敘述</h3>
+              <p class="leading-8 text-slate-700">若 \(X\) path-connected，則 \(X\) simply connected iff 任意兩條具有相同 initial and terminal points 的 paths 都 path-homotopic。正向：simply connected 表示每個 loop 都可縮到 constant loop。若 \(f,g\) 都從 \(a\) 到 \(b\)，則 \(f*\overline g\) 是 at \(a\) 的 loop，因為 simply connected，它與 constant loop homotopic，整理後得到 \(f\simeq_p g\)。反向：若任意同端點 paths 都 path-homotopic，則任一 loop \(f\) at \(p\) 與 constant loop \(c_p\) 同端點，故 \(f\simeq_p c_p\)，所以 \(\pi_1(X,p)\) trivial。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 6：product space 的 fundamental group</h3>
+              <p class="leading-8 text-slate-700">對 pointed spaces \((X_j,p_j)\)，有 \(\pi_1(\prod_{j=1}^nX_j,(p_1,\ldots,p_n))\cong\prod_{j=1}^n\pi_1(X_j,p_j)\)。定義同構 \(\Phi([f])=([\pi_1\circ f],\ldots,[\pi_n\circ f])\)。well-defined 由 homotopy 與 projection composition 保持。surjective：給每個 \([f_j]\)，組成 \(f(t)=(f_1(t),\ldots,f_n(t))\)，這是 product topology 下連續的 loop。injective：若所有座標 loop 都 null-homotopic，則把座標 homotopies 合併成 product homotopy，得到原 loop null-homotopic。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 7：contractible 的三個等價條件</h3>
+              <p class="leading-8 text-slate-700">題庫要求證明三者等價：\(X\) contractible；\(X\) homotopy equivalent to a one-point space \(\{x\}\)；each point of \(X\) is a deformation retract of \(X\)。準備時先記住 contractible 的意思是 identity map \(\operatorname{id}_X\) homotopic to a constant map。若 \(X\) contractible 到 \(x\)，則 inclusion \(i:\{x\}\to X\) 與 constant map \(r:X\to\{x\}\) 給出 homotopy equivalence。若每個點是 deformation retract，則 \(X\) 可連續變形到單點，當然 contractible。反向要小心：一般 contractible 給出 homotopy 到某個 constant map，這可被視為 deformation retraction 到該點，因為 singleton 中的點在 homotopy 中保持固定。</p>
+            </div>
+            <div class="subcard p-5">
+              <h3 class="font-black mb-2">題庫命題 8：homotopy equivalence induces isomorphism on \(\pi_1\)</h3>
+              <p class="leading-8 text-slate-700">若 \(\varphi:X\to Y\) 是 homotopy equivalence，存在 \(\psi:Y\to X\)，使 \(\psi\circ\varphi\simeq\operatorname{id}_X\) 與 \(\varphi\circ\psi\simeq\operatorname{id}_Y\)。因此 induced homomorphisms 滿足 \(\psi_*\circ\varphi_*=(\psi\circ\varphi)_*\) 與 \(\varphi_*\circ\psi_*=(\varphi\circ\psi)_*\)，並且 homotopic maps induce the same homomorphism on fundamental groups（必要時需處理 base point path 的調整）。所以 \(\varphi_*\) 有 inverse \(\psi_*\)，故為 group isomorphism。</p>
+            </div>
+          </div>
+          <aside class="space-y-4">
+            <div class="subcard p-4 outline"><h3 class="font-black text-blue-900">快速重點</h3><p class="text-sm leading-7">3.1 的核心只有四個符號：loop、path-homotopy、concatenation、induced map。先把 \([f][g]=[f*g]\) 與 \(\varphi_*([f])=[\varphi\circ f]\) 練熟。</p></div>
+            <div class="subcard p-4 trap"><h3 class="font-black text-red-900">易扣分點</h3><p class="text-sm leading-7">基本群運算的結合律不是 path 嚴格相等，而是在 homotopy class 上相等。base point independence 也不是說兩個群完全同一，而是 isomorphic。</p></div>
+            <label class="checkrow flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-id="q31">我能寫出基本群的定義與誘導同態</label>
+          </aside>
+        </div>
+      </section>
+
+      <section id="definitions-index" class="card p-6 qcard" data-priority="A" data-keywords="definition glossary compact connected quotient fundamental group 名詞 定義 總表">
+        <h2 class="text-2xl font-black mb-4">期末考名詞定義總表：考場最低必背版本</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="subcard p-5 defbox"><h3 class="font-black text-purple-900 mb-2">Compactness 系列</h3><p class="leading-7 text-sm text-slate-700">compact：每個 open cover 有 finite subcover。limit point compact：每個 infinite subset 有 limit point。sequentially compact：每個 sequence 有 convergent subsequence。first-countable：每點有 countable local base。second-countable：整個空間有 countable base。</p></div>
+          <div class="subcard p-5 defbox"><h3 class="font-black text-purple-900 mb-2">Locally compact / Baire</h3><p class="leading-7 text-sm text-slate-700">locally compact：每點有 open neighborhood whose closure is compact。dense：\(\overline A=X\)。nowhere dense：\(\operatorname{Int}(\overline A)=\varnothing\)。Baire space：可數個 open dense sets 的交集仍 dense。compactification：把 \(X\) dense embedding 到 compact Hausdorff space。</p></div>
+          <div class="subcard p-5 defbox"><h3 class="font-black text-purple-900 mb-2">Connectedness 系列</h3><p class="leading-7 text-sm text-slate-700">connected：不存在 separation。separation：兩個非空 disjoint 相對開集覆蓋整個空間。path：continuous map \([0,1]\to X\)。path-connected：任兩點可由 path 連接。product topology：基本開集只限制有限多個座標，尤其任意積時不能用 box topology。</p></div>
+          <div class="subcard p-5 defbox"><h3 class="font-black text-purple-900 mb-2">Quotient / Fundamental group</h3><p class="leading-7 text-sm text-slate-700">quotient topology：\(O\subset X/\sim\) open iff \(\pi^{-1}(O)\) open。homeomorphism：bijective continuous with continuous inverse。path-homotopy：端點固定的 path homotopy。\(\pi_1(X,p)\)：based loops 的 path-homotopy classes，運算是 concatenation。contractible：\(\operatorname{id}_X\) homotopic to constant map。</p></div>
+        </div>
+      </section>
+
+      <section id="drill" class="card p-6 qcard" data-priority="A" data-keywords="drill plan exam preparation closed book schedule 閉卷 演練 計畫">
+        <h2 class="text-2xl font-black mb-4">閉卷演練計畫</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="subcard p-5"><h3 class="font-black text-red-700 mb-2">第一輪：答案骨架</h3><p class="leading-7 text-sm text-slate-700">每題用 5 到 8 行寫出定義、主定理、證明構造。不要查課本抄長證明，先確認你知道每題從哪裡開始。</p></div>
+          <div class="subcard p-5"><h3 class="font-black text-amber-700 mb-2">第二輪：補洞</h3><p class="leading-7 text-sm text-slate-700">對每題標出最可能被扣分的一步，例如 finite subcover 的對象、quotient map 的 well-defined、homotopy 的端點固定。</p></div>
+          <div class="subcard p-5"><h3 class="font-black text-green-700 mb-2">第三輪：閉卷重寫</h3><p class="leading-7 text-sm text-slate-700">A 題全數閉卷寫一次。B 題至少口頭講完整，C 題記住 statement 與關鍵構造。最後只複習右欄快速大綱。</p></div>
+        </div>
+        <div class="method p-5 rounded-xl mt-5"><strong>最低過關標準：</strong>考前最後一次檢查時，你應該能不看資料寫出 2.6 三題、2.7 第一題、2.13 商空間五步證明、\(\pi_1\) 的 group operation 與 induced homomorphism。這四塊若穩，期末答題架構會穩定很多。</div>
+      </section>
+    </div>
+  </div>
+</main>
+<script>
+const search=document.getElementById('search');const priority=document.getElementById('priority');const cards=[...document.querySelectorAll('.qcard')];function applyFilters(){const q=(search.value||'').toLowerCase();const p=priority.value;cards.forEach(c=>{const key=(c.dataset.keywords+' '+c.innerText).toLowerCase();const okQ=!q||key.includes(q);const okP=p==='all'||c.dataset.priority===p;c.classList.toggle('hide',!(okQ&&okP));});}search.addEventListener('input',applyFilters);priority.addEventListener('change',applyFilters);
+const checks=[...document.querySelectorAll('input[type="checkbox"][data-id]')];checks.forEach(ch=>{const id='topo-final-v2-'+ch.dataset.id;ch.checked=localStorage.getItem(id)==='1';ch.addEventListener('change',()=>localStorage.setItem(id,ch.checked?'1':'0'));});document.getElementById('resetChecks').addEventListener('click',()=>{checks.forEach(ch=>{ch.checked=false;localStorage.removeItem('topo-final-v2-'+ch.dataset.id);});});
+</script>
+</body>
+</html>
