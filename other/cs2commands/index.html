@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS2 Commands Dashboard</title>
+    <link rel="stylesheet" href="../../assets/css/tool-shell.css">
+    <style>
+        /* --- 視覺收斂：觀測儀表板風格 --- */
+        :root {
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-hover: #f1f5f9;
+            --bg-active: #e0f2fe;
+            
+            /* 文字灰階 */
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            
+            /* 邊框與分割線 */
+            --border-light: #e2e8f0;
+            --border-strong: #cbd5e1;
+            
+            /* 主題色 */
+            --color-accent: #0ea5e9;
+            --color-accent-hover: #0284c7;
+
+            --flag-cheat-bg: #fef2f2;
+            --flag-cheat-text: #ef4444;
+            --flag-cheat-border: #fecaca;
+        
+            /* 字體分工 */
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+        }
+
+        /* --- 全局禁止選取特性 --- */
+        *, *::before, *::after {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-ui-drag: none;
+        }
+
+        /* 開放特定需要輸入或選取的元素 */
+        input, textarea, select, .allow-select {
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
+        }
+        
+        /* 全局基礎設定：讓 body 可捲動以顯示頁尾 */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 應用程式視窗 (鎖定 100vh 螢幕高度) */
+        .app-wrapper {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        /* 版面結構：頂部導航列 */
+        .topbar {
+            position: sticky;
+            top: 0;
+            flex-shrink: 0;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-strong);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000; /* 捲動時固定於最上層 */
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .brand svg { stroke: var(--text-primary); }
+
+        .stats-badge {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            background: var(--bg-body);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            font-family: var(--font-mono);
+        }
+
+        /* 內容容器 */
+        .container {
+            flex: 1;
+            min-height: 0; /* 讓 flex 子元素可以正常內部卷動 */
+            max-width: 1400px; 
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 32px 24px 32px; /* 底部保留 padding 讓邊界呼吸 */
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 32px;
+            align-items: stretch; /* 關鍵：強制 Sidebar 與 Content Area 擁有一樣的高度 */
+            box-sizing: border-box;
+        }
+
+        /* --- 左側：過濾面板 (獨立卷動與描邊) --- */
+        .sidebar {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            overflow-y: auto;
+            padding: 24px;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-lg);
+            background: transparent; /* 透出 bg-body 顏色 */
+            box-sizing: border-box; /* 確保 padding 不會撐破 100% 導致破圖重疊 */
+            scrollbar-width: thin;
+        }
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background-color: var(--border-strong); border-radius: 10px; }
+
+        .filter-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .filter-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .prefix-subgroup {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-left: 10px;
+            border-left: 2px solid var(--border-light);
+        }
+
+        .prefix-subgroup-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            width: fit-content;
+        }
+
+        .btn-filter {
+            appearance: none;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: var(--font-mono);
+        }
+
+        .btn-filter:hover {
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+        }
+
+        .btn-filter.active {
+            background: var(--bg-active);
+            border-color: var(--color-accent);
+            color: var(--color-accent-hover);
+            font-weight: 600;
+        }
+
+        /* --- 右側：主內容區 --- */
+        .main-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+            box-sizing: border-box;
+        }
+
+        /* 釘選在畫面的搜尋容器 */
+        .search-container {
+            flex-shrink: 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-strong);
+            font-size: 1rem;
+            color: var(--text-primary);
+            background: var(--bg-surface);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+            font-family: var(--font-mono);
+            box-sizing: border-box;
+        }
+
+        .search-input:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+
+        .results-control {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+        }
+
+        .results-summary { font-size: 0.85rem; color: var(--text-secondary); font-family: var(--font-mono);}
+        .results-summary strong { color: var(--text-primary); font-weight: 600;}
+
+        /* --- 核心：獨立卷動的資料清單 (描邊面板) --- */
+        .content-scroll-area {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-lg);
+            background: transparent;
+            box-sizing: border-box; /* 防止 padding 撐破外框 */
+            scrollbar-width: thin;
+        }
+        
+        .content-scroll-area::-webkit-scrollbar { width: 8px; }
+        .content-scroll-area::-webkit-scrollbar-thumb { background-color: var(--border-strong); border-radius: 10px; }
+        .content-scroll-area::-webkit-scrollbar-track { background: transparent; }
+
+        .data-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; 
+            flex-shrink: 0; 
+        }
+
+        /* --- 獨立卡片樣式 --- */
+        .data-item {
+            background: var(--bg-surface); /* 白色卡片浮在灰色底板上 */
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg); 
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); 
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+        
+        .data-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            border-color: var(--border-strong);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .item-header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            max-width: 60%;
+        }
+
+        .item-command-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            margin-left: -8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .item-command-wrap:hover { background: var(--bg-hover); }
+        .item-command-wrap:active .copy-icon { color: var(--color-accent); }
+
+        .item-command {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            word-break: break-all;
+            letter-spacing: -0.02em;
+        }
+
+        .copy-icon {
+            opacity: 0;
+            color: var(--text-muted);
+            transition: opacity 0.15s, color 0.15s;
+        }
+        .item-command-wrap:hover .copy-icon { opacity: 1; }
+
+        .item-meta-inline {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: var(--bg-hover);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            white-space: nowrap;
+            align-self: flex-end;
+        }
+
+        .meta-val {
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .item-flags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+
+        .flag-tag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-body);
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            cursor: help;
+        }
+
+        .flag-tag.cheat {
+            background: var(--flag-cheat-bg);
+            border-color: var(--flag-cheat-border);
+            color: var(--flag-cheat-text);
+            font-weight: 600;
+        }
+
+        .item-desc {
+            display: inline-flex;
+            align-items: flex-start;
+            margin-top: 4px;
+            cursor: help;
+            width: fit-content;
+        }
+
+        .desc-text {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            border-bottom: 1px dotted var(--border-strong);
+            transition: border-color 0.2s;
+        }
+        
+        .item-desc:hover .desc-text {
+            border-bottom-color: var(--text-muted);
+        }
+
+        /* --- Syntax 靜態樣式 --- */
+        .item-syntax {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-hover);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--border-strong);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            word-break: break-all;
+        }
+
+        .syntax-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            font-family: var(--font-sans);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        /* --- 可編輯的指令框 (Editable Syntax Wrap) 包含 Reset 標籤樣式 --- */
+        .editable-syntax-wrap {
+            display: flex;
+            align-items: stretch;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .editable-syntax-wrap:focus-within {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+        .editable-syntax-label {
+            display: flex;
+            align-items: center;
+            background: var(--bg-hover);
+            padding: 0 12px;
+            border-right: 1px solid var(--border-strong);
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+        .editable-syntax-label:hover {
+            color: var(--color-accent);
+            background: var(--bg-active);
+        }
+        .editable-syntax-label:active {
+            color: var(--color-accent-hover);
+        }
+        .reset-icon {
+            margin-left: 6px;
+            opacity: 0.5;
+            transition: transform 0.3s ease, opacity 0.2s ease;
+        }
+        .editable-syntax-label:hover .reset-icon {
+            opacity: 1;
+            transform: rotate(-180deg);
+        }
+
+        .editable-syntax-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            outline: none;
+            min-width: 0;
+        }
+        .editable-syntax-copy {
+            background: var(--bg-hover);
+            border: none;
+            border-left: 1px solid var(--border-strong);
+            padding: 0 16px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .editable-syntax-copy:hover {
+            color: var(--color-accent);
+            background: var(--bg-active);
+        }
+        .editable-syntax-copy:active {
+            color: var(--color-accent-hover);
+        }
+
+        /* --- 參數列表 --- */
+        .item-args {
+            background: transparent;
+            border: none;
+            padding: 4px 0 0 14px;
+            margin-top: 0;
+        }
+        .args-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .args-list li {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            line-height: 1.5;
+        }
+        .arg-name {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-hover);
+            border: 1px solid var(--border-light);
+            padding: 1px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .arg-desc {
+            color: var(--text-secondary);
+        }
+
+        /* --- 互動操作面板 --- */
+        .interactive-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border-strong);
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider.round { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-strong); transition: .2s; border-radius: 24px; }
+        .slider.round:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
+        .toggle-switch input:checked + .slider.round { background-color: var(--color-accent); }
+        .toggle-switch input:checked + .slider.round:before { transform: translateX(20px); }
+        .toggle-label { font-family: var(--font-mono); font-weight: 600; font-size: 0.85rem; color: var(--color-accent); }
+
+        .param-select, .param-text, .param-number-input {
+            padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong);
+            background: var(--bg-surface); color: var(--text-primary); font-family: var(--font-mono);
+            font-size: 0.9rem; outline: none; transition: border-color 0.15s;
+        }
+        .param-select { cursor: pointer; }
+        .param-number-input { width: 80px; }
+        .param-text { flex: 1; min-width: 200px; }
+        .param-select:focus, .param-text:focus, .param-number-input:focus { border-color: var(--color-accent); }
+        .param-slider { flex: 1; min-width: 150px; max-width: 300px; accent-color: var(--color-accent); cursor: pointer; }
+
+        .empty-state {
+            padding: 80px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            background: var(--bg-surface);
+            border: 1px dashed var(--border-strong);
+            border-radius: var(--radius-lg);
+        }
+
+        /* --- 頁尾說明 (Site Footer - 位於應用程式網頁底端) --- */
+        .site-footer {
+            position: relative;
+            z-index: 1000; /* 確保 Footer 位於最高圖層，解決破圖疊加問題 */
+            width: 100%;
+            background-color: #f5f5f7;
+            color: #86868b;
+            font-size: 12px;
+            line-height: 1.33337;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            font-family: var(--font-sans);
+            border-top: 1px solid #d2d2d7;
+            padding: 20px 0;
+            margin-top: auto; /* 置於最底 */
+            flex-shrink: 0;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .legal-disclaimer p {
+            margin: 0 0 8px 0;
+            line-height: 1.5;
+        }
+
+        /* 資料來源清單樣式 */
+        .source-list {
+            margin: 8px 0 16px 20px;
+            padding: 0;
+            list-style-type: disc;
+        }
+        
+        .source-list li {
+            margin-bottom: 6px;
+        }
+        
+        .source-list a {
+            color: var(--color-accent);
+            text-decoration: none;
+            transition: color 0.2s ease, text-decoration 0.2s ease;
+        }
+
+        .source-list a:hover {
+            color: var(--color-accent-hover);
+            text-decoration: underline;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding-top: 4px;
+            margin-top: 12px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .footer-bottom p {
+            margin: 4px 0;
+        }
+
+        .footer-bottom a {
+            color: #515154;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-bottom a:hover {
+            color: #1d1d1f;
+            text-decoration: underline;
+        }
+
+        /* --- Tooltip --- */
+        [data-tooltip] { position: relative; cursor: help; }
+        .btn-filter[data-tooltip] { cursor: pointer; }
+        .global-tooltip {
+            position: fixed; background: var(--text-primary); color: var(--bg-surface); padding: 8px 12px;
+            border-radius: var(--radius-sm); font-size: 0.75rem; white-space: normal; width: max-content;
+            max-width: 260px; text-align: left; pointer-events: none; z-index: 99999;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15); line-height: 1.5; opacity: 0;
+            transform: translate(-50%, calc(-100% - 2px)) scale(0.95); transition: opacity 0.1s ease, transform 0.1s ease;
+            visibility: hidden; font-family: var(--font-sans);
+        }
+        .global-tooltip.show { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); visibility: visible; }
+        .global-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--text-primary); }
+        .global-tooltip b { color: var(--color-accent); }
+        .source-hl { color: #38bdf8; font-family: var(--font-mono); font-weight: 600;}
+
+        /* --- Toast --- */
+        .toast-container { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: var(--text-primary); color: var(--bg-surface); padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+
+        @media (max-width: 992px) {
+            html, body { height: auto; }
+            .app-wrapper { height: auto; display: block; }
+            .container { display: flex; flex-direction: column; padding: 16px; gap: 24px;}
+            .sidebar { position: static; flex-direction: row; flex-wrap: wrap; max-height: none; overflow: visible; height: auto; padding: 16px; gap: 16px;}
+            .filter-section { flex: 1; min-width: 250px; }
+            .main-content { display: flex; height: auto; overflow: visible; }
+            .content-scroll-area { overflow: visible; padding: 16px; height: auto; }
+            .item-header { flex-direction: column; gap: 12px; }
+            .item-header-right { align-items: flex-start; max-width: 100%; }
+            .item-flags { justify-content: flex-start; }
+            .item-meta-inline { align-self: flex-start; }
+            .editable-syntax-wrap { flex-direction: column; }
+            .editable-syntax-label { border-right: none; border-bottom: 1px solid var(--border-strong); padding: 6px 12px; }
+            .editable-syntax-copy { border-left: none; border-top: 1px solid var(--border-strong); padding: 8px; }
+            .footer-content { padding: 0 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 100vh 的獨立視窗區塊 -->
+    <div class="app-wrapper">
+        <header class="topbar" translate="no">
+            <div class="brand">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                CS2 Commands Dashboard
+            </div>
+            <div class="stats-badge" id="stats-counter">Initializing...</div>
+        </header>
+
+        <div class="container">
+            <aside class="sidebar" translate="no">
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        Top Flags
+                    </div>
+                    <div class="filter-group" id="filter-flags">
+                        <!-- JS 生成 -->
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        Main Prefixes
+                    </div>
+                    <div id="filter-prefixes">
+                        <div class="filter-group" style="margin-bottom: 12px;">
+                            <button class="btn-filter active" data-prefix="all" data-tooltip="<b>All</b>：顯示全部，不限制特定功能群組">全部 (All)</button>
+                        </div>
+                        <!-- JS 生成 -->
+                    </div>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <div class="search-container" translate="no">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-input" class="search-input" placeholder="Search commands, syntax, or flags (e.g., +bugvoice, defensive)..." autocomplete="off" spellcheck="false">
+                </div>
+
+                <div class="results-control" translate="no">
+                    <div class="results-summary" id="result-status">Ready</div>
+                </div>
+
+                <!-- 獨立的內容卷動區域 -->
+                <div class="content-scroll-area" id="main-scroll-area">
+                    <div class="data-list" id="command-list">
+                        <!-- JS 渲染內容 -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 全局頁尾 (向下滾動網頁後才可見) -->
+    <footer class="site-footer" translate="no">
+        <div class="footer-content">
+            <div class="legal-disclaimer">
+                <p>Data Sources：本站指令與參數資料彙整自官方文檔與第三方社群資源。卡片中所標示之來源簡稱 (Source) 對應如下：</p>
+                <ul class="source-list allow-select">
+                    <li><strong>valve:</strong> <a href="https://developer.valvesoftware.com/wiki/List_of_Counter-Strike_2_console_commands_and_variables" target="_blank" rel="noopener noreferrer">Valve Developer Community Wiki</a></li>
+                    <li><strong>total:</strong> <a href="https://totalcsgo.com/commands" target="_blank" rel="noopener noreferrer">Total CS:GO Commands Database</a></li>
+                    <li><strong>poggu:</strong> <a href="https://cs2.poggu.me/dumped-data/command-list" target="_blank" rel="noopener noreferrer">Poggu's CS2 Dumped Data</a></li>
+                </ul>
+                <p style="margin-top: 12px; color: var(--text-muted);">免責聲明：本網站為非營利平台，相關指令、版權及商標權均歸屬於 Valve Corporation 及原發布者所有。本站不保證資料之絕對準確性與適用性，若因操作相關指令而產生任何衍生損害，本站概不負責。</p>
+            </div>
+            <div class="footer-bottom">
+                <p>Copyright &copy; 2026 Su, Hsien-Jin. All rights reserved.</p>
+                <p>聯絡資訊：<a href="mailto:bamboorat0528@gmail.com" class="allow-select">bamboorat0528@gmail.com</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <div class="toast-container" id="toast-container" translate="no"></div>
+
+    <script>
+        // --- Tooltip 邏輯 ---
+        const globalTooltip = document.createElement('div');
+        globalTooltip.className = 'global-tooltip';
+        globalTooltip.setAttribute('translate', 'no'); 
+        document.body.appendChild(globalTooltip);
+
+        function showGlobalTooltip(el) {
+            const text = el.getAttribute('data-tooltip');
+            if (!text) return;
+            globalTooltip.innerHTML = text;
+            const rect = el.getBoundingClientRect();
+            let leftPos = rect.left + (rect.width / 2);
+            globalTooltip.style.left = leftPos + 'px';
+            globalTooltip.style.top = rect.top + 'px';
+            globalTooltip.classList.add('show');
+        }
+
+        function hideGlobalTooltip() { globalTooltip.classList.remove('show'); }
+
+        function bindTooltips() {
+            document.querySelectorAll('[data-tooltip]').forEach(el => {
+                el.addEventListener('mouseenter', () => showGlobalTooltip(el));
+                el.addEventListener('mouseleave', hideGlobalTooltip);
+            });
+        }
+        
+        // 將事件綁定在獨立的滾動區上，避免卷動時 Tooltip 錯位
+        document.getElementById('main-scroll-area').addEventListener('scroll', hideGlobalTooltip, true);
+        document.querySelector('.sidebar').addEventListener('scroll', hideGlobalTooltip, true);
+        window.addEventListener('scroll', hideGlobalTooltip, true);
+
+        // --- 狀態管理 ---
+        let commandsDB = [];
+        let activePrefixes = new Set();
+        let activeFlags = new Set();
+        let currentSearchQuery = '';
+
+        const FLAG_SHORT_NAMES = {
+            'cheat': '開發作弊', 'sv': '伺服器端', 'cl': '客戶端', 'rep': '雙端同步',
+            'release': '正式發布', 'a': '存檔設定', 'user': '使用者資訊',
+            'developmentonly': '僅限開發', 'gamedll': '遊戲邏輯層', 'defensive': '防禦性',
+            'clientdll': '客戶端層', 'nf': '通知變動', 'per_user': '個人配置',
+            'dontrecord': '不予紀錄', 'clientcmd_can_execute': '遠端執行', 'hidden': '隱藏',
+            'norecord': '不予紀錄', 'client_can_execute': '用戶端執行', 'server_can_execute': '伺服器執行'
+        };
+        const FLAG_DESCRIPTIONS = {
+            'cheat': '需要特殊條件才能使用，通常屬於開發、除錯或會影響平衡的指令',
+            'sv': '伺服器側指令，會影響整體房間或回合規則',
+            'cl': '客戶端本地指令，只影響自己的畫面、操作或個人設定',
+            'rep': '同步型指令，會在客戶端與伺服器之間保持一致',
+            'release': '正式版本可用的指令，適合預設展示',
+            'a': '會保留到設定檔的偏好項目，適合個人化設定',
+            'user': '偏向當前玩家層級的使用者設定或資訊項目',
+            'developmentonly': '僅限開發人員或測試版本使用的內部指令。',
+            'gamedll': '由遊戲邏輯動態連結庫（Game DLL）定義或使用的伺服器端指令。',
+            'defensive': '用於防護或確保系統穩定性的指令，通常防止不當操作影響遊戲。',
+            'clientdll': '由用戶端動態連結庫（Client DLL）處理，僅在玩家本機執行的指令。',
+            'nf': '當此數值被修改時，會通知伺服器或所有連線玩家。',
+            'per_user': '該設定會針對不同使用者（帳號）分別儲存，不共用配置。',
+            'dontrecord': '在錄製 Demo 或日誌時，不會紀錄此指令的操作過程。',
+            'clientcmd_can_execute': '允許伺服器在特定條件下遠端調用用戶端的指令。',
+            'hidden': '隱藏指令，不會出現在一般補全清單中，通常為進階或過時功能。',
+            'norecord': '在執行時不會被錄製到遊戲 Demo 檔案或控制台日誌中。',
+            'client_can_execute': '被授權可以由玩家（用戶端）的控制台直接啟動並執行。', 
+            'server_can_execute': '被授權可以由伺服器主機或管理員腳本端啟動並執行。'
+        };
+
+        const PREFIX_GROUPS = [
+            { group: "操作介面與本機設定", tooltip: "和個人操作、畫面、介面與控制器設定有關", items: ["cl_", "ui_", "joy_"] },
+            { group: "對戰規則與觀戰", tooltip: "和伺服器規則、比賽流程、觀戰與回放控制有關", items: ["sv_", "mp_", "tv_", "spec_", "demo_"] },
+            { group: "Bot、路徑導航", tooltip: "和 Bot 行為、路徑規劃、導航網格與練習工具有關", items: ["bot_", "nav_"] },
+            { group: "畫面、音效與渲染", tooltip: "和聲音、材質、陰影、霧效與渲染管線有關", items: ["snd_", "r_", "mat_", "csm_", "fog_"] },
+            { group: "遊戲機制、實體與資源", tooltip: "和世界實體、彈藥、經濟、腳本等底層規則有關", items: ["ent_", "ammo_", "cash_", "script_", "inferno_", "contributionscore_", "sc_", "weapon_"] }
+        ];
+
+        const PREFIX_SHORT_NAMES = {
+            'cl_': '本地設定', 'ui_': '介面', 'joy_': '搖桿控制', 'sv_': '伺服器規則',
+            'mp_': '回合與模式', 'tv_': '觀戰轉播', 'spec_': '觀戰者', 'bot_': 'Bot 與練習',
+            'nav_': '導航網格', 'snd_': '音效系統', 'r_': '渲染設定', 'mat_': '材質系統',
+            'csm_': '陰影渲染', 'fog_': '霧效環境', 'ent_': '實體除錯', 'ammo_': '彈藥設定',
+            'cash_': '經濟系統', 'script_': '腳本系統', 'inferno_': '燃燒效果',
+            'contributionscore_': '計分機制', 'sc_': '特殊子系統', 'demo_': '錄影回放', 'weapon_': '武器參數'
+        };
+
+        const PREFIX_DESCRIPTIONS = {
+            'cl_': '客戶端本地功能，常見於視角、HUD、輸入與個人設定',
+            'sv_': '伺服器規則與引擎層控制，會影響整局行為',
+            'mp_': '比賽流程、回合規則、經濟與模式設定',
+            'bot_': 'Bot AI、行為、難度、隊伍控制與訓練功能'
+        };
+
+        // --- 智能參數推論引擎 (Heuristics) ---
+        function parseArgUI(cmd) {
+            if (cmd.command.startsWith('+') || cmd.command.startsWith('-')) {
+                return { type: 'none' };
+            }
+
+            const syntax = cmd.syntax_total || '';
+            const defVal = cmd.default_value !== undefined && cmd.default_value !== null ? String(cmd.default_value).trim() : '';
+            const args = cmd.arguments || [];
+
+            let type = 'none'; 
+            let options = [];
+            let min = 0, max = 100, step = 1;
+
+            const hasOptions = syntax.match(/<([^>]+)>/);
+            const optionsStr = hasOptions ? hasOptions[1] : '';
+
+            if (args.length === 0 && defVal === '' && !syntax.includes('<')) {
+                return { type: 'none' }; 
+            }
+
+            if (optionsStr.includes('0 / 1') || optionsStr.includes('0/1') || optionsStr.includes('0 | 1') || 
+                ((defVal === '0' || defVal === '1') && args.length === 0 && !optionsStr)) {
+                type = 'bool';
+            } 
+            else if (optionsStr.includes('/') || optionsStr.includes('|')) {
+                type = 'select';
+                options = optionsStr.split(/[\/\|]/).map(s => s.trim());
+            } 
+            else if (defVal !== '' && !isNaN(parseFloat(defVal))) {
+                const num = parseFloat(defVal);
+                if (defVal.includes('.')) {
+                    type = 'slider'; step = 0.01; min = 0; max = Math.max(1, num * 3);
+                } else {
+                    type = 'slider'; step = 1; min = Math.min(0, num); max = Math.max(10, num * 2);
+                    if (num > 100) max = num * 1.5; 
+                }
+            } 
+            else if (args.length > 0 || syntax.includes('<')) {
+                type = 'text'; 
+            }
+            
+            return { type, options, min, max, step, defVal };
+        }
+
+        // --- 1. 資料解析 ---
+        async function initApp() {
+            try {
+                const response = await fetch('cs2_commands.json');
+                if (!response.ok) throw new Error('Fetch failed');
+                const rawData = await response.json();
+                
+                commandsDB = rawData.map(cmd => {
+                    const normCommand = (cmd.command || '').toLowerCase();
+                    
+                    let bestDesc = "";
+                    let descSource = "";
+                    if (cmd.description_valve && cmd.description_valve.trim()) {
+                        bestDesc = cmd.description_valve.trim(); descSource = "valve";
+                    } else if (cmd.description_poggu && cmd.description_poggu.trim()) {
+                        bestDesc = cmd.description_poggu.trim(); descSource = "poggu";
+                    } else if (cmd.description_total && cmd.description_total.trim()) {
+                        bestDesc = cmd.description_total.trim(); descSource = "total";
+                    }
+
+                    const parseFlags = (str) => (str || '').split(',').map(f => f.trim().toLowerCase()).filter(f => f);
+                    const flagsMerged = parseFlags(cmd.flags_merged);
+                    const flagsValve = new Set(parseFlags(cmd.flags_valve));
+                    const flagsPoggu = new Set(parseFlags(cmd.flags_poggu));
+                    
+                    const flagObjects = flagsMerged.map(f => {
+                        let sources = [];
+                        if (flagsValve.has(f)) sources.push('valve');
+                        if (flagsPoggu.has(f)) sources.push('poggu');
+                        return { name: f, sources };
+                    });
+
+                    let prefix = 'other';
+                    if (normCommand.startsWith('+') || normCommand.startsWith('-')) {
+                        prefix = 'input (±)';
+                    } else if (normCommand.includes('_')) {
+                        prefix = normCommand.split('_')[0] + '_';
+                    }
+
+                    return {
+                        ...cmd,
+                        normCommand,
+                        bestDesc, descSource, normDesc: bestDesc.toLowerCase(),
+                        flagObjects, flagsMerged,
+                        prefix
+                    };
+                });
+
+                document.getElementById('stats-counter').innerText = `${commandsDB.length} Vectors`;
+                buildFilters();
+                applyFilters();
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('command-list').innerHTML = `
+                    <div class="empty-state" translate="no">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <h3 style="margin:0 0 8px 0; color:var(--text-primary);">Telemetry Link Offline</h3>
+                        <p style="margin:0; font-size:0.9rem;">Unable to load <code>cs2_commands.json</code>.</p>
+                    </div>`;
+            }
+        }
+
+        // --- 2. 動態生成 Filter ---
+        function buildFilters() {
+            const prefixCount = {};
+            const flagCount = {};
+
+            commandsDB.forEach(cmd => {
+                prefixCount[cmd.prefix] = (prefixCount[cmd.prefix] || 0) + 1;
+                cmd.flagsMerged.forEach(f => { flagCount[f] = (flagCount[f] || 0) + 1; });
+            });
+
+            const topFlags = Object.entries(flagCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15)
+                .map(entry => entry[0]);
+
+            const flagContainer = document.getElementById('filter-flags');
+            topFlags.forEach(flag => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-filter';
+                
+                const displayName = FLAG_SHORT_NAMES[flag] || flag;
+                btn.innerText = displayName;
+                
+                let tooltipHTML = `<b>${flag}</b>`;
+                if (FLAG_DESCRIPTIONS[flag]) {
+                    tooltipHTML += `：${FLAG_DESCRIPTIONS[flag]}`;
+                }
+                btn.setAttribute('data-tooltip', tooltipHTML);
+
+                btn.addEventListener('mouseenter', () => showGlobalTooltip(btn));
+                btn.addEventListener('mouseleave', hideGlobalTooltip);
+                btn.addEventListener('click', () => {
+                    activeFlags.has(flag) ? activeFlags.delete(flag) : activeFlags.add(flag);
+                    btn.classList.toggle('active');
+                    applyFilters();
+                });
+                flagContainer.appendChild(btn);
+            });
+
+            const prefixContainer = document.getElementById('filter-prefixes');
+            const btnAll = document.querySelector('.btn-filter[data-prefix="all"]');
+            
+            const validPrefixes = Object.entries(prefixCount)
+                .filter(([p, c]) => c > 0 && p !== 'other');
+            const validPrefixMap = new Map(validPrefixes);
+
+            PREFIX_GROUPS.forEach(groupDef => {
+                const availableItems = groupDef.items.filter(p => validPrefixMap.has(p));
+                if (availableItems.length === 0) return;
+
+                const groupWrapper = document.createElement('div');
+                groupWrapper.className = 'prefix-subgroup';
+                
+                const tooltipAttr = groupDef.tooltip ? `data-tooltip="${groupDef.tooltip}"` : '';
+                groupWrapper.innerHTML = `<div class="prefix-subgroup-title" ${tooltipAttr}>${groupDef.group}</div>`;
+                
+                const titleEl = groupWrapper.querySelector('.prefix-subgroup-title');
+                if (groupDef.tooltip) {
+                    titleEl.addEventListener('mouseenter', () => showGlobalTooltip(titleEl));
+                    titleEl.addEventListener('mouseleave', hideGlobalTooltip);
+                }
+
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'filter-group';
+                availableItems.forEach(prefix => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-filter';
+                    btn.innerText = PREFIX_SHORT_NAMES[prefix] ? `${PREFIX_SHORT_NAMES[prefix]}` : prefix;
+
+                    let tooltipHTML = `<b>${prefix}</b>`;
+                    if (PREFIX_DESCRIPTIONS[prefix]) tooltipHTML += `：${PREFIX_DESCRIPTIONS[prefix]}`;
+                    else if (PREFIX_SHORT_NAMES[prefix]) tooltipHTML += `：${PREFIX_SHORT_NAMES[prefix]}`;
+                    else tooltipHTML += `：特殊子系統指令`;
+                    
+                    btn.setAttribute('data-tooltip', tooltipHTML);
+                    btn.addEventListener('mouseenter', () => showGlobalTooltip(btn));
+                    btn.addEventListener('mouseleave', hideGlobalTooltip);
+                    btn.addEventListener('click', () => {
+                        activePrefixes.has(prefix) ? activePrefixes.delete(prefix) : activePrefixes.add(prefix);
+                        btn.classList.toggle('active');
+                        btnAll.classList.toggle('active', activePrefixes.size === 0);
+                        applyFilters();
+                    });
+                    btnGroup.appendChild(btn);
+                });
+                
+                groupWrapper.appendChild(btnGroup);
+                prefixContainer.appendChild(groupWrapper);
+            });
+        }
+
+        // --- 3. 搜尋算法 ---
+        function calculateScore(cmd, tokens) {
+            if (tokens.length === 0) return 1;
+
+            let score = 0;
+            let allTokensMatched = true;
+            const exactSearchStr = currentSearchQuery;
+
+            if (cmd.normCommand === exactSearchStr) score += 10000;
+            else if (cmd.normCommand.startsWith(exactSearchStr)) score += 5000;
+
+            for (const token of tokens) {
+                let tokenMatched = false;
+
+                if (cmd.normCommand.includes(token)) {
+                    score += 1000; tokenMatched = true;
+                } else if (cmd.flagsMerged.some(f => f.includes(token))) {
+                    score += 500; tokenMatched = true;
+                } else if (cmd.prefix.includes(token)) {
+                    score += 300; tokenMatched = true;
+                } else if (cmd.normDesc.includes(token)) {
+                    score += 100; tokenMatched = true;
+                }
+
+                if (!tokenMatched) allTokensMatched = false;
+            }
+
+            if (!allTokensMatched) return 0; 
+            if (tokens.length > 1) score += 500;
+
+            return score;
+        }
+
+        function applyFilters() {
+            const tokens = currentSearchQuery.split(/\s+/).filter(t => t);
+            let results = [];
+
+            for (const cmd of commandsDB) {
+                if (activePrefixes.size > 0 && !activePrefixes.has(cmd.prefix)) continue;
+
+                let passesFlags = true;
+                for (const flag of activeFlags) {
+                    if (!cmd.flagsMerged.includes(flag)) { passesFlags = false; break; }
+                }
+                if (!passesFlags) continue;
+
+                const score = calculateScore(cmd, tokens);
+                if (score > 0) results.push({ cmd, score });
+            }
+
+            results.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return a.cmd.command.localeCompare(b.cmd.command);
+            });
+
+            renderCommands(results);
+        }
+
+        // --- 4. 條件渲染 ---
+        function renderCommands(scoredData) {
+            const listContainer = document.getElementById('command-list');
+            const mainScrollArea = document.getElementById('main-scroll-area');
+            
+            document.getElementById('result-status').innerHTML = `Found <strong>${scoredData.length}</strong> matching entries`;
+            listContainer.innerHTML = ''; 
+
+            if (scoredData.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state" translate="no">
+                        <p style="margin:0;">No vectors matched your criteria.</p>
+                    </div>`;
+                mainScrollArea.scrollTop = 0;
+                return;
+            }
+
+            const maxRender = 150; 
+            const renderData = scoredData.slice(0, maxRender);
+
+            renderData.forEach(item => {
+                const cmd = item.cmd;
+
+                // 1. Metadata
+                let metaHTML = '';
+                const defVal = cmd.default_value !== undefined && cmd.default_value !== null ? String(cmd.default_value).trim() : '';
+                if (defVal !== '') {
+                    metaHTML = `
+                        <div class="item-meta-inline" translate="no">
+                            Default: <span class="meta-val">${defVal}</span>
+                        </div>
+                    `;
+                }
+
+                // 2. Flags 
+                let flagsHTML = '';
+                if (cmd.flagObjects.length > 0) {
+                    flagsHTML = `<div class="item-flags" translate="no">` + cmd.flagObjects.map(f => {
+                        const isCheat = f.name === 'cheat';
+                        const sourceStr = f.sources.length > 0 ? f.sources.join(', ') : 'unknown';
+                        return `<span class="flag-tag ${isCheat ? 'cheat' : ''}" data-tooltip="Source: <span class='source-hl'>${sourceStr}</span>">${f.name}</span>`;
+                    }).join('') + `</div>`;
+                }
+
+                // 3. Description (允許翻譯，不加 translate="no")
+                let descHTML = '';
+                if (cmd.bestDesc) {
+                    descHTML = `
+                        <div class="item-desc" data-tooltip="Source: <span class='source-hl' translate='no'>${cmd.descSource}</span>">
+                            <span class="desc-text">${cmd.bestDesc}</span>
+                        </div>
+                    `;
+                }
+
+                // 4. Arguments 準備 (允許描述被翻譯，但參數名不翻)
+                let argsHTML = '';
+                if (cmd.arguments && cmd.arguments.length > 0) {
+                    const argsItems = cmd.arguments.map(a => `
+                        <li>
+                            <span class="arg-name" translate="no">${a.name}</span> 
+                            <span class="arg-desc">- ${a.description}</span>
+                        </li>
+                    `).join('');
+                    
+                    argsHTML = `
+                        <div class="item-args">
+                            <ul class="args-list">${argsItems}</ul>
+                        </div>
+                    `;
+                }
+
+                // --- 5. 根據分析決定「Syntax & 互動」區塊的渲染流 ---
+                const uiSpec = parseArgUI(cmd);
+                let syntaxBlockHTML = '';
+                let interactivePanelHTML = '';
+
+                if (uiSpec.type !== 'none') {
+                    // == 【動態調參模式】 ==
+                    let controlHTML = '';
+                    let initialVal = uiSpec.defVal !== '' ? uiSpec.defVal : (uiSpec.type === 'slider' ? uiSpec.min : '');
+
+                    if (uiSpec.type === 'bool') {
+                        initialVal = (initialVal === '1' || initialVal === 'true') ? '1' : '0';
+                        controlHTML = `
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="param-toggle" ${initialVal === '1' ? 'checked' : ''}>
+                                <span class="slider round"></span>
+                            </label>
+                            <span class="toggle-label">${initialVal === '1' ? '1 (ON)' : '0 (OFF)'}</span>
+                        `;
+                    } else if (uiSpec.type === 'select') {
+                        if (!initialVal && uiSpec.options.length > 0) initialVal = uiSpec.options[0];
+                        const opts = uiSpec.options.map(o => `<option value="${o}" ${o === initialVal ? 'selected' : ''}>${o}</option>`).join('');
+                        controlHTML = `<select class="param-select">${opts}</select>`;
+                    } else if (uiSpec.type === 'slider') {
+                        controlHTML = `
+                            <input type="range" class="param-slider" min="${uiSpec.min}" max="${uiSpec.max}" step="${uiSpec.step}" value="${initialVal}">
+                            <input type="number" class="param-number-input" min="${uiSpec.min}" max="${uiSpec.max}" step="${uiSpec.step}" value="${initialVal}">
+                        `;
+                    } else {
+                        controlHTML = `<input type="text" class="param-text" value="${initialVal}" placeholder="Enter value...">`;
+                    }
+
+                    // 結合控制項與可編輯的 Syntax 輸入框，加入了 data-initial 以供重置使用
+                    interactivePanelHTML = `
+                        <div class="interactive-panel">
+                            <div class="control-row" translate="no">
+                                ${controlHTML}
+                            </div>
+                            
+                            <div class="editable-syntax-wrap" translate="no">
+                                <div class="editable-syntax-label" data-initial="${initialVal}" title="Reset to default value">
+                                    Syntax
+                                    <svg class="reset-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                                </div>
+                                <input type="text" class="editable-syntax-input" value="${cmd.command} ${initialVal}" spellcheck="false" title="You can edit this before copying">
+                                <button class="editable-syntax-copy" title="Copy result">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Arguments 作為輔助說明吸附於 Syntax 之下 -->
+                            ${argsHTML}
+                        </div>
+                    `;
+                } else {
+                    // == 【純靜態模式 (無法調參)】 ==
+                    const syntaxText = cmd.syntax_total ? String(cmd.syntax_total).trim() : '';
+                    if (syntaxText) {
+                        syntaxBlockHTML = `
+                            <div class="item-syntax" translate="no">
+                                <span class="syntax-label">Syntax</span>
+                                <span>${syntaxText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                            </div>
+                            ${argsHTML} <!-- Arguments 依然吸附於 Syntax 之下 -->
+                        `;
+                    } else {
+                        // 連 Syntax 都沒有的話，單純補上 Arguments
+                        syntaxBlockHTML = argsHTML;
+                    }
+                }
+
+                // --- 6. 最終組裝卡片 ---
+                const div = document.createElement('div');
+                div.className = 'data-item';
+                div.innerHTML = `
+                    <div class="item-header" translate="no">
+                        <div class="item-command-wrap" data-cmd="${cmd.command}" title="Copy command">
+                            <span class="item-command">${cmd.command}</span>
+                            <svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </div>
+                        <div class="item-header-right">
+                            ${metaHTML}
+                            ${flagsHTML}
+                        </div>
+                    </div>
+                    ${descHTML}
+                    ${syntaxBlockHTML}
+                    ${interactivePanelHTML}
+                `;
+                
+                // 綁定基礎標題複製
+                div.querySelector('.item-command-wrap').addEventListener('click', function() {
+                    copyToClipboard(this.getAttribute('data-cmd'));
+                });
+
+                listContainer.appendChild(div);
+
+                // --- 綁定互動調參事件 ---
+                const panel = div.querySelector('.interactive-panel');
+                if (panel) {
+                    const toggle = panel.querySelector('.param-toggle');
+                    const select = panel.querySelector('.param-select');
+                    const slider = panel.querySelector('.param-slider');
+                    const numInput = panel.querySelector('.param-number-input');
+                    const textInput = panel.querySelector('.param-text');
+                    
+                    const editableInput = panel.querySelector('.editable-syntax-input');
+                    const copyBtn = panel.querySelector('.editable-syntax-copy');
+                    const resetBtn = panel.querySelector('.editable-syntax-label');
+                    const toggleLabel = panel.querySelector('.toggle-label');
+
+                    const updateVal = (val) => {
+                        if (editableInput) editableInput.value = `${cmd.command} ${val}`;
+                    };
+
+                    if (toggle) {
+                        toggle.addEventListener('change', (e) => {
+                            const val = e.target.checked ? '1' : '0';
+                            if (toggleLabel) toggleLabel.textContent = val === '1' ? '1 (ON)' : '0 (OFF)';
+                            updateVal(val);
+                        });
+                    }
+                    if (select) {
+                        select.addEventListener('change', (e) => updateVal(e.target.value));
+                    }
+                    if (slider) {
+                        slider.addEventListener('input', (e) => {
+                            if (numInput) numInput.value = e.target.value;
+                            updateVal(e.target.value);
+                        });
+                        if (numInput) {
+                            numInput.addEventListener('input', (e) => {
+                                slider.value = e.target.value;
+                                updateVal(e.target.value);
+                            });
+                        }
+                    }
+                    if (textInput) {
+                        textInput.addEventListener('input', (e) => updateVal(e.target.value));
+                    }
+
+                    if (copyBtn && editableInput) {
+                        copyBtn.addEventListener('click', function() {
+                            copyToClipboard(editableInput.value);
+                        });
+                    }
+
+                    // 綁定隱藏的 Reset 按鈕
+                    if (resetBtn) {
+                        resetBtn.addEventListener('click', () => {
+                            const defaultVal = resetBtn.getAttribute('data-initial');
+                            
+                            // 觸發旋轉動畫
+                            const icon = resetBtn.querySelector('.reset-icon');
+                            if (icon) {
+                                icon.style.transform = 'rotate(-360deg)';
+                                setTimeout(() => icon.style.transform = '', 300);
+                            }
+
+                            // 重置所有相關欄位與狀態
+                            updateVal(defaultVal);
+                            
+                            if (toggle) {
+                                toggle.checked = (defaultVal === '1');
+                                if (toggleLabel) toggleLabel.textContent = defaultVal === '1' ? '1 (ON)' : '0 (OFF)';
+                            }
+                            if (select) select.value = defaultVal;
+                            if (slider) slider.value = defaultVal;
+                            if (numInput) numInput.value = defaultVal;
+                            if (textInput) textInput.value = defaultVal;
+                        });
+                    }
+                }
+            });
+            
+            if(scoredData.length > maxRender) {
+                 const info = document.createElement('div');
+                 info.setAttribute('translate', 'no');
+                 info.style.padding = '20px';
+                 info.style.textAlign = 'center';
+                 info.style.color = 'var(--text-muted)';
+                 info.style.fontSize = '0.85rem';
+                 info.innerText = `... Output truncated. Showing first ${maxRender} vectors.`;
+                 listContainer.appendChild(info);
+            }
+
+            bindTooltips();
+            mainScrollArea.scrollTop = 0; // 篩選後自動回到頂部
+        }
+
+        // --- 5. 工具函數 ---
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(`Copied to clipboard: <strong style="font-family:var(--font-mono); font-size:1rem;">${text}</strong>`);
+            } catch (err) { }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast(htmlMsg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <span>${htmlMsg}</span>
+            `;
+            container.appendChild(toast);
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        // --- 事件綁定 ---
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value.toLowerCase().trim();
+            applyFilters();
+        });
+
+        const allBtn = document.querySelector('.btn-filter[data-prefix="all"]');
+        allBtn.addEventListener('click', (e) => {
+            activePrefixes.clear();
+            document.querySelectorAll('#filter-prefixes .btn-filter').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            applyFilters();
+        });
+
+        initApp();
+    </script>
+    <script src="../../assets/js/tool-shell.js" data-home="../../index.html#tools" data-section="CS2 指令"></script>
+</body>
+</html>

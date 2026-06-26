@@ -1,0 +1,516 @@
+{
+    "courses": [
+        {
+            "course_code": "00UA7A6",
+            "name": "中文閱讀與思辨",
+            "semester": "1121",
+            "credits": 2.0,
+            "grade": "A-",
+            "teacher": "徐禎苓"
+        },
+        {
+            "course_code": "00UB7A2",
+            "name": "英文（一）",
+            "semester": "1121",
+            "credits": 2.0,
+            "grade": "A+",
+            "teacher": "李婉歆"
+        },
+        {
+            "course_code": "AEU0005",
+            "name": "計算機概論",
+            "semester": "1121",
+            "credits": 3.0,
+            "grade": "A",
+            "teacher": "呂成凱"
+        },
+        {
+            "course_code": "AEU0013",
+            "name": "程式設計",
+            "semester": "1121",
+            "credits": 3.0,
+            "grade": "A",
+            "teacher": "康立威"
+        },
+        {
+            "course_code": "IEU0114",
+            "name": "工程圖學",
+            "semester": "1121",
+            "credits": 2.0,
+            "grade": "A",
+            "teacher": "陳順同"
+        },
+        {
+            "course_code": "IEU0115",
+            "name": "機械通用技術",
+            "semester": "1121",
+            "credits": 2.0,
+            "grade": "A+",
+            "teacher": "郭金國,洪翊軒"
+        },
+        {
+            "course_code": "MAU0180",
+            "name": "微積分乙（一）",
+            "semester": "1121",
+            "credits": 3.0,
+            "grade": "B-",
+            "teacher": "朱亮儒,李政哲"
+        },
+        {
+            "course_code": "05UG001",
+            "name": "邏輯思考與應用",
+            "semester": "1121",
+            "credits": 2.0,
+            "grade": "B-",
+            "teacher": "王銀國"
+        },
+        {
+            "course_code": "05UG002",
+            "name": "科學思維",
+            "semester": "1121",
+            "credits": 2.0,
+            "grade": "B+",
+            "teacher": "鍾兆晉"
+        },
+        {
+            "course_code": "IEU0021",
+            "name": "冷凍空調原理",
+            "semester": "1121",
+            "credits": 3.0,
+            "grade": "A-",
+            "teacher": "莫懷恩"
+        },
+        {
+            "course_code": "IEU3252",
+            "name": "汽車電子學",
+            "semester": "1121",
+            "credits": 3.0,
+            "grade": "C+",
+            "teacher": "柯盛泰"
+        },
+        {
+            "course_code": "0000080",
+            "name": "初階服務學習－系學會",
+            "semester": "1122",
+            "credits": 0.0,
+            "grade": "P",
+            "teacher": "李懿芳"
+        },
+        {
+            "course_code": "00UA8A6",
+            "name": "中文寫作與表達",
+            "semester": "1122",
+            "credits": 2.0,
+            "grade": "A+",
+            "teacher": "徐禎苓"
+        },
+        {
+            "course_code": "00UB8A2",
+            "name": "英文（二）",
+            "semester": "1122",
+            "credits": 2.0,
+            "grade": "A+",
+            "teacher": "蕭阡涵"
+        },
+        {
+            "course_code": "00UP139",
+            "name": "體育（保齡球初級）",
+            "semester": "1122",
+            "credits": 1.0,
+            "grade": "A+",
+            "teacher": "徐孟達"
+        },
+        {
+            "course_code": "AEU0008",
+            "name": "工程數學（一）",
+            "semester": "1122",
+            "credits": 3.0,
+            "grade": "C+",
+            "teacher": "賴以威"
+        },
+        {
+            "course_code": "MAU0181",
+            "name": "微積分乙（二）",
+            "semester": "1122",
+            "credits": 3.0,
+            "grade": "A+",
+            "teacher": "李政哲"
+        },
+        {
+            "course_code": "05UG016",
+            "name": "運算思維與程式設計",
+            "semester": "1122",
+            "credits": 2.0,
+            "grade": "A+",
+            "teacher": "蔡明男"
+        },
+        {
+            "course_code": "06UG005",
+            "name": "奈米科技",
+            "semester": "1122",
+            "credits": 2.0,
+            "grade": "A+",
+            "teacher": "郭金國"
+        },
+        {
+            "course_code": "CHU0186",
+            "name": "國語語音學",
+            "semester": "1122",
+            "credits": 2.0,
+            "grade": "C-",
+            "teacher": "林香薇"
+        },
+        {
+            "course_code": "00UP139",
+            "name": "體育（保齡球初級）",
+            "semester": "1131",
+            "credits": 1.0,
+            "grade": "A+",
+            "teacher": "徐孟達"
+        },
+        {
+            "course_code": "AEU0003",
+            "name": "數位系統",
+            "semester": "1131",
+            "credits": 3.0,
+            "grade": "E*",
+            "teacher": "林政宏"
+        },
+        {
+            "course_code": "AEU0015",
+            "name": "工程數學（二）",
+            "semester": "1131",
+            "credits": 3.0,
+            "grade": "B+",
+            "teacher": "賴以威"
+        },
+        {
+            "course_code": "MAU0100",
+            "name": "微分方程導論",
+            "semester": "1131",
+            "credits": 3.0,
+            "grade": "B",
+            "teacher": "陳賢修"
+        },
+        {
+            "course_code": "MAU0160",
+            "name": "線性代數（一）",
+            "semester": "1131",
+            "credits": 3.0,
+            "grade": "B+",
+            "teacher": "李華介"
+        },
+        {
+            "course_code": "MAU0162",
+            "name": "高等微積分（一）",
+            "semester": "1131",
+            "credits": 4.0,
+            "grade": "B-",
+            "teacher": "林俊吉"
+        },
+        {
+            "course_code": "PHU0251",
+            "name": "普通物理乙（一）",
+            "semester": "1131",
+            "credits": 3.0,
+            "grade": "B+",
+            "teacher": "吳亞霖"
+        },
+        {
+            "course_code": "02UG008",
+            "name": "中國古代思想的現代意義",
+            "semester": "1131",
+            "credits": 2.0,
+            "grade": "A-",
+            "teacher": "謝聰輝"
+        },
+        {
+            "course_code": "AEU0030",
+            "name": "電機機械（一）",
+            "semester": "1131",
+            "credits": 3.0,
+            "grade": "B-",
+            "teacher": "洪欽銘,陳瑄易"
+        },
+        {
+            "course_code": "MAU0172",
+            "name": "線性代數探索（一）",
+            "semester": "1131",
+            "credits": 1.0,
+            "grade": "A",
+            "teacher": "李華介"
+        },
+        {
+            "course_code": "MAU0174",
+            "name": "高等微積分探索（一）",
+            "semester": "1131",
+            "credits": 1.0,
+            "grade": "B-",
+            "teacher": "林俊吉"
+        },
+        {
+            "course_code": "AEU0014",
+            "name": "電路學（一）",
+            "semester": "1132",
+            "credits": 3.0,
+            "grade": "B-",
+            "teacher": "郭建宏"
+        },
+        {
+            "course_code": "AEU0025",
+            "name": "訊號與系統",
+            "semester": "1132",
+            "credits": 3.0,
+            "grade": "B",
+            "teacher": "王嘉斌"
+        },
+        {
+            "course_code": "MAU0161",
+            "name": "線性代數（二）",
+            "semester": "1132",
+            "credits": 3.0,
+            "grade": "C",
+            "teacher": "李華介"
+        },
+        {
+            "course_code": "MAU0163",
+            "name": "高等微積分（二）",
+            "semester": "1132",
+            "credits": 4.0,
+            "grade": "D*",
+            "teacher": "郭庭榕"
+        },
+        {
+            "course_code": "PHU0252",
+            "name": "普通物理乙（二）",
+            "semester": "1132",
+            "credits": 3.0,
+            "grade": "A",
+            "teacher": "古煥宇"
+        },
+        {
+            "course_code": "01UG018",
+            "name": "民間文學與說唱藝術",
+            "semester": "1132",
+            "credits": 2.0,
+            "grade": "C+",
+            "teacher": "蔡孟珍"
+        },
+        {
+            "course_code": "AEU0069",
+            "name": "電磁學",
+            "semester": "1132",
+            "credits": 3.0,
+            "grade": "B-",
+            "teacher": "王儷憲"
+        },
+        {
+            "course_code": "MAU0173",
+            "name": "線性代數探索（二）",
+            "semester": "1132",
+            "credits": 1.0,
+            "grade": "A",
+            "teacher": "李華介"
+        },
+        {
+            "course_code": "MAU0175",
+            "name": "高等微積分探索（二）",
+            "semester": "1132",
+            "credits": 1.0,
+            "grade": "B+",
+            "teacher": "郭庭榕"
+        },
+        {
+            "course_code": "00UB9A1",
+            "name": "英文（三）：文學與文化",
+            "semester": "1133",
+            "credits": 2.0,
+            "grade": "A",
+            "teacher": "李金安"
+        },
+        {
+            "course_code": "AEU0075",
+            "name": "超大型積體電路設計導論",
+            "semester": "1133",
+            "credits": 3.0,
+            "grade": "A-",
+            "teacher": "郭岳芳"
+        },
+        {
+            "course_code": "AEU0003",
+            "name": "數位系統",
+            "semester": "1141",
+            "credits": 3.0,
+            "grade": "A",
+            "teacher": "林政宏"
+        },
+        {
+            "course_code": "AEU0006",
+            "name": "電子學（一）",
+            "semester": "1141",
+            "credits": 3.0,
+            "grade": "B-",
+            "teacher": "蘇崇彥"
+        },
+        {
+            "course_code": "AEU0007",
+            "name": "電子學實驗（一）",
+            "semester": "1141",
+            "credits": 2.0,
+            "grade": "A+",
+            "teacher": "張譽騰"
+        },
+        {
+            "course_code": "AEU0070",
+            "name": "電機專題製作（一）",
+            "semester": "1141",
+            "credits": 2.0,
+            "grade": "A+",
+            "teacher": "蘇崇彥"
+        },
+        {
+            "course_code": "MAU0178",
+            "name": "微積分甲（一）",
+            "semester": "1141",
+            "credits": 4.0,
+            "grade": "A+",
+            "teacher": "林惠娥"
+        },
+        {
+            "course_code": "05UG010",
+            "name": "科學的語言",
+            "semester": "1141",
+            "credits": 2.0,
+            "grade": "B",
+            "teacher": "蔡承志"
+        },
+        {
+            "course_code": "0SUG540",
+            "name": "自主學習：MOOCs（一）",
+            "semester": "1141",
+            "credits": 2.0,
+            "grade": "採",
+            "teacher": "無"
+        },
+        {
+            "course_code": "AEU0017",
+            "name": "電路學（二）",
+            "semester": "1141",
+            "credits": 3.0,
+            "grade": "B-",
+            "teacher": "郭建宏"
+        },
+        {
+            "course_code": "AEU0022",
+            "name": "資料結構",
+            "semester": "1141",
+            "credits": 3.0,
+            "grade": "C+",
+            "teacher": "林政宏"
+        },
+        {
+            "course_code": "AEU0043",
+            "name": "控制系統",
+            "semester": "1141",
+            "credits": 3.0,
+            "grade": "C+",
+            "teacher": "許陳鑑"
+        },
+        {
+            "course_code": "MAU0170",
+            "name": "微積分探索（一）",
+            "semester": "1141",
+            "credits": 1.0,
+            "grade": "A+",
+            "teacher": "林惠娥"
+        },
+        {
+            "course_code": "AEU0011",
+            "name": "電子學（二）",
+            "semester": "1142",
+            "credits": 3.0,
+            "grade": "C-",
+            "teacher": "蘇崇彥"
+        },
+        {
+            "course_code": "AEU0012",
+            "name": "電子學實驗（二）",
+            "semester": "1142",
+            "credits": 2.0,
+            "grade": "未登",
+            "teacher": "蔡政翰"
+        },
+        {
+            "course_code": "AEU0071",
+            "name": "電機專題製作（二）",
+            "semester": "1142",
+            "credits": 2.0,
+            "grade": "A+",
+            "teacher": "康立威"
+        },
+        {
+            "course_code": "MAU0153",
+            "name": "機率導論",
+            "semester": "1142",
+            "credits": 3.0,
+            "grade": "未登",
+            "teacher": "蔡碧紋"
+        },
+        {
+            "course_code": "MAU0179",
+            "name": "微積分甲（二）",
+            "semester": "1142",
+            "credits": 4.0,
+            "grade": "A-",
+            "teacher": "陳賢修"
+        },
+        {
+            "course_code": "ABU0596",
+            "name": "全民國防教育軍事訓練－國際情勢",
+            "semester": "1142",
+            "credits": 0.0,
+            "grade": "B-",
+            "teacher": "劉鐵軍"
+        },
+        {
+            "course_code": "AEC8071",
+            "name": "通訊電子學",
+            "semester": "1142",
+            "credits": 3.0,
+            "grade": "A+",
+            "teacher": "張譽騰"
+        },
+        {
+            "course_code": "AEU0044",
+            "name": "單晶片控制",
+            "semester": "1142",
+            "credits": 3.0,
+            "grade": "Q",
+            "teacher": "呂藝光"
+        },
+        {
+            "course_code": "AEU0051",
+            "name": "電子電路設計",
+            "semester": "1142",
+            "credits": 3.0,
+            "grade": "A+",
+            "teacher": "盧明智"
+        },
+        {
+            "course_code": "MAU0027",
+            "name": "拓樸學（一）",
+            "semester": "1142",
+            "credits": 3.0,
+            "grade": "A",
+            "teacher": "林乾"
+        },
+        {
+            "course_code": "MAU0171",
+            "name": "微積分探索（二）",
+            "semester": "1142",
+            "credits": 1.0,
+            "grade": "A-",
+            "teacher": "陳賢修"
+        }
+    ]
+}

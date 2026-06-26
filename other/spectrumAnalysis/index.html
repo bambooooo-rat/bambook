@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric EQ</title>
+    <!-- 20260328 Bambooooo@Taipei -->
+    <link rel="stylesheet" href="../../assets/css/tool-shell.css">
+    <link rel="stylesheet" href="assets/css/fonts.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/adjustments.svg?v=2">
+    <link rel="apple-touch-icon" href="assets/icons/adjustments.svg?v=2">
+</head>
+<body>
+
+    <div class="container">
+        <!-- 整合型卡片：標題 + 音頻控制 + 畫布 + 旋鈕面板 -->
+        <div class="content-card">
+            
+            <!-- 專業版頂部控制列 (DAW Transport Bar) -->
+            <div class="daw-top-bar">
+                
+                <div class="daw-left">
+                    <h1 class="header-title" style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="custom-svg-icon" style="margin: 0;">
+                            <path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M6 4v4" />
+                            <path d="M6 12v8" />
+                            <path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M12 4v10" />
+                            <path d="M12 18v2" />
+                            <path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                            <path d="M18 4v1" />
+                            <path d="M18 9v11" />
+                        </svg>
+                        <span>Parametric EQ</span>
+                    </h1>
+                    
+                    <!-- 載入音軌：下拉式選單 -->
+                    <div class="audio-dropdown-container" id="audioDropdownContainer">
+                        <button class="upload-btn" id="audioDropdownBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            載入音軌 ▾
+                        </button>
+                        <div class="audio-dropdown-list" id="audioDropdownList">
+                            <!-- 本機上傳 -->
+                            <label for="audioFile" class="audio-dropdown-item allow-select" style="margin:0; width:100%;">
+                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="custom-svg-icon">
+                                <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                                <path d="M12 11v6" />
+                                <path d="M9.5 13.5l2.5 -2.5l2.5 2.5" />
+                            </svg>
+                                上傳本機檔案...
+                            </label>
+                            <div class="audio-dropdown-divider"></div>
+                            <!-- JS 動態生成的 sample 列表容器 -->
+                            <div id="sampleListContainer">
+                                <div class="audio-dropdown-item" style="color:var(--text-muted); font-size: 0.8rem; pointer-events:none;">讀取 sample 資料夾中...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="file" id="audioFile" accept="audio/*" hidden />
+                </div>
+
+                <div class="daw-center">
+                    <button id="playPauseBtn" class="play-btn" disabled>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                    
+                    <div class="track-info">
+                        <div class="track-meta">
+                            <span id="trackName" class="track-name">尚未載入音頻檔案...</span>
+                            <div class="time-display">
+                                <span id="currentTime">00:00</span> / <span id="duration">00:00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="waveform-wrapper" id="waveformWrapper">
+                            <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
+                            <div class="waveform-loading" id="waveformLoading">等待音軌...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preview / Reset / Scale 按鈕區塊 -->
+                <div class="daw-right">
+                    <div class="btn-group">
+                        <button id="previewBtn" class="control-btn btn-preview">Preview</button>
+                        <button id="resetBtn" class="control-btn btn-reset">Reset</button>
+                    </div>
+                    <button id="scaleBtn" class="control-btn btn-scale">Scale: Log</button>
+                </div>
+
+            </div>
+            
+            <audio id="audioPlayer" hidden></audio>
+            
+            <div class="eq-module">
+                
+                <div style="position: relative; width: 100%; flex: 1; min-height: 150px;">
+                    <canvas id="spectrumCanvas"></canvas>
+                    <div id="canvasOverlay" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; color: rgba(255,255,255,0.5); font-weight: bold; letter-spacing: 2px;">
+                        等待音訊輸入...
+                    </div>
+                </div>
+
+                <!-- 底部：左側預設選單 + 右側旋鈕面板 -->
+                <div class="eq-bottom-panel">
+                    
+                    <!-- 左側 Presets 選單 (自訂向上展開下拉選單) -->
+                    <div class="preset-sidebar">
+                        <div class="preset-title">Presets</div>
+                        
+                        <div class="custom-dropdown-container" id="presetDropdownContainer">
+                            <div class="custom-dropdown-selected" id="presetDropdownSelected">手動調整中...</div>
+                            <div class="custom-dropdown-list" id="presetDropdownList">
+                                <!-- JS 動態生成下拉選項 -->
+                            </div>
+                        </div>
+                        
+                        <div class="preset-desc-box" id="presetDesc">
+                            從上方選單載入 EQ 經典設定
+                        </div>
+                    </div>
+
+                    <!-- 右側旋鈕操作介面區塊 -->
+                    <div class="eq-layout" id="eqContainer">
+                        <!-- 透過 JS 渲染 5 個 PEQ 控制面板 (旋鈕) -->
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <script src="assets/js/main.js"></script>
+    <script src="../../assets/js/tool-shell.js" data-home="../../index.html#tools" data-section="Parametric EQ"></script>
+</body>
+</html>

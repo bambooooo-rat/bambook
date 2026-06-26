@@ -1,0 +1,466 @@
+import MarkdownIt from "https://cdn.jsdelivr.net/npm/markdown-it@14.2.0/+esm";
+import markdownItFootnote from "https://cdn.jsdelivr.net/npm/markdown-it-footnote@4.0.0/+esm";
+import markdownItTaskLists from "https://cdn.jsdelivr.net/npm/markdown-it-task-lists@2.1.1/+esm";
+import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.4.11/+esm";
+import renderMathInElement from "https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/contrib/auto-render.mjs";
+
+const markdown = new MarkdownIt({ html: true, linkify: true, typographer: true })
+  .use(markdownItFootnote)
+  .use(markdownItTaskLists, { enabled: true, label: true });
+
+// Inline Tabler Icons (outline set) keep the public site independent of icon CDNs.
+const tablerIcon = paths => `<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+const ICONS = {
+  book: tablerIcon('<path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/>'),
+  math: tablerIcon('<path d="M19 5h-7l-4 14l-3 -6h-2"/><path d="M14 13l6 6"/><path d="M14 19l6 -6"/>'),
+  pdf: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"/><path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"/><path d="M17 18h2"/><path d="M20 15h-3v6"/><path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1"/>'),
+  download: tablerIcon('<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 11l5 5l5 -5"/><path d="M12 4l0 12"/>'),
+  external: tablerIcon('<path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/>'),
+  link: tablerIcon('<path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/>'),
+  presentation: tablerIcon('<path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/><path d="M12 16l0 4"/><path d="M9 20l6 0"/><path d="M8 12l3 -3l2 2l3 -3"/>'),
+  terminal: tablerIcon('<path d="M8 9l3 3l-3 3"/><path d="M13 15l3 0"/><path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -12"/>'),
+  world: tablerIcon('<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/>'),
+  chart: tablerIcon('<path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"/><path d="M4 20h14"/>'),
+  wave: tablerIcon('<path d="M21 12h-2c-.894 0 -1.662 -.857 -1.761 -2c-.296 -3.45 -.749 -6 -2.749 -6s-2.5 3.582 -2.5 8s-.5 8 -2.5 8s-2.452 -2.547 -2.749 -6c-.1 -1.147 -.867 -2 -1.763 -2h-2"/>'),
+  camera: tablerIcon('<path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>'),
+};
+
+const app = document.querySelector("#app");
+const materialMenu = document.querySelector("[data-material-menu]");
+const state = {
+  courses: {},
+  articles: [],
+  tools: [],
+  articleBodies: new Map(),
+  manifestError: "",
+};
+
+document.addEventListener("DOMContentLoaded", initialise);
+
+async function initialise() {
+  bindEvents();
+  await loadSiteManifest();
+  buildMaterialMenu();
+  route();
+}
+
+function bindEvents() {
+  window.addEventListener("hashchange", route);
+
+  document.querySelectorAll(".nav-menu > button").forEach(button => {
+    button.addEventListener("click", () => {
+      const menu = button.closest(".nav-menu");
+      const willOpen = !menu.classList.contains("is-open");
+      closeMenus();
+      if (willOpen) {
+        menu.classList.add("is-open");
+        button.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".nav-menu")) closeMenus();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeMenus();
+  });
+}
+
+function closeMenus() {
+  document.querySelectorAll(".nav-menu.is-open").forEach(menu => {
+    menu.classList.remove("is-open");
+    menu.querySelector("button")?.setAttribute("aria-expanded", "false");
+  });
+}
+
+function buildMaterialMenu() {
+  const names = courseNames();
+  materialMenu.innerHTML = names.length
+    ? names.map(name => `<a href="#materials=${encodeURIComponent(name)}">${escapeHTML(name)}</a>`).join("")
+    : `<span class="menu-message">教材資料尚未載入</span>`;
+}
+
+async function loadSiteManifest() {
+  try {
+    const response = await fetch(assetURL("site-manifest.json"), { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const manifest = await response.json();
+    if (!manifest || typeof manifest !== "object") throw new Error("site-manifest.json 格式不正確");
+    state.courses = manifest.materials && typeof manifest.materials === "object" ? manifest.materials : {};
+    state.tools = Array.isArray(manifest.tools) ? manifest.tools : [];
+    state.articles = (Array.isArray(manifest.articles) ? manifest.articles : [])
+      .filter(item => item && typeof item.path === "string")
+      .map(item => ({
+        path: item.path.replace(/^\/+/, ""),
+        title: item.title || fileTitle(item.path),
+        date: item.date || "",
+        tags: Array.isArray(item.tags) ? item.tags : [],
+        summary: item.summary || "",
+      }))
+      .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  } catch (error) {
+    state.manifestError = `網站索引無法載入：${error.message}`;
+  }
+}
+
+function route() {
+  closeMenus();
+  const hash = decodedHash();
+  const [name, value = ""] = hash.split(/=(.*)/s);
+
+  if (name === "materials") renderCourse(value);
+  else if (name === "articles") renderArticles();
+  else if (name === "article") renderArticles(value);
+  else if (name === "tools") renderTools();
+  else renderHome();
+}
+
+function renderHome() {
+  setActiveNav("");
+  document.title = "Bambook";
+  const names = courseNames();
+  const materialCards = names.map((name, index) => card({
+    href: `#materials=${encodeURIComponent(name)}`,
+    icon: courseIcon(name),
+    title: name,
+    description: `${name}的課本、講義、投影片與練習資源。`,
+    action: "開啟教材 →",
+  })).join("") || emptyState("教材資料尚未載入。請先執行 build_manifest.py。");
+
+  app.innerHTML = `
+    <section>
+      <div class="section-heading"><h2>教材</h2><a href="#materials=${encodeURIComponent(names[0] || "")}">查看全部教材</a></div>
+      <div class="card-grid">${materialCards}</div>
+    </section>
+    <section>
+      <div class="section-heading"><h2>文章</h2><a href="#articles">所有文章</a></div>
+      <div class="card-grid">${articlePreviewCards()}</div>
+    </section>
+    <section>
+      <div class="section-heading"><h2>其他工具</h2><a href="#tools">工具總覽</a></div>
+      <div class="card-grid">${toolCards().slice(0, 3).map(card).join("")}</div>
+    </section>`;
+}
+
+function renderCourse(name) {
+  const course = state.courses[name];
+  if (!course) {
+    renderNotFound("找不到這份教材", "請從上方的「教材」選單重新選擇課程。");
+    return;
+  }
+
+  setActiveNav("");
+  document.title = `${name} | Bambook`;
+  const courseLinks = courseNames().map(courseName => `<a class="${courseName === name ? "is-active" : ""}" href="#materials=${encodeURIComponent(courseName)}">${escapeHTML(courseName)}</a>`).join("");
+
+  app.innerHTML = `
+    <a class="back-link" href="#home">← 回到首頁</a>
+    <div class="course-layout">
+      <div class="course-content">
+        <header class="page-heading">
+          <p class="eyebrow">Course materials</p>
+          <h1>${escapeHTML(name)}</h1>
+          <p>課本、講義、投影片及歷屆練習均由此頁統一整理；點選檔案即可在新分頁開啟。</p>
+        </header>
+        <div id="syllabus-slot"></div>
+        ${resourceSection("課本", textbookItems(course.textbooks), ICONS.book)}
+        ${resourceSection("講義", handoutItems(course.handouts), ICONS.pdf)}
+        ${slidesSection(course.slides)}
+        ${practiceSection(course.practice)}
+      </div>
+      <aside class="course-sidebar"><h2>教材</h2>${courseLinks}</aside>
+    </div>`;
+
+  renderSyllabus(course.syllabus);
+}
+
+function renderSyllabus(path) {
+  const slot = document.querySelector("#syllabus-slot");
+  if (!slot || !path) return;
+  slot.innerHTML = resourceSection("課程進度", `<p class="notice">正在載入課程進度…</p>`, ICONS.book);
+  fetch(assetURL(path), { cache: "no-store" })
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    })
+    .then(items => {
+      if (!Array.isArray(items)) throw new Error("資料格式不正確");
+      slot.innerHTML = resourceSection("課程進度", syllabusItems(items), ICONS.book);
+    })
+    .catch(() => {
+      slot.innerHTML = resourceSection("課程進度", `<p class="notice">課程進度檔暫時無法讀取。</p>`, ICONS.book);
+    });
+}
+
+function textbookItems(items = []) {
+  if (!items.length) return emptyState("尚無課本資料。");
+  return `<div class="resource-grid">${items.map(item => `
+    <article class="resource-item">
+      <div><div class="resource-name">${documentResourceLink(item.path, item.title || "未命名課本")}</div><div class="resource-meta">${escapeHTML([item.author, item.version].filter(Boolean).join(" · "))}</div></div>
+    </article>`).join("")}</div>`;
+}
+
+function handoutItems(items = []) {
+  if (!items.length) return emptyState("尚無講義資料。");
+  return `<div class="resource-grid">${items.map(item => `
+    <article class="resource-item">
+      <div class="resource-name">${escapeHTML(item.title || "未命名講義")}</div>
+      <div class="resource-actions">${handoutLink(item.blank, "填空", "blank")}${handoutLink(item.sol, "解答", "sol")}</div>
+    </article>`).join("")}</div>`;
+}
+
+function slidesSection(slides = []) {
+  if (!slides.length) return resourceSection("投影片", emptyState("尚無投影片資料。"), ICONS.presentation);
+  const content = slides.map(group => `
+    <details class="resource-details">
+      <summary>${escapeHTML(group.category || "未分類")}</summary>
+      <div class="resource-grid">${(group.files || []).map(item => `
+        <article class="resource-item"><div class="resource-name">${documentResourceLink(item.path, item.name || "未命名投影片")}</div></article>`).join("")}</div>
+    </details>`).join("");
+  return resourceSection("投影片", content, ICONS.presentation);
+}
+
+function practiceSection(practice = {}) {
+  const groups = [
+    ["試題", practice.exams],
+    ["期中詳解", practice.midterm_answers],
+    ["期末詳解", practice.final_answers],
+    ["其他詳解", practice.other_answers || practice.answers],
+  ].filter(([, items]) => Array.isArray(items) && items.length);
+  const links = Array.isArray(practice.links) ? practice.links : [];
+  if (!groups.length && !links.length) return resourceSection("練習與資源", emptyState("尚無練習資料。"), ICONS.math);
+
+  const external = links.length ? `<div class="resource-grid">${links.map(item => `
+    <article class="resource-item"><div class="resource-name">${externalResourceLink(item.url, item.title || item.url)}</div></article>`).join("")}</div>` : "";
+  const detail = groups.map(([title, items]) => `
+    <details class="resource-details"><summary>${escapeHTML(title)}</summary>
+    <div class="resource-grid">${items.map(item => `<article class="resource-item"><div class="resource-name">${documentResourceLink(item.path, item.name || "未命名檔案")}</div></article>`).join("")}</div></details>`).join("");
+  return resourceSection("練習與資源", external + detail, ICONS.math);
+}
+
+function syllabusItems(items) {
+  return `<ol class="syllabus-list">${items.map(item => {
+    const text = [item.date, item.title, ...(item.items || [])].filter(Boolean).join(" · ");
+    return `<li>${escapeHTML(text)}</li>`;
+  }).join("")}</ol>`;
+}
+
+function resourceSection(title, content, icon = ICONS.book) {
+  return `<section class="resource-section"><h2>${icon}<span>${escapeHTML(title)}</span></h2>${content}</section>`;
+}
+
+function documentResourceLink(path, label) {
+  if (!path) return "";
+  return `<a class="resource-document-link" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="開啟 PDF：${escapeHTML(label)}" title="開啟 PDF">${escapeHTML(label)}${ICONS.pdf}</a>`;
+}
+
+function externalResourceLink(url, label) {
+  if (!url) return "";
+  return `<a class="resource-document-link" href="${safeURL(url)}" target="_blank" rel="noopener" aria-label="開啟連結：${escapeHTML(label)}" title="開啟連結">${escapeHTML(label)}${ICONS.link}</a>`;
+}
+
+function handoutLink(path, label, variant) {
+  if (!path) return "";
+  return `<a class="resource-link resource-link--handout resource-link--${variant}" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="${escapeHTML(label)}講義" title="${escapeHTML(label)}講義"><span>${escapeHTML(label)}</span>${ICONS.pdf}</a>`;
+}
+
+function renderArticles(requestedPath = "") {
+  setActiveNav("articles");
+  if (state.manifestError) {
+    renderNotFound("文章區暫時無法載入", state.manifestError);
+    return;
+  }
+  if (!state.articles.length) {
+    renderNotFound("尚未有文章", "在 content/ 建立 Markdown 檔後，執行 build_manifest.py 重新建立網站索引即可。");
+    return;
+  }
+  if (!requestedPath) {
+    document.title = "文章 | Bambook";
+    app.innerHTML = `
+      <a class="back-link" href="#home">← 回到首頁</a>
+      <section class="article-overview">
+        <header class="page-heading"><p class="eyebrow">Articles</p><h1>文章</h1><p>筆記、公告與整理後的學習紀錄。</p></header>
+        <div class="article-overview-list">${state.articles.map(articleOverviewItem).join("")}</div>
+      </section>`;
+    return;
+  }
+  const record = state.articles.find(article => article.path === requestedPath);
+  if (!record) {
+    renderNotFound("找不到文章", "這篇文章可能已被移除或重新命名。");
+    return;
+  }
+  const list = articleList(record.path);
+  app.innerHTML = `
+    <a class="back-link" href="#home">← 回到首頁</a>
+    <div class="articles-layout">
+      <aside class="article-list"><h2>文章目錄</h2>${list}</aside>
+      <article id="article-view" class="article"><p class="notice">正在載入文章…</p></article>
+    </div>`;
+  loadArticle(record);
+}
+
+function articleOverviewItem(article) {
+  return `<a class="article-overview-item" href="#article=${encodeURIComponent(article.path)}">
+    <time>${escapeHTML(formatDate(article.date))}</time>
+    <div><h2>${escapeHTML(article.title)}</h2><p>${escapeHTML(article.summary || "閱讀這篇文章。")}</p></div>
+  </a>`;
+}
+
+async function loadArticle(record) {
+  const view = document.querySelector("#article-view");
+  if (!view) return;
+  try {
+    let parsed = state.articleBodies.get(record.path);
+    if (!parsed) {
+      const response = await fetch(assetURL(`content/${record.path}`), { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      parsed = parseFrontMatter(await response.text());
+      state.articleBodies.set(record.path, parsed);
+    }
+    const article = { ...record, ...parsed.info, tags: normaliseTags(parsed.info.tags || record.tags) };
+    document.title = `${article.title} | Bambook`;
+    const dirtyHTML = markdown.render(parsed.body);
+    view.innerHTML = `
+      <header class="article-header">
+        <div class="article-date">${escapeHTML(formatDate(article.date))}</div>
+        <h1>${escapeHTML(article.title)}</h1>
+        <div class="tag-list">${article.tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</div>
+        ${article.summary ? `<p class="article-summary">${escapeHTML(article.summary)}</p>` : ""}
+      </header>
+      <div class="article-body">${DOMPurify.sanitize(dirtyHTML, { USE_PROFILES: { html: true, svg: true, mathMl: true } })}</div>`;
+    renderMathInElement(view.querySelector(".article-body"), {
+      delimiters: [
+        { left: "$$", right: "$$", display: true }, { left: "\\[", right: "\\]", display: true },
+        { left: "\\(", right: "\\)", display: false }, { left: "$", right: "$", display: false },
+      ],
+      throwOnError: false,
+    });
+  } catch (error) {
+    view.innerHTML = `<p class="error">文章無法載入：${escapeHTML(error.message)}</p>`;
+  }
+}
+
+function articleList(activePath) {
+  return state.articles.map(article => `
+    <a class="${article.path === activePath ? "is-active" : ""}" href="#article=${encodeURIComponent(article.path)}">
+      ${escapeHTML(article.title)}<time>${escapeHTML(formatDate(article.date))}</time>
+    </a>`).join("");
+}
+
+function articlePreviewCards() {
+  if (state.manifestError) return emptyState(state.manifestError);
+  if (!state.articles.length) return emptyState("尚未有文章。");
+  return state.articles.slice(0, 3).map(article => card({
+    href: `#article=${encodeURIComponent(article.path)}`,
+    icon: ICONS.book,
+    title: article.title,
+    description: article.summary || "閱讀這篇 Markdown 文章。",
+    action: formatDate(article.date),
+  })).join("");
+}
+
+function renderTools() {
+  setActiveNav("");
+  document.title = "其他工具 | Bambook";
+  app.innerHTML = `
+    <a class="back-link" href="#home">← 回到首頁</a>
+    <header class="page-heading"><p class="eyebrow">Other tools</p><h1>其他工具</h1><p>這些工具都保留為可單獨開啟的靜態頁面，資料與功能已整合進 Bambook。</p></header>
+    <div class="card-grid">${toolCards().map(card).join("") || emptyState("尚未找到工具資料夾。")}</div>`;
+}
+
+function toolCards() {
+  return state.tools.map(tool => {
+    const id = tool.id || String(tool.path || "").split("/").filter(Boolean).pop() || "";
+    return {
+    href: tool.path || "#tools",
+    icon: toolIcon(id),
+    title: id || "未命名工具",
+    description: tool.description || "開啟這個工具。",
+    action: tool.action || "開啟工具 →",
+    tags: Array.isArray(tool.tags) ? tool.tags : [],
+    };
+  });
+}
+
+function card({ href, icon, title, description, action, tags = [] }) {
+  return `<a class="card ${tags.length ? "tool-card" : ""}" href="${safeURL(href)}">
+    <span class="card-icon" aria-hidden="true">${icon}</span>
+    <h3>${escapeHTML(title)}</h3><p>${escapeHTML(description)}</p>
+    ${tags.length ? `<span class="tag-list">${tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</span>` : ""}
+    <span class="card-action">${escapeHTML(action)}</span>
+  </a>`;
+}
+
+function renderNotFound(title, detail) {
+  setActiveNav("");
+  document.title = `${title} | Bambook`;
+  app.innerHTML = `<a class="back-link" href="#home">← 回到首頁</a><section class="page-heading"><h1>${escapeHTML(title)}</h1><p>${escapeHTML(detail)}</p></section>`;
+}
+
+function setActiveNav(name) {
+  document.querySelectorAll("[data-nav]").forEach(link => link.classList.toggle("is-active", link.dataset.nav === name));
+}
+
+function courseNames() {
+  return Object.keys(state.courses).sort((a, b) => a.localeCompare(b, "zh-Hant"));
+}
+
+function courseIcon(name) {
+  return name.includes("微積") ? ICONS.math : ICONS.book;
+}
+
+function toolIcon(id) {
+  return ({
+    cs2commands: ICONS.terminal,
+    geomaster: ICONS.world,
+    grades: ICONS.chart,
+    spectrumAnalysis: ICONS.wave,
+    topo: ICONS.math,
+    kaohsiung: ICONS.camera,
+  })[id] || ICONS.book;
+}
+
+function decodedHash() {
+  try { return decodeURIComponent(location.hash.slice(1)); }
+  catch { return location.hash.slice(1); }
+}
+
+function assetURL(path) {
+  return new URL(path, new URL("./", window.location.href)).href;
+}
+
+function parseFrontMatter(source) {
+  const text = source.replace(/\r\n/g, "\n");
+  if (!text.startsWith("---\n")) return { info: {}, body: text };
+  const end = text.indexOf("\n---", 4);
+  if (end === -1) return { info: {}, body: text };
+  const info = {};
+  text.slice(4, end).trim().split("\n").forEach(line => {
+    const match = line.match(/^([^:]+):\s*(.*)$/);
+    if (!match) return;
+    const key = match[1].trim();
+    const value = match[2].replace(/^["']|["']$/g, "").trim();
+    info[key] = key === "tags" ? normaliseTags(value) : value;
+  });
+  return { info, body: text.slice(end + 4).replace(/^\n+/, "") };
+}
+
+function normaliseTags(tags) {
+  if (Array.isArray(tags)) return tags.map(String).map(tag => tag.trim()).filter(Boolean);
+  return String(tags || "").split(/[,，]/).map(tag => tag.trim()).filter(Boolean);
+}
+
+function fileTitle(path) {
+  return decodeURIComponent(path.split("/").pop() || path).replace(/\.md$/i, "");
+}
+
+function formatDate(value) {
+  if (!value) return "未標示日期";
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.valueOf()) ? value : date.toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric" });
+}
+
+function emptyState(message) { return `<p class="empty-state">${escapeHTML(message)}</p>`; }
+function safeURL(value) { return escapeHTML(String(value || "#")); }
+function escapeHTML(value) { return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]); }

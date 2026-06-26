@@ -1,0 +1,162 @@
+{
+  "programs": {
+    "EE_Major": {
+      "name": "電機主修",
+      "applicable_year": 112,
+      "categories": [
+        {
+          "name": "校共同必修",
+          "required_credits": 32,
+          "sub_categories": [
+            {
+              "name": "中文",
+              "required_credits": 4,
+              "match_rule": { "type": "regex", "value": "^.{2}UA.*" }
+            },
+            {
+              "name": "英文",
+              "required_credits": 6,
+              "match_rule": { "type": "regex", "value": "^.{2}UB.*" }
+            },
+            {
+              "name": "通識",
+              "required_credits": 18,
+              "match_rule": { "type": "regex", "value": "^.{2}UG.*",
+              "cross_disciplinary": [
+                "PCU0152", "EDU0154", "E0U0001", "HGU0004", "HGU0191", 
+                "MAU0160", "CMU0176", "CMU0177", "ESU0177", "BIU0169", 
+                "NSU0006", "CHU0350", "GEU0233", "GEU0234", "ITU0010",
+                "AEU0014", "OEU0001", "VDU0004", "PEU0003", "PAU0026",
+                "CLU1003", "EAU0154", "EAU0220"
+              ]
+            }
+            },
+            {
+              "name": "體育",
+              "required_credits": 4,
+              "match_rule": { "type": "regex", "value": "^.{2}UP.*" }
+            }
+          ]
+        },
+        {
+          "name": "系必修",
+          "required_credits": 43,
+          "match_rule": {
+            "type": "course_codes",
+            "values": [
+              "AEU0003", "AEU0005", "AEU0013", "MAU0180", 
+              "AEU0004", "AEU0008", "AEU0014", "MAU0181", 
+              "AEU0006", "AEU0007", "AEU0015", "AEU0012", 
+              "AEU0011", "AEU0025", "AEU0070", "AEU0071"
+            ]
+          }
+        },
+        {
+          "name": "系選修",
+          "required_credits": 38,
+          "match_rule": {
+            "type": "mixed",
+            "values": [
+              "PHU0251", "PHU0252"
+            ],
+            "regex": "^AE.*",
+            "note": "包含普物乙，以及所有以 AE 開頭（電機系開設）的各學制課程"
+          }
+        },
+        {
+          "name": "自由選修",
+          "required_credits": 15,
+          "match_rule": {
+            "type": "any",
+            "note": "任何本校或抵免之非重複學分皆可採計"
+          }
+        }
+      ]
+    },
+    "MA_DMajor": {
+      "name": "數學雙主",
+      "applicable_year": 113,
+      "categories": [
+        {
+          "name": "必修",
+          "required_credits": 43,
+          "match_rule": {
+            "type": "course_codes",
+            "values": [
+              "MAU0160", "MAU0161", "MAU0178", "MAU0179", 
+              "MAU0162", "MAU0163", "MAU0166", "MAU0167", 
+              "MAU0100", "MAU0153", "MAU0013", "MAU0106", 
+              "MAC9029"
+            ]
+          }
+        },
+        {
+          "name": "選修",
+          "required_credits": 6,
+          "match_rule": {
+            "type": "course_codes",
+            "values": [
+              "MAU0003", "MAU0021", "MAU0023", "MAU0030", 
+              "MAU0032", "MAU0061", "MAU0115", "MAU0128", 
+              "MAU0147", "MAU0152", "MAU0027", "MAU0107"
+            ]
+          }
+        }
+      ]
+    },
+    "IE_Minor": {
+      "name": "工教輔系",
+      "applicable_year": 113,
+      "categories": [
+        {
+          "name": "必修",
+          "required_credits": 4,
+          "match_rule": {
+            "type": "course_codes",
+            "values": [
+              "06UG005", "IEU0111"
+            ]
+          }
+        },
+        {
+          "name": "選修",
+          "required_credits": 16,
+          "match_rule": {
+            "type": "course_codes",
+            "values": [
+              "IEU0009", "IEU0114", "IEU0117", "IEU0119", 
+              "IEU1050", "IEU1103", "IEU1108", "IEU1132", 
+              "IEU1160", "IEU1863", "IEU1873", "IEU3144", 
+              "IEU0021", "IEU3159", "IEU3163", "IEU3468", 
+              "IEU3511", "IEU0107", "IEU1042", "IEU1102", 
+              "IEU1106", "IEU1107", "IEU1111", "IEU1118", 
+              "IEU1135", "IEU1175", "IEU1190", "IEU1843", 
+              "IEU3101", "IEU3102", "IEU3113", "IEU3158", 
+              "IEU3164", "IEU3165", "IEU3252", "IEU3324", 
+              "IEU3414", "IEU3512", "IEU4030", "IEU4354", 
+              "IEU4355", "IEU4356", "IEU0081", "IEU0082"
+            ],
+            "exemptions": [
+            {
+              "taken": "AEU0006", 
+              "target": "IEU1873", 
+              "target_name": "電子學"
+            },
+            {
+              "taken": "AEU0014", 
+              "target": "IEU3468", 
+              "target_name": "電路學"
+            },
+            {
+              "taken": "AEU0013", 
+              "target": "IEU0119", 
+              "target_name": "程式設計"
+            }
+          ]
+            
+          }
+        }
+      ]
+    }
+  }
+}

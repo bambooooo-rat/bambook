@@ -1,0 +1,60 @@
+:root { --bambook-bar-height: 2.75rem; }
+
+body.bambook-tool-page { padding-top: var(--bambook-bar-height) !important; flex-wrap: wrap !important; }
+
+.bambook-toolbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 2147483640;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: var(--bambook-bar-height);
+  padding: .45rem max(1rem, env(safe-area-inset-right)) .45rem max(1rem, env(safe-area-inset-left));
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(15, 118, 110, .96);
+  color: #f4fffc;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, .18);
+  font-family: "Noto Sans TC", "Noto Sans", system-ui, sans-serif;
+  font-size: .84rem;
+  line-height: 1.2;
+}
+.bambook-toolbar a { color: inherit; font-weight: 800; text-decoration: none; }
+.bambook-toolbar a:hover { text-decoration: underline; }
+.bambook-toolbar__divider { opacity: .55; }
+.bambook-toolbar__section { overflow: hidden; opacity: .88; text-overflow: ellipsis; white-space: nowrap; }
+.bambook-toolbar__theme {
+  display: inline-grid;
+  width: 1.85rem;
+  height: 1.85rem;
+  place-items: center;
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.bambook-toolbar__theme:hover { background: rgba(255,255,255,.13); }
+
+.bambook-tool-footer {
+  box-sizing: border-box;
+  flex: 0 0 100%;
+  width: 100%;
+  margin-top: auto;
+  padding: 1.5rem max(1rem, env(safe-area-inset-right)) 2rem max(1rem, env(safe-area-inset-left));
+  border-top: 1px solid #dce6e2;
+  background: #f7f8f8;
+  color: #62716b;
+  font: .78rem/1.7 "Noto Sans TC", "Noto Sans", system-ui, sans-serif;
+}
+.bambook-tool-footer__contact { display: flex; flex-wrap: wrap; gap: .35rem .8rem; max-width: 1240px; margin: 0 auto; padding-bottom: .8rem; border-bottom: 1px solid #dce6e2; }
+.bambook-tool-footer__contact strong { color: #17221f; }
+.bambook-tool-footer a { color: #0f766e; }
+.bambook-tool-footer__legal { max-width: 1240px; margin: .8rem auto 0; }
+.bambook-tool-footer__legal p { margin: 0 0 .55rem; }
+
+@media (max-width: 450px) {
+  .bambook-toolbar { gap: .3rem; font-size: .78rem; }
+  .bambook-toolbar__section { max-width: 42vw; }
+}
