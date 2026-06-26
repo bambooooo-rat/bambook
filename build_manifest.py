@@ -145,6 +145,31 @@ def first_heading(source: str, fallback: str) -> str:
     return match.group(1).strip() if match else fallback
 
 
+def markdown_record(file_path: Path) -> dict[str, Any]:
+    metadata, body = parse_front_matter(file_path.read_text(encoding="utf-8-sig"))
+    fallback_title = file_path.stem.replace("-", " ")
+    tags = [tag.strip() for tag in re.split(r"[,，、]+", metadata.get("tags", "")) if tag.strip()]
+    return {
+        "path": file_path.relative_to(CONTENT_DIR).as_posix(),
+        "title": metadata.get("title") or first_heading(body, fallback_title),
+        "date": metadata.get("date", ""),
+        "tags": tags,
+        "summary": metadata.get("summary", ""),
+    }
+
+
+def build_home_intro() -> dict[str, Any] | None:
+    if not CONTENT_DIR.is_dir():
+        return None
+    direct_articles = sorted((item for item in CONTENT_DIR.glob("*.md") if item.is_file()), key=lambda item: item.name.casefold())
+    if not direct_articles:
+        return None
+    if len(direct_articles) > 1:
+        names = ", ".join(item.name for item in direct_articles)
+        print(f"Warning: expected one top-level Markdown file in content/, found {len(direct_articles)}: {names}. Using {direct_articles[0].name}.")
+    return markdown_record(direct_articles[0])
+
+
 def build_articles() -> list[dict[str, Any]]:
     if not CONTENT_DIR.is_dir():
         return []
@@ -160,6 +185,17 @@ def build_articles() -> list[dict[str, Any]]:
             "tags": tags,
             "summary": metadata.get("summary", ""),
         })
+    return sorted(articles, key=lambda item: (item["date"], item["path"]), reverse=True)
+
+
+def build_public_articles() -> list[dict[str, Any]]:
+    if not CONTENT_DIR.is_dir():
+        return []
+    articles = []
+    for file_path in sorted(CONTENT_DIR.rglob("*.md"), key=lambda item: item.as_posix().casefold()):
+        if file_path.parent == CONTENT_DIR:
+            continue
+        articles.append(markdown_record(file_path))
     return sorted(articles, key=lambda item: (item["date"], item["path"]), reverse=True)
 
 
@@ -217,8 +253,9 @@ def build_tools() -> list[dict[str, Any]]:
 def build_manifest() -> dict[str, Any]:
     return {
         "schema": 1,
+        "home_intro": build_home_intro(),
         "materials": build_materials(),
-        "articles": build_articles(),
+        "articles": build_public_articles(),
         "tools": build_tools(),
     }
 

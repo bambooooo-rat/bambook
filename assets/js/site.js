@@ -1,12 +1,30 @@
 import MarkdownIt from "https://cdn.jsdelivr.net/npm/markdown-it@14.2.0/+esm";
+import markdownItAbbr from "https://cdn.jsdelivr.net/npm/markdown-it-abbr@2.0.0/+esm";
+import markdownItDeflist from "https://cdn.jsdelivr.net/npm/markdown-it-deflist@3.0.0/+esm";
 import markdownItFootnote from "https://cdn.jsdelivr.net/npm/markdown-it-footnote@4.0.0/+esm";
+import markdownItIns from "https://cdn.jsdelivr.net/npm/markdown-it-ins@4.0.0/+esm";
+import markdownItMark from "https://cdn.jsdelivr.net/npm/markdown-it-mark@4.0.0/+esm";
+import markdownItSub from "https://cdn.jsdelivr.net/npm/markdown-it-sub@2.0.0/+esm";
+import markdownItSup from "https://cdn.jsdelivr.net/npm/markdown-it-sup@2.0.0/+esm";
 import markdownItTaskLists from "https://cdn.jsdelivr.net/npm/markdown-it-task-lists@2.1.1/+esm";
 import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.4.11/+esm";
 import renderMathInElement from "https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/contrib/auto-render.mjs";
 
 const markdown = new MarkdownIt({ html: true, linkify: true, typographer: true })
+  .use(markdownItAbbr)
+  .use(markdownItDeflist)
   .use(markdownItFootnote)
+  .use(markdownItIns)
+  .use(markdownItMark)
+  .use(markdownItSub)
+  .use(markdownItSup)
   .use(markdownItTaskLists, { enabled: true, label: true });
+
+const markdownSanitizeOptions = {
+  USE_PROFILES: { html: true, svg: true, mathMl: true },
+  ADD_TAGS: ["input"],
+  ADD_ATTR: ["checked", "disabled", "type", "class", "id", "for", "aria-hidden", "aria-label"],
+};
 
 // Inline Tabler Icons (outline set) keep the public site independent of icon CDNs.
 const tablerIcon = paths => `<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
@@ -29,9 +47,12 @@ const app = document.querySelector("#app");
 const materialMenu = document.querySelector("[data-material-menu]");
 const state = {
   courses: {},
+  homeIntro: null,
   articles: [],
   tools: [],
   articleBodies: new Map(),
+  tocScrollHandler: null,
+  tocScrollRoot: null,
   manifestError: "",
 };
 
@@ -89,6 +110,16 @@ async function loadSiteManifest() {
     if (!manifest || typeof manifest !== "object") throw new Error("site-manifest.json 格式不正確");
     state.courses = manifest.materials && typeof manifest.materials === "object" ? manifest.materials : {};
     state.tools = Array.isArray(manifest.tools) ? manifest.tools : [];
+    const homeIntro = manifest.home_intro && typeof manifest.home_intro === "object" ? manifest.home_intro : null;
+    state.homeIntro = homeIntro && typeof homeIntro.path === "string"
+      ? {
+        path: homeIntro.path.replace(/^\/+/, ""),
+        title: homeIntro.title || fileTitle(homeIntro.path),
+        date: homeIntro.date || "",
+        tags: Array.isArray(homeIntro.tags) ? homeIntro.tags : [],
+        summary: homeIntro.summary || "",
+      }
+      : null;
     state.articles = (Array.isArray(manifest.articles) ? manifest.articles : [])
       .filter(item => item && typeof item.path === "string")
       .map(item => ({
@@ -106,14 +137,23 @@ async function loadSiteManifest() {
 
 function route() {
   closeMenus();
+  clearArticleTocScroll();
+  document.body.classList.remove("article-mode");
   const hash = decodedHash();
   const [name, value = ""] = hash.split(/=(.*)/s);
 
   if (name === "materials") renderCourse(value);
-  else if (name === "articles") renderArticles();
-  else if (name === "article") renderArticles(value);
+  else if (name === "articles") renderArticlesPage();
+  else if (name === "article") renderArticlesPage(value);
   else if (name === "tools") renderTools();
   else renderHome();
+}
+
+function clearArticleTocScroll() {
+  if (!state.tocScrollHandler) return;
+  (state.tocScrollRoot || window).removeEventListener("scroll", state.tocScrollHandler);
+  state.tocScrollHandler = null;
+  state.tocScrollRoot = null;
 }
 
 function renderHome() {
@@ -129,18 +169,55 @@ function renderHome() {
   })).join("") || emptyState("教材資料尚未載入。請先執行 build_manifest.py。");
 
   app.innerHTML = `
+    ${homeIntroShell()}
     <section>
-      <div class="section-heading"><h2>教材</h2><a href="#materials=${encodeURIComponent(names[0] || "")}">查看全部教材</a></div>
+      <div class="section-heading"><h2>教材</h2><a href="#materials=${encodeURIComponent(names[0] || "")}">全部教材 →</a></div>
       <div class="card-grid">${materialCards}</div>
     </section>
     <section>
-      <div class="section-heading"><h2>文章</h2><a href="#articles">所有文章</a></div>
+      <div class="section-heading"><h2>文章</h2><a href="#articles">全部文章 →</a></div>
       <div class="card-grid">${articlePreviewCards()}</div>
     </section>
     <section>
-      <div class="section-heading"><h2>其他工具</h2><a href="#tools">工具總覽</a></div>
+      <div class="section-heading"><h2>其他工具</h2><a href="#tools">全部工具 →</a></div>
       <div class="card-grid">${toolCards().slice(0, 3).map(card).join("")}</div>
     </section>`;
+  loadHomeIntro();
+}
+
+function homeIntroShell() {
+  if (!state.homeIntro) return "";
+  return `
+    <section class="home-intro" aria-label="網站首頁使用說明">
+      <div class="home-intro-label">
+        <span>網站首頁</span>
+        <span>使用說明</span>
+      </div>
+      <div class="home-intro-content" data-home-intro>
+        <p class="notice">正在載入網站說明…</p>
+      </div>
+    </section>`;
+}
+
+async function loadHomeIntro() {
+  const target = document.querySelector("[data-home-intro]");
+  if (!target || !state.homeIntro) return;
+  try {
+    const cacheKey = `home:${state.homeIntro.path}`;
+    let parsed = state.articleBodies.get(cacheKey);
+    if (!parsed) {
+      const response = await fetch(assetURL(`content/${state.homeIntro.path}`), { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      parsed = parseFrontMatter(await response.text());
+      state.articleBodies.set(cacheKey, parsed);
+    }
+    const dirtyHTML = renderMarkdown(parsed.body);
+    target.innerHTML = `<div class="home-intro-body">${DOMPurify.sanitize(dirtyHTML, markdownSanitizeOptions)}</div>`;
+    const body = target.querySelector(".home-intro-body");
+    hydrateMarkdownBody(body);
+  } catch (error) {
+    target.innerHTML = `<p class="error">網站說明無法載入：${escapeHTML(error.message)}</p>`;
+  }
 }
 
 function renderCourse(name) {
@@ -265,39 +342,22 @@ function handoutLink(path, label, variant) {
   return `<a class="resource-link resource-link--handout resource-link--${variant}" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="${escapeHTML(label)}講義" title="${escapeHTML(label)}講義"><span>${escapeHTML(label)}</span>${ICONS.pdf}</a>`;
 }
 
-function renderArticles(requestedPath = "") {
-  setActiveNav("articles");
-  if (state.manifestError) {
-    renderNotFound("文章區暫時無法載入", state.manifestError);
-    return;
+function normaliseArticleReaderShell() {
+  document.querySelector(".article-reader > .back-link")?.remove();
+  const articleView = document.querySelector("#article-view");
+  if (articleView && !document.querySelector("#content-scroll")) {
+    const wrapper = document.createElement("div");
+    wrapper.id = "content-scroll";
+    wrapper.className = "article-scroll";
+    articleView.replaceWith(wrapper);
+    wrapper.appendChild(articleView);
   }
-  if (!state.articles.length) {
-    renderNotFound("尚未有文章", "在 content/ 建立 Markdown 檔後，執行 build_manifest.py 重新建立網站索引即可。");
-    return;
-  }
-  if (!requestedPath) {
-    document.title = "文章 | Bambook";
-    app.innerHTML = `
-      <a class="back-link" href="#home">← 回到首頁</a>
-      <section class="article-overview">
-        <header class="page-heading"><p class="eyebrow">Articles</p><h1>文章</h1><p>筆記、公告與整理後的學習紀錄。</p></header>
-        <div class="article-overview-list">${state.articles.map(articleOverviewItem).join("")}</div>
-      </section>`;
-    return;
-  }
-  const record = state.articles.find(article => article.path === requestedPath);
-  if (!record) {
-    renderNotFound("找不到文章", "這篇文章可能已被移除或重新命名。");
-    return;
-  }
-  const list = articleList(record.path);
-  app.innerHTML = `
-    <a class="back-link" href="#home">← 回到首頁</a>
-    <div class="articles-layout">
-      <aside class="article-list"><h2>文章目錄</h2>${list}</aside>
-      <article id="article-view" class="article"><p class="notice">正在載入文章…</p></article>
-    </div>`;
-  loadArticle(record);
+  const listTitle = document.querySelector(".article-list h2");
+  if (listTitle) listTitle.textContent = "文章索引";
+  const tocTitle = document.querySelector(".article-toc h2");
+  if (tocTitle) tocTitle.textContent = "文章目錄";
+  const tocEmpty = document.querySelector(".article-toc .toc-empty");
+  if (tocEmpty) tocEmpty.textContent = "正在建立目錄…";
 }
 
 function articleOverviewItem(article) {
@@ -320,7 +380,7 @@ async function loadArticle(record) {
     }
     const article = { ...record, ...parsed.info, tags: normaliseTags(parsed.info.tags || record.tags) };
     document.title = `${article.title} | Bambook`;
-    const dirtyHTML = markdown.render(parsed.body);
+    const dirtyHTML = renderMarkdown(parsed.body);
     view.innerHTML = `
       <header class="article-header">
         <div class="article-date">${escapeHTML(formatDate(article.date))}</div>
@@ -328,14 +388,10 @@ async function loadArticle(record) {
         <div class="tag-list">${article.tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</div>
         ${article.summary ? `<p class="article-summary">${escapeHTML(article.summary)}</p>` : ""}
       </header>
-      <div class="article-body">${DOMPurify.sanitize(dirtyHTML, { USE_PROFILES: { html: true, svg: true, mathMl: true } })}</div>`;
-    renderMathInElement(view.querySelector(".article-body"), {
-      delimiters: [
-        { left: "$$", right: "$$", display: true }, { left: "\\[", right: "\\]", display: true },
-        { left: "\\(", right: "\\)", display: false }, { left: "$", right: "$", display: false },
-      ],
-      throwOnError: false,
-    });
+      <div class="article-body">${DOMPurify.sanitize(dirtyHTML, markdownSanitizeOptions)}</div>`;
+    hydrateMarkdownBody(view.querySelector(".article-body"));
+    buildArticleTocForPage(view);
+    document.querySelector("#content-scroll")?.scrollTo({ top: 0 });
   } catch (error) {
     view.innerHTML = `<p class="error">文章無法載入：${escapeHTML(error.message)}</p>`;
   }
@@ -358,6 +414,162 @@ function articlePreviewCards() {
     description: article.summary || "閱讀這篇 Markdown 文章。",
     action: formatDate(article.date),
   })).join("");
+}
+
+function renderArticlesPage(requestedPath = "") {
+  setActiveNav("articles");
+  if (state.manifestError) {
+    renderNotFound("文章資料無法載入", state.manifestError);
+    return;
+  }
+  if (!state.articles.length) {
+    renderNotFound("尚未有文章", "在 content/月份資料夾 中建立 Markdown 檔後，執行 build_manifest.py 重新建立網站索引即可。");
+    return;
+  }
+  if (!requestedPath) {
+    document.title = "文章 | Bambook";
+    app.innerHTML = `
+      <section class="article-overview">
+        <header class="page-heading"><p class="eyebrow">Articles</p><h1>文章</h1><p>筆記、雜談與整理後的學習紀錄。</p></header>
+        ${articleOverviewByMonth()}
+      </section>`;
+    return;
+  }
+
+  const record = state.articles.find(article => article.path === requestedPath);
+  if (!record) {
+    renderNotFound("找不到文章", "這篇文章可能已被移動、重新命名，或尚未被 site-manifest.json 收錄。");
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="article-reader">
+      <div class="articles-layout">
+        <aside class="article-list"><h2>文章索引</h2>${articleListGrouped(record.path)}</aside>
+        <div id="content-scroll" class="article-scroll">
+          <article id="article-view" class="article"><p class="notice">正在載入文章…</p></article>
+        </div>
+        <aside class="article-toc" data-article-toc><h2>文章目錄</h2><p class="toc-empty">正在建立目錄…</p></aside>
+      </div>
+    </div>`;
+  document.body.classList.add("article-mode");
+  normaliseArticleReaderShell();
+  loadArticle(record);
+}
+
+function articleMonthGroups() {
+  const groups = new Map();
+  state.articles.forEach(article => {
+    const key = monthKey(article.date, article.path);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(article);
+  });
+  return [...groups.entries()];
+}
+
+function monthKey(dateValue, fallback = "") {
+  const match = String(dateValue || "").match(/^(\d{4})-(\d{2})/);
+  if (match) return `${match[1]} 年 ${Number(match[2])} 月`;
+  const folder = String(fallback || "").match(/^(\d{4})(\d{2})\//);
+  if (folder) return `${folder[1]} 年 ${Number(folder[2])} 月`;
+  return "未分類";
+}
+
+function articleListGrouped(activePath) {
+  return articleMonthGroups().map(([month, articles]) => `
+    <section class="article-month">
+      <h3>${escapeHTML(month)}</h3>
+      ${articles.map(article => `
+        <a class="${article.path === activePath ? "is-active" : ""}" href="#article=${encodeURIComponent(article.path)}">
+          ${escapeHTML(article.title)}<time>${escapeHTML(formatDate(article.date))}</time>
+        </a>`).join("")}
+    </section>`).join("");
+}
+
+function articleOverviewByMonth() {
+  return `<div class="article-overview-list">${articleMonthGroups().map(([month, articles]) => `
+    <section class="article-overview-month">
+      <h2>${escapeHTML(month)}</h2>
+      ${articles.map(articleOverviewItem).join("")}
+    </section>`).join("")}</div>`;
+}
+
+function buildArticleTocForPage(view) {
+  const toc = document.querySelector("[data-article-toc]");
+  const body = view?.querySelector(".article-body");
+  if (!toc || !body) return;
+
+  if (state.tocScrollHandler) {
+    (state.tocScrollRoot || window).removeEventListener("scroll", state.tocScrollHandler);
+    state.tocScrollHandler = null;
+    state.tocScrollRoot = null;
+  }
+
+  const headings = [...body.querySelectorAll("h1, h2, h3, h4, h5, h6")];
+  if (!headings.length) {
+    toc.innerHTML = `<h2>文章目錄</h2><p class="toc-empty">這篇文章沒有可建立目錄的標題。</p>`;
+    return;
+  }
+
+  const usedIds = new Set();
+  headings.forEach((heading, index) => {
+    let id = heading.id || slugifyHeading(heading.textContent || "", index);
+    while (usedIds.has(id)) id = `${id}-${index + 1}`;
+    heading.id = id;
+    usedIds.add(id);
+  });
+
+  toc.innerHTML = `
+    <h2>文章目錄</h2>
+    <nav class="toc-nav" aria-label="文章目錄">
+      ${headings.map((heading, index) => `
+        <button class="toc-link toc-link--${heading.tagName.toLowerCase()}" type="button" data-toc-target="${escapeHTML(heading.id)}">
+          ${escapeHTML(heading.textContent || `段落 ${index + 1}`)}
+        </button>`).join("")}
+    </nav>`;
+
+  const links = [...toc.querySelectorAll("[data-toc-target]")];
+  const scrollRoot = document.querySelector("#content-scroll") || window;
+  const setActive = activeId => {
+    links.forEach(link => link.classList.toggle("is-active", link.dataset.tocTarget === activeId));
+  };
+  const updateActive = () => {
+    let current = headings[0];
+    if (scrollRoot === window) {
+      headings.forEach(heading => {
+        if (heading.getBoundingClientRect().top <= 110) current = heading;
+      });
+    } else {
+      const anchorLine = scrollRoot.scrollTop + 36;
+      headings.forEach(heading => {
+        if (heading.offsetTop <= anchorLine) current = heading;
+      });
+    }
+    setActive(current.id);
+  };
+
+  links.forEach(link => {
+    link.addEventListener("click", () => {
+      const target = document.getElementById(link.dataset.tocTarget);
+      if (!target) return;
+      if (scrollRoot === window) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      else scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: "smooth" });
+      setActive(target.id);
+    });
+  });
+
+  let ticking = false;
+  state.tocScrollHandler = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      updateActive();
+      ticking = false;
+    });
+  };
+  state.tocScrollRoot = scrollRoot;
+  scrollRoot.addEventListener("scroll", state.tocScrollHandler, { passive: true });
+  updateActive();
 }
 
 function renderTools() {
@@ -428,6 +640,62 @@ function decodedHash() {
 
 function assetURL(path) {
   return new URL(path, new URL("./", window.location.href)).href;
+}
+
+function slugifyHeading(text, index) {
+  const slug = String(text || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKC")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
+  return `heading-${index + 1}${slug ? `-${slug}` : ""}`;
+}
+
+function renderMarkdown(source) {
+  const mathSegments = [];
+  const stash = value => {
+    const token = `@@BAMBOOK_MATH_${mathSegments.length}@@`;
+    mathSegments.push({ token, value });
+    return token;
+  };
+
+  let protectedSource = String(source || "")
+    .replace(/\$\$[\s\S]+?\$\$/g, match => stash(match))
+    .replace(/\\\[[\s\S]+?\\\]/g, match => stash(match))
+    .replace(/\\\([\s\S]+?\\\)/g, match => stash(match))
+    .replace(/(^|[^$])\$(?!\$)((?:\\.|[^\n$\\])+)\$(?!\$)/g, (_, prefix, body) => `${prefix}${stash(`$${body}$`)}`);
+
+  let html = markdown.render(protectedSource);
+  mathSegments.forEach(({ token, value }) => {
+    html = html.replaceAll(token, escapeHTML(value));
+  });
+  return html;
+}
+
+function hydrateMarkdownBody(root) {
+  if (!root) return;
+  renderMathInElement(root, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true }, { left: "\\[", right: "\\]", display: true },
+      { left: "\\(", right: "\\)", display: false }, { left: "$", right: "$", display: false },
+    ],
+    throwOnError: false,
+  });
+  classifyMarkdownImages(root);
+}
+
+function classifyMarkdownImages(root) {
+  root.querySelectorAll("img").forEach(image => {
+    const applyOrientation = () => {
+      if (!image.naturalWidth || !image.naturalHeight) return;
+      const ratio = image.naturalWidth / image.naturalHeight;
+      image.dataset.orientation = ratio > 1.08 ? "landscape" : ratio < .92 ? "portrait" : "square";
+    };
+
+    if (image.complete) applyOrientation();
+    else image.addEventListener("load", applyOrientation, { once: true });
+  });
 }
 
 function parseFrontMatter(source) {

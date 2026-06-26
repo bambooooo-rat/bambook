@@ -1,5 +1,15 @@
 :root { --bambook-bar-height: 2.75rem; }
 
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input, textarea, select, [contenteditable="true"], [contenteditable="true"] * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 body.bambook-tool-page { padding-top: var(--bambook-bar-height) !important; flex-wrap: wrap !important; }
 
 .bambook-toolbar {

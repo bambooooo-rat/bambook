@@ -1,5 +1,16 @@
 {
   "schema": 1,
+  "home_intro": {
+    "path": "welcome.md",
+    "title": "Bambook 使用說明",
+    "date": "2026-06-26",
+    "tags": [
+      "網站介紹",
+      "教材",
+      "工具"
+    ],
+    "summary": "Bambook 是一個整理教材、筆記、文章與小工具的靜態網站，主要給學生、朋友，以及偶然路過的訪客使用。"
+  },
   "materials": {
     "工程數學": {
       "syllabus": null,
@@ -389,14 +400,15 @@
   },
   "articles": [
     {
-      "path": "welcome.md",
-      "title": "Bambook 使用說明",
-      "date": "2026-06-26",
+      "path": "202606/test.md",
+      "title": "Markdown 語法測試",
+      "date": "2026-06-27",
       "tags": [
-        "網站",
-        "公告"
+        "Markdown",
+        "測試",
+        "語法展示"
       ],
-      "summary": "教材、文章與工具現在都集中在 Bambook。"
+      "summary": "這是一篇用來測試 Bambook 文章系統的 Markdown 展示文，包含標題、段落、列表、表格、程式碼、註腳、數學式與常用擴充語法。"
     }
   ],
   "tools": [
@@ -428,7 +440,7 @@
       "id": "grades",
       "path": "other/grades/",
       "title": "grades",
-      "description": "整理修課紀錄、學分、成績與課程規劃。",
+      "description": "我的修課紀錄、學分、成績整理。",
       "icon": "↗",
       "tags": [
         "NTNU",
