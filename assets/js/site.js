@@ -327,6 +327,7 @@ function resourceSection(title, content, icon = ICONS.book) {
   return `<section class="resource-section"><h2>${icon}<span>${escapeHTML(title)}</span></h2>${content}</section>`;
 }
 
+
 function documentResourceLink(path, label) {
   if (!path) return "";
   return `<a class="resource-document-link" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="開啟 PDF：${escapeHTML(label)}" title="開啟 PDF">${escapeHTML(label)}${ICONS.pdf}</a>`;
@@ -430,7 +431,7 @@ function renderArticlesPage(requestedPath = "") {
     document.title = "文章 | Bambook";
     app.innerHTML = `
       <section class="article-overview">
-        <header class="page-heading"><p class="eyebrow">Articles</p><h1>文章</h1><p>筆記、雜談與整理後的學習紀錄。</p></header>
+        <header class="page-heading"><p class="eyebrow">Articles</p><h1>文章</h1><p>筆記、故事與碎碎念。</p></header>
         ${articleOverviewByMonth()}
       </section>`;
     return;
