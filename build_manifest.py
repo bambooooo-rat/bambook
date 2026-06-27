@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parent
 MATERIALS_DIR = ROOT / "materials"
 CONTENT_DIR = ROOT / "content"
 OTHER_DIR = ROOT / "other"
+ENTRIES_DIR = ROOT / "entries"
 
 
 def web_path(path: Path) -> str:
@@ -82,6 +83,21 @@ def parse_links(file_path: Path | None) -> list[dict[str, str]]:
         if separator and title.strip() and url.strip():
             links.append({"title": title.strip(), "url": url.strip()})
     return links
+
+
+def read_json_object(file_path: Path) -> dict[str, Any]:
+    try:
+        value = json.loads(file_path.read_text(encoding="utf-8-sig"))
+        return value if isinstance(value, dict) else {}
+    except json.JSONDecodeError as error:
+        print(f"Warning: ignored invalid JSON in {file_path.relative_to(ROOT)}: {error}")
+        return {}
+
+
+def normalise_tag_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(tag).strip() for tag in value if str(tag).strip()]
+    return [tag.strip() for tag in re.split(r"[,，、]+", str(value or "")) if tag.strip()]
 
 
 def parse_practice(directory: Path) -> dict[str, list[dict[str, str]]]:
@@ -148,7 +164,7 @@ def first_heading(source: str, fallback: str) -> str:
 def markdown_record(file_path: Path) -> dict[str, Any]:
     metadata, body = parse_front_matter(file_path.read_text(encoding="utf-8-sig"))
     fallback_title = file_path.stem.replace("-", " ")
-    tags = [tag.strip() for tag in re.split(r"[,，、]+", metadata.get("tags", "")) if tag.strip()]
+    tags = normalise_tag_list(metadata.get("tags", ""))
     return {
         "path": file_path.relative_to(CONTENT_DIR).as_posix(),
         "title": metadata.get("title") or first_heading(body, fallback_title),
@@ -209,15 +225,51 @@ def html_title(index_file: Path) -> str:
 
 
 def read_tool_metadata(tool_dir: Path) -> dict[str, Any]:
-    metadata_file = tool_dir / "tool.json"
-    if not metadata_file.is_file():
+    metadata_file = next((tool_dir / name for name in ("tool.json", "meta.json") if (tool_dir / name).is_file()), None)
+    if not metadata_file:
         return {}
-    try:
-        value = json.loads(metadata_file.read_text(encoding="utf-8-sig"))
-        return value if isinstance(value, dict) else {}
-    except json.JSONDecodeError as error:
-        print(f"Warning: ignored invalid JSON in {metadata_file.name}: {error}")
-        return {}
+    return read_json_object(metadata_file)
+
+
+def build_entries() -> list[dict[str, Any]]:
+    """Build public entry cards from entries/<type>/<id>/meta.json.
+
+    Entries are self-contained pages such as tools, works, demos, or other
+    independent static pages. The main site only reads their metadata.
+    """
+    if not ENTRIES_DIR.is_dir():
+        return []
+
+    entries: list[dict[str, Any]] = []
+    for type_dir in sorted((item for item in ENTRIES_DIR.iterdir() if item.is_dir()), key=lambda item: item.name.casefold()):
+        for entry_dir in sorted((item for item in type_dir.iterdir() if item.is_dir()), key=lambda item: item.name.casefold()):
+            metadata_file = entry_dir / "meta.json"
+            index_file = next((entry_dir / name for name in ("index.html", "index.htm") if (entry_dir / name).is_file()), None)
+            if not metadata_file.is_file() or not index_file:
+                continue
+            metadata = read_json_object(metadata_file)
+            visibility = str(metadata.get("visibility") or "public").strip().lower()
+            if visibility == "private":
+                continue
+            entry_type = str(metadata.get("type") or type_dir.name.rstrip("s") or "entry")
+            path = f"{web_path(entry_dir)}/"
+            title = str(metadata.get("title") or html_title(index_file))
+            entries.append({
+                "id": entry_dir.name,
+                "type": entry_type,
+                "path": str(metadata.get("url") or path),
+                "title": title,
+                "date": str(metadata.get("date") or ""),
+                "status": str(metadata.get("status") or ""),
+                "visibility": visibility,
+                "description": str(metadata.get("summary") or metadata.get("description") or f"開啟「{title}」。"),
+                "summary": str(metadata.get("summary") or metadata.get("description") or ""),
+                "tags": normalise_tag_list(metadata.get("tags", [])),
+                "thumbnail": str(metadata.get("thumbnail") or metadata.get("cover") or ""),
+                "action": str(metadata.get("action") or "開啟頁面 →"),
+                "icon": str(metadata.get("icon") or "↗"),
+            })
+    return sorted(entries, key=lambda item: (item.get("date") or "", item["title"].casefold()), reverse=True)
 
 
 def build_tools() -> list[dict[str, Any]]:
@@ -251,11 +303,13 @@ def build_tools() -> list[dict[str, Any]]:
 
 
 def build_manifest() -> dict[str, Any]:
+    entries = build_entries()
     return {
         "schema": 1,
         "home_intro": build_home_intro(),
         "materials": build_materials(),
         "articles": build_public_articles(),
+        "entries": entries,
         "tools": build_tools(),
     }
 

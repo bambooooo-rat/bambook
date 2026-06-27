@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "home_intro": {
+    "path": "welcome.md",
+    "title": "Bambook 使用說明",
+    "date": "2026-06-26",
+    "tags": [
+      "網站介紹",
+      "教材",
+      "工具"
+    ],
+    "summary": "Bambook 是一個整理教材、筆記、文章與小工具的靜態網站，主要給學生、朋友，以及偶然路過的訪客使用。"
+  },
+  "materials_count": 2,
+  "articles_count": 1,
+  "entries_count": 0,
+  "tools_count": 4
+}

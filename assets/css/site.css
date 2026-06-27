@@ -35,7 +35,7 @@ html[data-theme="dark"] {
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
 .article-list::-webkit-scrollbar,
 .article-toc::-webkit-scrollbar,
 .article-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -76,7 +76,7 @@ input, textarea, select, [contenteditable="true"], [contenteditable="true"] * {
   backdrop-filter: blur(14px);
 }
 .header-inner {
-  display: flex; align-items: center; gap: 1rem; max-width: 1240px;
+  display: flex; align-items: center; gap: 1rem; width: min(1240px, calc(100% - 2.5rem)); max-width: none;
   min-height: 4.5rem; margin: 0 auto; padding: .65rem 0rem;
 }
 .brand { display: inline-flex; flex: 0 0 auto; align-items: center; gap: .55rem; color: var(--text); font-size: 1.2rem; font-weight: 800; letter-spacing: -.03em; text-decoration: none; }
@@ -132,7 +132,7 @@ h1, h2, h3, p { margin-top: 0; }
   background: var(--accent);
   content: "";
 }
-.home-intro, .home-intro * { -webkit-user-select: text; user-select: text; }
+.home-intro, .home-intro * { -webkit-user-select: none; user-select: none; }
 .home-intro-label { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .85rem; padding-left: .55rem; color: var(--accent-strong); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .home-intro-label span { padding: .16rem .5rem; border-radius: 999px; background: color-mix(in srgb, var(--accent-soft) 70%, white); }
 .home-intro-body { max-width: 58rem; padding-left: .55rem; }
@@ -238,7 +238,16 @@ details.resource-details[open] .resource-item { padding-left: .35rem; }
 }
 .article-list h2 { margin-bottom: .75rem; color: var(--muted); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
 .article-month + .article-month { margin-top: 1.25rem; }
-.article-month h3 { margin: 0 0 .45rem .7rem; color: var(--muted); font-size: .78rem; font-weight: 800; letter-spacing: .04em; }
+.article-month h3 { margin: 0 0 .45rem; color: var(--muted); font-size: .78rem; font-weight: 800; letter-spacing: .04em; }
+.article-month > a {
+  margin-left: .45rem;
+  padding-left: .95rem;
+  border-left: 2px solid var(--border);
+}
+.article-month > a:hover,
+.article-month > a.is-active {
+  border-left-color: var(--accent);
+}
 .article-list a { display: block; padding: .65rem .7rem; border-radius: 9px; color: var(--muted); font-size: .92rem; text-decoration: none; }
 .article-list a:hover, .article-list a.is-active { background: var(--accent-soft); color: var(--accent-strong); font-weight: 700; }
 .article-list time { display: block; margin-top: .15rem; color: var(--muted); font-family: var(--font-mono); font-size: .73rem; font-weight: 400; }
@@ -263,7 +272,15 @@ details.resource-details[open] .resource-item { padding-left: .35rem; }
 .toc-link--h3 { padding-left: 1rem; font-size: .82rem; }
 .toc-link--h4 { padding-left: 1.45rem; font-size: .8rem; }
 .toc-link--h5, .toc-link--h6 { padding-left: 1.85rem; font-size: .78rem; }
-.toc-empty { color: var(--muted); font-size: .86rem; }
+.toc-empty {
+  margin: 0;
+  padding: .65rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--surface-soft) 62%, transparent);
+  color: color-mix(in srgb, var(--muted) 78%, transparent);
+  font-size: .86rem;
+}
 .article, .article * { -webkit-user-select: text; user-select: text; }
 .article-header { padding-bottom: 1.55rem; border-bottom: 1px solid var(--border); }
 .article-header h1 { margin: .6rem 0 .7rem; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.15; letter-spacing: -.04em; }
@@ -375,7 +392,7 @@ details.resource-details[open] .resource-item { padding-left: .35rem; }
 }
 
 @media (max-width: 760px) {
-  .header-inner { flex-wrap: wrap; gap: .3rem .65rem; padding: 1.6rem 1.4rem; }
+  .header-inner { flex-wrap: wrap; gap: .3rem .65rem; width: min(100% - 1.5rem, 1240px); padding: 1.6rem 0; }
   .brand { margin-right: auto; }
   .icon-button { margin-left: 0; }
   .main-nav { order: 3; width: 100%; overflow-x: auto; padding-bottom: .15rem; }

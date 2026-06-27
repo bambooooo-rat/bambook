@@ -1,0 +1,11 @@
+{
+  "title": "Entry Title",
+  "type": "tool",
+  "date": "2026-06-27",
+  "status": "active",
+  "visibility": "public",
+  "summary": "一句話說明這個工具、作品或獨立頁面。",
+  "tags": ["tool"],
+  "url": "./entries/tools/example/",
+  "thumbnail": "./entries/tools/example/thumbnail.jpg"
+}

@@ -49,6 +49,7 @@ const state = {
   courses: {},
   homeIntro: null,
   articles: [],
+  entries: [],
   tools: [],
   articleBodies: new Map(),
   tocScrollHandler: null,
@@ -109,7 +110,9 @@ async function loadSiteManifest() {
     const manifest = await response.json();
     if (!manifest || typeof manifest !== "object") throw new Error("site-manifest.json 格式不正確");
     state.courses = manifest.materials && typeof manifest.materials === "object" ? manifest.materials : {};
-    state.tools = Array.isArray(manifest.tools) ? manifest.tools : [];
+    const legacyTools = Array.isArray(manifest.tools) ? manifest.tools : [];
+    state.entries = (Array.isArray(manifest.entries) ? manifest.entries : []).map(normaliseEntryCard);
+    state.tools = [...legacyTools.map(normaliseEntryCard), ...state.entries];
     const homeIntro = manifest.home_intro && typeof manifest.home_intro === "object" ? manifest.home_intro : null;
     state.homeIntro = homeIntro && typeof homeIntro.path === "string"
       ? {
@@ -482,7 +485,7 @@ function articleListGrouped(activePath) {
       <h3>${escapeHTML(month)}</h3>
       ${articles.map(article => `
         <a class="${article.path === activePath ? "is-active" : ""}" href="#article=${encodeURIComponent(article.path)}">
-          ${escapeHTML(article.title)}<time>${escapeHTML(formatDate(article.date))}</time>
+          ${escapeHTML(article.title)}
         </a>`).join("")}
     </section>`).join("");
 }
@@ -508,7 +511,7 @@ function buildArticleTocForPage(view) {
 
   const headings = [...body.querySelectorAll("h1, h2, h3, h4, h5, h6")];
   if (!headings.length) {
-    toc.innerHTML = `<h2>文章目錄</h2><p class="toc-empty">這篇文章沒有可建立目錄的標題。</p>`;
+    toc.innerHTML = `<h2>文章目錄</h2><p class="toc-empty">此文章沒有標題層級，因此沒有可跳轉的文章目錄。</p>`;
     return;
   }
 
@@ -588,12 +591,26 @@ function toolCards() {
     return {
     href: tool.path || "#tools",
     icon: toolIcon(id),
-    title: id || "未命名工具",
+    title: tool.title || id || "未命名項目",
     description: tool.description || "開啟這個工具。",
     action: tool.action || "開啟工具 →",
     tags: Array.isArray(tool.tags) ? tool.tags : [],
     };
   });
+}
+
+function normaliseEntryCard(item) {
+  const path = String(item?.path || item?.url || "");
+  const id = String(item?.id || path.split("/").filter(Boolean).pop() || "");
+  return {
+    ...item,
+    id,
+    path,
+    title: item?.title || id,
+    description: item?.description || item?.summary || "",
+    tags: Array.isArray(item?.tags) ? item.tags : [],
+    action: item?.action || "開啟頁面 →",
+  };
 }
 
 function card({ href, icon, title, description, action, tags = [] }) {
@@ -684,6 +701,7 @@ function hydrateMarkdownBody(root) {
     throwOnError: false,
   });
   classifyMarkdownImages(root);
+  bindMarkdownFootnotes(root);
 }
 
 function classifyMarkdownImages(root) {
@@ -696,6 +714,27 @@ function classifyMarkdownImages(root) {
 
     if (image.complete) applyOrientation();
     else image.addEventListener("load", applyOrientation, { once: true });
+  });
+}
+
+function bindMarkdownFootnotes(root) {
+  root.addEventListener("click", event => {
+    const link = event.target.closest?.("a[href]");
+    if (!link || !root.contains(link)) return;
+    const href = link.getAttribute("href") || "";
+    if (!/^#fn(?:ref)?\d+/i.test(href)) return;
+
+    const id = decodeURIComponent(href.slice(1));
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    event.preventDefault();
+    const scrollRoot = document.querySelector("#content-scroll");
+    if (scrollRoot) {
+      scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: "smooth" });
+    } else {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   });
 }
 
