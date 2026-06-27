@@ -235,7 +235,6 @@ function renderCourse(name) {
   const courseLinks = courseNames().map(courseName => `<a class="${courseName === name ? "is-active" : ""}" href="#materials=${encodeURIComponent(courseName)}">${escapeHTML(courseName)}</a>`).join("");
 
   app.innerHTML = `
-    <a class="back-link" href="#home">← 回到首頁</a>
     <div class="course-layout">
       <div class="course-content">
         <header class="page-heading">
@@ -580,7 +579,6 @@ function renderTools() {
   setActiveNav("");
   document.title = "其他工具 | Bambook";
   app.innerHTML = `
-    <a class="back-link" href="#home">← 回到首頁</a>
     <header class="page-heading"><p class="eyebrow">Other tools</p><h1>其他工具</h1><p>這些工具都保留為可單獨開啟的靜態頁面，資料與功能已整合進 Bambook。</p></header>
     <div class="card-grid">${toolCards().map(card).join("") || emptyState("尚未找到工具資料夾。")}</div>`;
 }
