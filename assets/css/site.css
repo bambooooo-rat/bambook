@@ -299,6 +299,7 @@ details.resource-details[open] .resource-item { padding-left: .35rem; }
 .article-body pre { overflow-x: auto; padding: 1rem; border-radius: 10px; background: #15201d; color: #e8f1ed; }
 .article-body pre code { padding: 0; background: transparent; }
 .article-body blockquote { margin: 1rem 0; padding: .25rem 1rem; border-left: 3px solid var(--accent); color: var(--muted); }
+.article-body .math-block, .home-intro-body .math-block,
 .article-body .katex-display, .home-intro-body .katex-display {
   display: block;
   width: 100%;
@@ -307,7 +308,11 @@ details.resource-details[open] .resource-item { padding-left: .35rem; }
   overflow-y: hidden;
   text-align: center !important;
 }
+.article-body .math-block > span, .home-intro-body .math-block > span { display: block; width: 100%; text-align: center !important; }
+.article-body .math-block .katex-display, .home-intro-body .math-block .katex-display { margin: 0 auto; }
 .article-body .katex-display > .katex, .home-intro-body .katex-display > .katex { display: inline-block; text-align: initial; }
+.article-body .math-block > .katex, .home-intro-body .math-block > .katex,
+.article-body .math-block > span > .katex, .home-intro-body .math-block > span > .katex { display: inline-block; text-align: initial; }
 .article-body img, .home-intro-body img { display: block; max-width: 100%; height: auto; margin: 1.15rem auto; border-radius: 10px; object-fit: contain; }
 .article-body img[data-orientation="landscape"], .home-intro-body img[data-orientation="landscape"] {
   width: 100%;

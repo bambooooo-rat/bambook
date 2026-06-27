@@ -672,21 +672,27 @@ function slugifyHeading(text, index) {
 
 function renderMarkdown(source) {
   const mathSegments = [];
-  const stash = value => {
+  const stash = (value, display = false) => {
     const token = `@@BAMBOOK_MATH_${mathSegments.length}@@`;
-    mathSegments.push({ token, value });
+    mathSegments.push({ token, value, display });
     return token;
   };
 
   let protectedSource = String(source || "")
-    .replace(/\$\$[\s\S]+?\$\$/g, match => stash(match))
-    .replace(/\\\[[\s\S]+?\\\]/g, match => stash(match))
+    .replace(/\$\$[\s\S]+?\$\$/g, match => stash(match, true))
+    .replace(/\\\[[\s\S]+?\\\]/g, match => stash(match, true))
     .replace(/\\\([\s\S]+?\\\)/g, match => stash(match))
     .replace(/(^|[^$])\$(?!\$)((?:\\.|[^\n$\\])+)\$(?!\$)/g, (_, prefix, body) => `${prefix}${stash(`$${body}$`)}`);
 
   let html = markdown.render(protectedSource);
-  mathSegments.forEach(({ token, value }) => {
-    html = html.replaceAll(token, escapeHTML(value));
+  mathSegments.forEach(({ token, value, display }) => {
+    const replacement = display
+      ? `<div class="math-block">${escapeHTML(value)}</div>`
+      : escapeHTML(value);
+    if (display) {
+      html = html.replace(new RegExp(`<p>\\s*${escapeRegExp(token)}\\s*</p>`, "g"), replacement);
+    }
+    html = html.replaceAll(token, replacement);
   });
   return html;
 }
@@ -700,8 +706,21 @@ function hydrateMarkdownBody(root) {
     ],
     throwOnError: false,
   });
+  normaliseDisplayMathBlocks(root);
   classifyMarkdownImages(root);
   bindMarkdownFootnotes(root);
+}
+
+function normaliseDisplayMathBlocks(root) {
+  root.querySelectorAll("p").forEach(paragraph => {
+    const katexNodes = paragraph.querySelectorAll(".katex");
+    if (katexNodes.length !== 1) return;
+    const hasNonWhitespaceText = [...paragraph.childNodes].some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+    if (hasNonWhitespaceText) return;
+    const children = [...paragraph.children];
+    if (children.length !== 1 || !(children[0].classList.contains("katex") || children[0].querySelector(".katex"))) return;
+    paragraph.classList.add("math-block", "math-block--paragraph");
+  });
 }
 
 function classifyMarkdownImages(root) {
@@ -761,6 +780,10 @@ function normaliseTags(tags) {
 
 function fileTitle(path) {
   return decodeURIComponent(path.split("/").pop() || path).replace(/\.md$/i, "");
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function formatDate(value) {
