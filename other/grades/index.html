@@ -1,245 +1,535 @@
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NTNU Course Tracker Pro</title>
-  <link rel="stylesheet" href="../../assets/css/tool-shell.css">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-  
-  <!-- 引入 Chart.js 圖表庫 -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>成績紀錄與數據分析</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
-    /* 全局不可選取文字，保留輸入框正常運作 */
-    body { 
-      font-family: 'Noto Sans TC', sans-serif; 
+    :root {
+      color-scheme: light;
+      --bg: #f6f4ef;
+      --surface: #fffdfa;
+      --surface-soft: #efede5;
+      --text: #1f2421;
+      --muted: #6f766f;
+      --muted-2: #92998f;
+      --border: #d8d2c4;
+      --border-soft: #e7e1d5;
+      --accent: #3f7f68;
+      --accent-strong: #2f6652;
+      --accent-soft: #e2eee8;
+      --warn: #a16207;
+      --danger: #b42318;
+      --mono: ui-monospace, SFMono-Regular, Consolas, "Noto Sans Mono", monospace;
+      --sans: "Noto Sans TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --sidebar-w: 17rem;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.62;
       -webkit-user-select: none;
       user-select: none;
     }
-    input, select, textarea {
-      -webkit-user-select: auto;
-      user-select: auto;
+    input, select, button, textarea { font: inherit; }
+    input, select, textarea, table, canvas { -webkit-user-select: text; user-select: text; }
+    button, a { color: inherit; }
+    a { text-decoration: none; }
+    .hidden, [hidden] { display: none !important; }
+    .app-shell { min-height: 100vh; display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      border-right: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg) 82%, var(--surface));
     }
-    .hide { display: none !important; }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    .sidebar-transition { transition: transform 0.3s ease-in-out; }
+    .brand { padding: 1.25rem 1.2rem 1rem; border-bottom: 1px solid var(--border-soft); }
+    .brand-title { margin: 0; font-size: 1.05rem; font-weight: 820; letter-spacing: -0.025em; line-height: 1.25; }
+    .brand-caption { margin: .25rem 0 0; color: var(--muted); font-family: var(--mono); font-size: .72rem; line-height: 1.4; }
+    .nav { min-height: 0; overflow: auto; padding: .8rem .7rem; }
+    .nav-section-title { margin: 1rem .55rem .45rem; color: var(--muted-2); font-family: var(--mono); font-size: .68rem; font-weight: 780; letter-spacing: .05em; }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .65rem;
+      min-height: 2.35rem;
+      margin: .08rem 0;
+      padding: .45rem .55rem;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: .9rem;
+      font-weight: 680;
+      transition: background .14s ease, color .14s ease;
+    }
+    .nav-link:hover, .nav-link.is-active { background: var(--accent-soft); color: var(--accent-strong); }
+    .nav-link small { color: var(--muted-2); font-family: var(--mono); font-size: .68rem; font-weight: 700; }
+    .sidebar-foot { padding: .75rem 1.2rem 1rem; border-top: 1px solid var(--border-soft); color: var(--muted-2); font-family: var(--mono); font-size: .68rem; }
+    .main { min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      min-height: 4.25rem;
+      padding: 0 2rem;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter: blur(12px);
+    }
+    .page-title { margin: 0; font-size: 1.08rem; font-weight: 820; letter-spacing: -0.02em; line-height: 1.2; }
+    .topbar-meta { display: flex; align-items: center; gap: .65rem; color: var(--muted); font-family: var(--mono); font-size: .72rem; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      min-height: 2.1rem;
+      padding: 0 .7rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .8rem;
+      font-weight: 760;
+      line-height: 1;
+    }
+    .button:hover { border-color: var(--accent); color: var(--accent-strong); }
+    .content { width: min(1180px, calc(100% - 4rem)); margin: 0 auto; padding: 2rem 0 3rem; }
+    .view { display: grid; gap: 1.65rem; }
+    .section { padding: 0 0 1.45rem; border-bottom: 1px solid var(--border); }
+    .section:last-child { border-bottom: 0; }
+    .section-header { display: flex; align-items: end; justify-content: space-between; gap: 1.2rem; margin-bottom: .95rem; }
+    .section-title { margin: 0; font-size: 1.15rem; font-weight: 820; letter-spacing: -0.025em; line-height: 1.25; }
+    .section-caption { margin: .22rem 0 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .metric { min-width: 0; padding: 1rem .95rem; border-right: 1px solid var(--border-soft); }
+    .metric:last-child { border-right: 0; }
+    .metric-label { margin: 0 0 .35rem; color: var(--muted); font-family: var(--mono); font-size: .72rem; font-weight: 760; line-height: 1.35; }
+    .metric-value { margin: 0; font-family: var(--mono); font-size: clamp(1.55rem, 3vw, 2.2rem); font-weight: 860; letter-spacing: -0.04em; line-height: 1; }
+    .metric-sub { margin: .35rem 0 0; color: var(--muted-2); font-family: var(--mono); font-size: .7rem; line-height: 1.35; }
+    .progress-list { display: grid; gap: .15rem; }
+    .progress-row {
+      display: grid;
+      grid-template-columns: minmax(10rem, 1fr) 7rem minmax(12rem, 1.25fr) 4rem;
+      align-items: center;
+      gap: .85rem;
+      padding: .72rem 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .progress-row:last-child { border-bottom: 0; }
+    .progress-name { min-width: 0; font-weight: 760; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .progress-number, .progress-percent { color: var(--muted); font-family: var(--mono); font-size: .78rem; text-align: right; white-space: nowrap; }
+    .progress-track { height: .55rem; border-radius: 999px; background: var(--surface-soft); overflow: hidden; }
+    .progress-fill { height: 100%; width: 0; border-radius: inherit; background: var(--accent); display: flex; justify-content: flex-end; }
+    .progress-pending { height: 100%; background: color-mix(in srgb, var(--accent) 35%, var(--surface-soft)); }
+    .chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem 1.35rem; }
+    .chart-panel { min-width: 0; padding: 0; background: transparent; }
+    .chart-frame { height: 320px; padding: .6rem 0 0; border-top: 1px solid var(--border-soft); }
+    .filter-bar { display: grid; grid-template-columns: repeat(5, minmax(8rem, 1fr)); gap: .65rem; padding: .8rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .field { display: grid; gap: .28rem; }
+    .field label { color: var(--muted); font-family: var(--mono); font-size: .68rem; font-weight: 760; }
+    .field input, .field select {
+      width: 100%;
+      min-height: 2.1rem;
+      padding: 0 .55rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      outline: 0;
+      font-size: .84rem;
+    }
+    .field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent); }
+    .table-wrap { width: 100%; overflow: auto; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .84rem; line-height: 1.45; }
+    th, td { padding: .62rem .65rem; border-bottom: 1px solid var(--border-soft); vertical-align: middle; text-align: left; }
+    th { position: sticky; top: 0; z-index: 1; background: var(--bg); color: var(--muted); font-family: var(--mono); font-size: .68rem; font-weight: 780; letter-spacing: .035em; white-space: nowrap; }
+    tbody tr:hover { background: color-mix(in srgb, var(--surface-soft) 56%, transparent); }
+    td.num, th.num { text-align: right; font-family: var(--mono); white-space: nowrap; }
+    td.center, th.center { text-align: center; }
+    .course-name { min-width: 14rem; font-weight: 680; }
+    .mono { font-family: var(--mono); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.3rem;
+      min-height: 1.45rem;
+      padding: .05rem .38rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: .68rem;
+      font-weight: 760;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .badge--a { background: #e5f3eb; color: #24694d; border-color: #c8e2d2; }
+    .badge--b { background: #e8eee7; color: #4d6654; border-color: #d3ded2; }
+    .badge--c { background: #f4edda; color: #805d16; border-color: #e5d5aa; }
+    .badge--fail { background: #f8e4e2; color: var(--danger); border-color: #e9c2bd; }
+    .badge--neutral { background: var(--surface-soft); color: var(--muted); border-color: var(--border); }
+    .audit-tags { display: flex; flex-wrap: wrap; gap: .25rem; min-width: 12rem; }
+    .audit-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 1.35rem;
+      padding: 0 .36rem;
+      border: 1px solid var(--border-soft);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: .66rem;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .audit-tag[data-status="applied"] { border-color: #c8e2d2; color: #2f6652; background: #edf7f1; }
+    .audit-tag[data-status="exempted"] { border-color: #c2dbe4; color: #17606d; background: #edf7f9; }
+    .audit-tag[data-status="cross"] { border-color: #d8cfb8; color: #765c20; background: #f6f1e5; }
+    .audit-tag[data-status="overflow"] { border-color: #e3d3a4; color: #875c08; background: #fbf4d8; }
+    .audit-table {
+      margin-top: .75rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .audit-table-head,
+    .audit-summary {
+      display: grid;
+      grid-template-columns: 1rem minmax(12rem, 1fr) 8rem minmax(12rem, 1.15fr) 4rem;
+      align-items: center;
+      gap: .75rem;
+    }
+    .audit-table-head {
+      min-height: 2.35rem;
+      border-bottom: 1px solid var(--border-soft);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: .68rem;
+      font-weight: 780;
+      letter-spacing: .035em;
+    }
+    details.audit-category {
+      border-bottom: 1px solid var(--border-soft);
+    }
+    details.audit-category:last-child { border-bottom: 0; }
+    .audit-summary {
+      min-height: 3.05rem;
+      cursor: pointer;
+      list-style: none;
+      transition: background .14s ease;
+    }
+    .audit-summary:hover { background: color-mix(in srgb, var(--surface-soft) 45%, transparent); }
+    .audit-summary::-webkit-details-marker { display: none; }
+    .audit-summary::before {
+      content: "▸";
+      color: var(--muted);
+      font-size: .78rem;
+      transform: translateX(.15rem);
+    }
+    details[open] > .audit-summary::before { content: "▾"; }
+    .audit-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 780;
+    }
+    .audit-credit,
+    .audit-percent {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: .78rem;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .audit-detail {
+      padding: .2rem 0 1rem 1.75rem;
+    }
+    .sub-audit {
+      margin: .8rem 0 1.05rem;
+      padding-left: .8rem;
+      border-left: 2px solid var(--border-soft);
+    }
+    .sub-audit-title {
+      display: flex;
+      justify-content: space-between;
+      gap: .7rem;
+      margin-bottom: .45rem;
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 760;
+    }
+    .table-wrap--nested {
+      border-top-color: var(--border-soft);
+      border-bottom-color: var(--border-soft);
+    }
+    .table-wrap--nested table { font-size: .8rem; }
+    .table-wrap--nested th { background: var(--surface); }
+    .status-line { color: var(--muted); font-size: .76rem; line-height: 1.45; }
+    .empty { margin: 0; color: var(--muted-2); font-size: .82rem; }
+    .loading {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: .78rem;
+    }
+
+    th .button {
+      min-height: 1.45rem;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: inherit;
+      font-family: inherit;
+      font-size: inherit;
+      letter-spacing: inherit;
+    }
+    th .button:hover { color: var(--accent-strong); background: transparent; }
+    .chart-panel .section-caption { margin: 0 0 .35rem; font-family: var(--mono); font-size: .72rem; }
+    .section-header .section-caption { text-align: right; }
+    .error-box {
+      width: min(42rem, calc(100% - 2rem));
+      padding: 1rem;
+      border: 1px solid var(--danger);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--danger) 7%, var(--surface));
+      color: var(--danger);
+      font-family: var(--mono);
+      font-size: .84rem;
+      line-height: 1.6;
+    }
+    @media (max-width: 1060px) {
+      :root { --sidebar-w: 14.5rem; }
+      .content { width: min(100% - 2rem, 1180px); }
+      .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metric:nth-child(2n) { border-right: 0; }
+      .metric:nth-child(-n+2) { border-bottom: 1px solid var(--border-soft); }
+      .chart-grid { grid-template-columns: 1fr; }
+      .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .progress-row { grid-template-columns: minmax(8rem, 1fr) 6rem minmax(9rem, 1fr) 3.5rem; }
+    }
+    @media (max-width: 760px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+      .brand { padding: 1rem; }
+      .nav { display: flex; gap: .35rem; overflow-x: auto; padding: .65rem 1rem; }
+      .nav-section-title, .sidebar-foot { display: none; }
+      .nav-link { flex: 0 0 auto; margin: 0; }
+      .nav-link small { display: none; }
+      .topbar { padding: 0 1rem; }
+      .content { width: min(100% - 1.5rem, 1180px); padding-top: 1.25rem; }
+      .metric-grid, .filter-bar { grid-template-columns: 1fr; }
+      .metric { border-right: 0; border-bottom: 1px solid var(--border-soft); }
+      .metric:last-child { border-bottom: 0; }
+      .progress-row { grid-template-columns: 1fr; gap: .35rem; padding: .75rem 0; }
+      .audit-table-head { display: none; }
+      .audit-summary { grid-template-columns: 1rem minmax(0, 1fr) auto; gap: .45rem; padding: .75rem 0; }
+      .audit-summary .progress-track { grid-column: 2 / -1; }
+      .audit-detail { padding-left: 0; }
+      .audit-percent { text-align: right; }
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col md:flex-row selection:bg-indigo-100 selection:text-indigo-900 select-none">
-
-  <!-- 狀態視圖：載入中 -->
-  <div id="loading-view" class="fixed inset-0 flex flex-col items-center justify-center bg-slate-50 z-50">
-    <i class="fas fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i>
-    <p class="text-slate-500 font-medium tracking-widest">載入與編譯規則引擎...</p>
-  </div>
-
-  <!-- 狀態視圖：錯誤 -->
-  <div id="error-view" class="fixed inset-0 flex flex-col items-center justify-center bg-slate-50 z-50 hide px-4">
-    <div class="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-6">
-      <i class="fas fa-server text-3xl"></i>
-    </div>
-    <h2 class="text-2xl font-bold text-slate-800 mb-2">資料庫連線失敗</h2>
-    <p id="error-message" class="text-slate-500 max-w-md text-center mb-8"></p>
-    <div class="bg-white p-6 rounded-xl border border-slate-200 text-sm text-slate-600 w-full max-w-lg shadow-sm">
-      <p class="font-semibold mb-3 text-slate-700"><i class="fas fa-lightbulb text-amber-500 mr-2"></i>解決方案提示：</p>
-      <ul class="list-disc pl-5 space-y-2">
-        <li>確認本地伺服器已啟動 (<code class="bg-slate-100 px-1.5 py-0.5 rounded text-pink-600">python -m http.server</code>)</li>
-        <li>確認 <code class="bg-slate-100 px-1.5 py-0.5 rounded">courses.json</code> 與 <code class="bg-slate-100 px-1.5 py-0.5 rounded">program.json</code> 存在於相同路徑</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- 手機版 Header -->
-  <div class="md:hidden bg-white border-b border-slate-200 flex items-center justify-between p-4 sticky top-0 z-20 shadow-sm">
-    <div class="flex items-center space-x-3">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">S</div>
-      <h1 class="text-lg font-bold text-slate-800">修課總覽</h1>
-    </div>
-    <button onclick="toggleMobileMenu()" class="text-slate-500 hover:text-slate-800 focus:outline-none p-2">
-      <i class="fas fa-bars text-xl" id="mobile-menu-icon"></i>
-    </button>
-  </div>
-
-  <!-- 主應用程式介面 -->
-  <div id="app-view" class="flex w-full min-h-screen hide">
-    
-    <!-- 左側導覽列 -->
-    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col fixed h-full z-30 sidebar-transition -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none">
-      <div class="p-6 hidden md:block">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-md">S</div>
-          <div>
-            <h1 class="text-lg font-bold text-slate-800">修課總覽</h1>
-          </div>
-        </div>
-      </div>
-
-      <div class="px-4 py-2 flex-1 space-y-1 overflow-y-auto" id="sidebar-nav">
-        <p class="px-4 text-xs font-semibold text-slate-400 tracking-wider mb-2 mt-4 uppercase">Data View</p>
-        <a href="#overview" id="nav-overview" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-          <i class="fas fa-chart-pie w-5 text-center"></i><span>學業總覽</span>
-        </a>
-        <a href="#courses" id="nav-courses" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-          <i class="fas fa-list w-5 text-center"></i><span>修課清單與搜尋</span>
-        </a>
-        
-        <div id="dynamic-nav-container"></div>
-      </div>
-      
-      <div class="p-4 border-t border-slate-100 bg-slate-50/50">
-        <div class="text-[10px] text-slate-400 text-center font-mono">Engine v6.2 (Strict Cross-Major Rule)</div>
-      </div>
+<body>
+  <div id="loading" class="loading">Loading courses.json / program.json</div>
+  <div id="app" class="app-shell hidden">
+    <aside class="sidebar">
+      <header class="brand">
+        <h1 class="brand-title">成績紀錄與數據分析</h1>
+        <p class="brand-caption">Transcript Analytics</p>
+      </header>
+      <nav id="nav" class="nav" aria-label="頁面導覽">
+        <p class="nav-section-title">Views</p>
+        <a class="nav-link" href="#overview" data-route="overview">總覽 <small>Overview</small></a>
+        <a class="nav-link" href="#courses" data-route="courses">課程資料 <small>Courses</small></a>
+        <a class="nav-link" href="#analytics" data-route="analytics">統計分析 <small>Analytics</small></a>
+        <div id="program-nav"></div>
+      </nav>
+      <footer class="sidebar-foot" id="data-foot">No data</footer>
     </aside>
-
-    <!-- 手機版遮罩 -->
-    <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 z-20 hide md:hidden" onclick="toggleMobileMenu()"></div>
-
-    <!-- 右側主內容區塊 -->
-    <main class="flex-1 md:ml-64 p-4 md:p-8 w-full overflow-x-hidden pt-6 md:pt-8">
-      <div class="max-w-6xl mx-auto" id="content-area">
-        <!-- 內容將透過 JS 動態注入 -->
-      </div>
+    <main class="main">
+      <header class="topbar">
+        <h2 class="page-title" id="page-title">總覽</h2>
+        <div class="topbar-meta">
+          <span id="data-status">Ready</span>
+          <button type="button" class="button" id="refresh-btn">Reload</button>
+        </div>
+      </header>
+      <div class="content" id="content"></div>
     </main>
   </div>
-
   <script>
-    // --- 全域狀態 ---
-    let coursesData = [];
+let coursesData = [];
     let rulesData = null;
-    let globalCourseAudit = {}; 
     let generatedReports = {};
-    let currentSort = { key: 'semester', direction: 'desc' };
-    
-    // 圖表實例緩存
-    let chartInstances = { semester: null };
+    let currentSort = { key: "semester", direction: "desc" };
+    let activeFilters = { search: "", semester: "all", grade: "all", pass: "all", program: "all" };
+    let charts = {};
 
-    // --- 介面控制 ---
-    let isMobileMenuOpen = false;
-    const toggleMobileMenu = () => {
-      isMobileMenuOpen = !isMobileMenuOpen;
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('mobile-overlay');
-      const icon = document.getElementById('mobile-menu-icon');
-      
-      if (isMobileMenuOpen) {
-        sidebar.classList.remove('-translate-x-full');
-        overlay.classList.remove('hide');
-        icon.classList.replace('fa-bars', 'fa-times');
-      } else {
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('hide');
-        icon.classList.replace('fa-times', 'fa-bars');
+    const palette = {
+      accent: "#3f7f68",
+      accentStrong: "#2f6652",
+      border: "#d8d2c4",
+      muted: "#6f766f",
+      text: "#1f2421",
+      soft: "#efede5",
+      domain: ["#3f7f68", "#8a7a3f", "#6e8273", "#9a6b4f", "#a8a29a", "#5f7568"],
+      grade: {
+        "A+": "#2f6652", "A": "#3f7f68", "A-": "#5a947d",
+        "B+": "#7b8f68", "B": "#8fa06e", "B-": "#a6a970",
+        "C+": "#b8944d", "C": "#b07842", "C-": "#a55d3d",
+        "D": "#b45309", "D*": "#b42318", "E": "#b42318", "E*": "#b42318",
+        "F": "#b42318", "X": "#b42318", "Q": "#8b5a5a", "W": "#8b5a5a",
+        "P": "#6e8273", "採": "#6e8273", "未登": "#a8a29a"
       }
     };
 
-    // --- 邏輯層 ---
-    const isPassed = (grade) => !['E', 'E*', 'F', 'X', 'Q', 'W', 'D*'].includes(grade);
+    const pageTitles = { overview: "總覽", courses: "課程資料", analytics: "統計分析" };
+    const isPassed = grade => !["E", "E*", "F", "X", "Q", "W", "D*"].includes(grade);
 
-    const getGpaPoints = (grade) => {
-      const mapping = {
-        'A+': 4.3, 'A': 4.0, 'A-': 3.7,
-        'B+': 3.3, 'B': 3.0, 'B-': 2.7,
-        'C+': 2.3, 'C': 2.0, 'C-': 1.7,
-        'D': 1.0, 'D*': 1.0, 'E': 0.0, 'E*': 0.0, 'F': 0.0, 'X': 0.0
-      };
-      return mapping[grade]; 
+    const getGpaPoints = grade => ({
+      "A+": 4.3, "A": 4.0, "A-": 3.7,
+      "B+": 3.3, "B": 3.0, "B-": 2.7,
+      "C+": 2.3, "C": 2.0, "C-": 1.7,
+      "D": 1.0, "D*": 1.0, "E": 0.0, "E*": 0.0, "F": 0.0, "X": 0.0
+    }[grade]);
+
+    const getCourseCode = course => course.course_code || course.code || "";
+    const fmt = value => Number(value || 0).toFixed(1).replace(/\.0$/, "");
+    const pct = (current, max) => max > 0 ? Math.min(100, (current / max) * 100) : 0;
+    const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[char]));
+
+    const getGradeClass = grade => {
+      if (["A+", "A", "A-"].includes(grade)) return "badge--a";
+      if (["B+", "B", "B-"].includes(grade)) return "badge--b";
+      if (["C+", "C", "C-", "D"].includes(grade)) return "badge--c";
+      if (["E", "E*", "F", "X", "Q", "W", "D*"].includes(grade)) return "badge--fail";
+      return "badge--neutral";
     };
 
-    const calculateOverallGPA = () => {
-      let totalGpaCredits = 0;
-      let totalGpaPoints = 0;
-      coursesData.forEach(c => {
-        const pts = getGpaPoints(c.grade);
-        if (pts !== undefined && c.credits > 0) {
-          totalGpaCredits += c.credits;
-          totalGpaPoints += (pts * c.credits);
-        }
-      });
-      if (totalGpaCredits === 0) return '0.00';
-      return (totalGpaPoints / totalGpaCredits).toFixed(2);
-    };
+    const getGradeTag = grade => `<span class="badge ${getGradeClass(grade)}">${escapeHTML(grade || "-")}</span>`;
+    const getStatusLabel = status => ({ applied: "採計", exempted: "抵免", cross: "跨域", overflow: "超額" }[status] || status);
+    const getStatusBadge = status => `<span class="audit-tag" data-status="${escapeHTML(status)}">${escapeHTML(getStatusLabel(status))}</span>`;
 
-    const getCourseCode = (course) => course.course_code || course.code;
-
-    const matchRuleBodyOnly = (course, rule) => {
+    function matchRuleBodyOnly(course, rule) {
       if (!rule) return false;
       const code = getCourseCode(course);
-
-      if (rule.type === 'regex') return new RegExp(rule.value).test(code);
-      if (rule.type === 'course_codes') return rule.values.includes(code);
-      if (rule.type === 'mixed') return rule.values.includes(code) || new RegExp(rule.regex).test(code);
-      if (rule.type === 'any') return true;
+      if (rule.type === "regex") return new RegExp(rule.value).test(code);
+      if (rule.type === "course_codes") return rule.values.includes(code);
+      if (rule.type === "mixed") return rule.values.includes(code) || new RegExp(rule.regex).test(code);
+      if (rule.type === "any") return true;
       return false;
-    };
+    }
 
-    const isCommonOrFreeCategory = (categoryName) => {
-      return categoryName.includes('校共同') ||
-             categoryName.includes('共同') ||
-             categoryName.includes('通識') ||
-             categoryName.includes('體育') ||
-             categoryName.includes('自由');
-    };
+    function isCommonOrFreeCategory(categoryName) {
+      return categoryName.includes("校共同") ||
+             categoryName.includes("共同") ||
+             categoryName.includes("通識") ||
+             categoryName.includes("體育") ||
+             categoryName.includes("自由");
+    }
 
-    const isCourseInSameProgramProfessionalCategory = (course, report, currentCatNode) => {
+    function isCourseInSameProgramProfessionalCategory(course, report, currentCatNode) {
       if (!report || !report.categories) return false;
-
       return report.categories.some(catNode => {
         if (catNode === currentCatNode) return false;
         if (isCommonOrFreeCategory(catNode.name)) return false;
-
         if (catNode.subCategories && catNode.subCategories.length > 0) {
           return catNode.subCategories.some(subNode => matchRuleBodyOnly(course, subNode.match_rule));
         }
-
         return matchRuleBodyOnly(course, catNode.match_rule);
       });
-    };
+    }
 
-    const matchCourse = (course, rule, context = {}) => {
+    function matchCourse(course, rule, context = {}) {
       if (!rule) return false;
       const code = getCourseCode(course);
-
-      // 一般規則先判斷。若課程本身就是 UG 通識課，仍可正常進入通識。
       if (matchRuleBodyOnly(course, rule)) return true;
-
-      // 抵免規則保留：這通常是輔系、雙主修對外系課的替代採計。
       if (rule.exemptions && rule.exemptions.some(e => e.taken === code)) return true;
 
-      // 跨域探索特例：只有「非本主修專業欄位」的課可以被當作跨域。
-      // 例如 EE_Major 中，AEU0014 同時是電機系必修，所以不得再認列為電機主修的跨域探索；
-      // 但 MAU0160 不屬於電機系必修/系選修欄位，因此仍可認列為電機主修的跨域探索。
       if (rule.cross_disciplinary && rule.cross_disciplinary.includes(code)) {
-        const blockedByOwnProfessionalRule = isCourseInSameProgramProfessionalCategory(
-          course,
-          context.report,
-          context.catNode
-        );
-
-        return !blockedByOwnProfessionalRule;
+        return !isCourseInSameProgramProfessionalCategory(course, context.report, context.catNode);
       }
-
       return false;
-    };
+    }
 
-    // --- 核心重構：Two-Phase Match & Allocate Engine ---
-    const runGlobalAudit = () => {
+    function calculateOverallGPA() {
+      let credits = 0;
+      let points = 0;
+      coursesData.forEach(course => {
+        const p = getGpaPoints(course.grade);
+        if (p !== undefined && Number(course.credits) > 0) {
+          credits += Number(course.credits);
+          points += p * Number(course.credits);
+        }
+      });
+      return { value: credits > 0 ? points / credits : 0, credits };
+    }
+
+    function getSemesterStats() {
+      const semesters = [...new Set(coursesData.map(c => c.semester))].sort();
+      return semesters.map(semester => {
+        const courses = coursesData.filter(c => c.semester === semester);
+        const passed = courses.filter(c => isPassed(c.grade));
+        const pending = courses.filter(c => c.grade === "未登");
+        let gpaCredits = 0;
+        let gpaPoints = 0;
+
+        courses.forEach(course => {
+          const p = getGpaPoints(course.grade);
+          if (p !== undefined && Number(course.credits) > 0) {
+            gpaCredits += Number(course.credits);
+            gpaPoints += p * Number(course.credits);
+          }
+        });
+
+        return {
+          semester,
+          totalCredits: courses.reduce((sum, c) => sum + Number(c.credits || 0), 0),
+          earnedCredits: passed.filter(c => c.grade !== "未登").reduce((sum, c) => sum + Number(c.credits || 0), 0),
+          pendingCredits: pending.reduce((sum, c) => sum + Number(c.credits || 0), 0),
+          count: courses.length,
+          gpaCredits,
+          gpa: gpaCredits > 0 ? Number((gpaPoints / gpaCredits).toFixed(2)) : null,
+        };
+      });
+    }
+
+    function runGlobalAudit() {
       generatedReports = {};
       if (!rulesData || !coursesData) return;
 
-      // Initialize Report Data Structures
       Object.keys(rulesData).forEach(programKey => {
         const programRule = rulesData[programKey];
-        let report = {
+        const report = {
           key: programKey,
           name: programRule.name,
-          color: programRule.color || 'blue',
+          color: programRule.color || "default",
           year: programRule.applicable_year,
           totalRequired: 0,
           totalEarned: 0,
@@ -248,25 +538,44 @@
         };
 
         programRule.categories.forEach(cat => {
-          let catNode = { name: cat.name, required: cat.required_credits, actualEarned: 0, pendingEarned: 0, earned: 0, pending: 0, items: [], subCategories: [] };
+          const catNode = {
+            name: cat.name,
+            required: Number(cat.required_credits || 0),
+            actualEarned: 0,
+            pendingEarned: 0,
+            earned: 0,
+            pending: 0,
+            items: [],
+            subCategories: [],
+          };
+
           if (cat.sub_categories) {
             cat.sub_categories.forEach(sub => {
-              catNode.subCategories.push({ name: sub.name, required: sub.required_credits, actualEarned: 0, pendingEarned: 0, earned: 0, pending: 0, items: [], match_rule: sub.match_rule });
+              catNode.subCategories.push({
+                name: sub.name,
+                required: Number(sub.required_credits || 0),
+                actualEarned: 0,
+                pendingEarned: 0,
+                earned: 0,
+                pending: 0,
+                items: [],
+                match_rule: sub.match_rule,
+              });
             });
           } else {
             catNode.match_rule = cat.match_rule;
           }
+
           report.categories.push(catNode);
-          report.totalRequired += cat.required_credits;
+          report.totalRequired += catNode.required;
         });
 
         generatedReports[programKey] = report;
       });
 
-      // Phase 1: Match Phase (多重標記，找出所有可能的相容規則)
       coursesData.forEach(course => {
         course.matches = {};
-        course.allocations = {}; // 將用來存這門課最終分發到的類別
+        course.allocations = {};
 
         Object.keys(rulesData).forEach(programKey => {
           course.matches[programKey] = [];
@@ -279,43 +588,33 @@
                   course.matches[programKey].push({ catNode, subNode, catIndex, subIndex });
                 }
               });
-            } else {
-              if (matchCourse(course, catNode.match_rule, { programKey, report, catNode })) {
-                course.matches[programKey].push({ catNode, subNode: null, catIndex });
-              }
+            } else if (matchCourse(course, catNode.match_rule, { programKey, report, catNode })) {
+              course.matches[programKey].push({ catNode, subNode: null, catIndex });
             }
           });
         });
       });
 
-      // Phase 2: Allocate Phase (學位內部配額分配)
       coursesData.forEach((course, courseIndex) => {
         if (!isPassed(course.grade)) return;
-        const isPendingCourse = course.grade === '未登';
+        const isPendingCourse = course.grade === "未登";
 
         Object.keys(rulesData).forEach(programKey => {
           const matches = course.matches[programKey];
-          if (!matches || matches.length === 0) return; // 這門課對該學程完全無用
+          if (!matches || matches.length === 0) return;
 
-          // 核心邏輯：在「同一個學程」中，依照順序尋找「尚有空位」的分類。如果全滿了，就分給第一個分類（視為超額）。
           let selectedMatch = null;
           for (let i = 0; i < matches.length; i++) {
             const target = matches[i].subNode || matches[i].catNode;
-            // 只要實際取得+未登學分還沒滿，就直接分配進去
             if ((target.actualEarned + target.pendingEarned) < target.required) {
               selectedMatch = matches[i];
               break;
             }
           }
-
-          // 如果全部都滿了（例如必選修全滿，連自由選修也滿了），就強制丟給優先權最高的第一個標籤當作 overflow
-          if (!selectedMatch) {
-            selectedMatch = matches[0];
-          }
+          if (!selectedMatch) selectedMatch = matches[0];
 
           const target = selectedMatch.subNode || selectedMatch.catNode;
-          const code = course.course_code || course.code;
-          
+          const code = getCourseCode(course);
           let exemption = null;
           let isCross = false;
 
@@ -325,32 +624,27 @@
           }
 
           const isOverflow = (target.actualEarned + target.pendingEarned) >= target.required;
-          let status = isOverflow ? 'overflow' : (exemption ? 'exempted' : (isCross ? 'cross' : 'applied'));
-          let reason = isOverflow ? '類別學分已滿，轉為超額備查' : 
-                       (exemption ? `抵免科目: ${exemption.target} ${exemption.target_name || ''}`.trim() : 
-                       (isCross ? '跨領域專業探索課程' : '成功採計'));
+          const status = isOverflow ? "overflow" : (exemption ? "exempted" : (isCross ? "cross" : "applied"));
+          const reason = isOverflow ? "類別學分已滿" :
+            (exemption ? `抵免科目: ${exemption.target} ${exemption.target_name || ""}`.trim() :
+            (isCross ? "跨領域專業探索課程" : "採計"));
 
-          // 執行學分分發
-          if (isPendingCourse) target.pendingEarned += course.credits;
-          else target.actualEarned += course.credits;
+          if (isPendingCourse) target.pendingEarned += Number(course.credits || 0);
+          else target.actualEarned += Number(course.credits || 0);
 
-          // 紀錄至報表中，供前端呈現
           target.items.push({ course, status, reason, courseIndex });
-
-          // 同時紀錄在 course 本身，供「修課清單」的全域追蹤徽章使用
           course.allocations[programKey] = {
             programName: rulesData[programKey].name,
             category: selectedMatch.catNode.name,
             subCategory: selectedMatch.subNode ? selectedMatch.subNode.name : null,
-            status: status,
-            reason: reason
+            status,
+            reason
           };
         });
       });
 
-      // Phase 3: 最終結算
       Object.keys(generatedReports).forEach(programKey => {
-        let report = generatedReports[programKey];
+        const report = generatedReports[programKey];
         report.categories.forEach(cat => {
           if (cat.subCategories.length > 0) {
             cat.subCategories.forEach(sub => {
@@ -369,677 +663,762 @@
           report.totalPending += cat.pending;
         });
       });
-    };
+    }
 
-    // --- 呈現組件 ---
-    const getGradeTag = (grade) => {
-      const g = grade || '無';
-      let c = "bg-slate-100 text-slate-600 border-slate-200";
-      if (['A+', 'A', 'A-'].includes(g)) c = "bg-emerald-100 text-emerald-700 border-emerald-200";
-      else if (['B+', 'B', 'B-'].includes(g)) c = "bg-blue-100 text-blue-700 border-blue-200";
-      else if (['C+', 'C', 'C-'].includes(g)) c = "bg-yellow-100 text-yellow-700 border-yellow-200";
-      else if (['Q', 'E*', 'F', 'X', 'W', 'D*'].includes(g)) c = "bg-red-50 text-red-600 border-red-100";
-      else if (g === '未登') c = "bg-slate-100 text-slate-500 border-slate-200"; 
-      else if (['P', '採'].includes(g)) c = "bg-indigo-100 text-indigo-700 border-indigo-200";
-      return `<span class="inline-block w-12 text-center py-0.5 text-xs font-semibold rounded border ${c}">${g}</span>`;
-    };
+    function getCourseDomain(course) {
+      if (!course.allocations || Object.keys(course.allocations).length === 0) return "自由選修/其他";
+      const allocs = Object.values(course.allocations);
+      if (allocs.some(a => a.category.includes("共同") || a.category.includes("通識") || a.category.includes("體育"))) {
+        return "共同/通識";
+      }
+      const specialized = allocs.filter(a => !a.category.includes("自由"));
+      if (specialized.length > 0) return specialized[0].programName;
+      return "自由選修/其他";
+    }
 
-    const getStatusBadge = (status) => {
-      if (status === 'applied') return `<span class="shrink-0 px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-[10px] font-bold border border-emerald-200 uppercase tracking-wider"><i class="fas fa-check mr-1"></i>採計</span>`;
-      if (status === 'exempted') return `<span class="shrink-0 px-2 py-1 bg-cyan-50 text-cyan-700 rounded text-[10px] font-bold border border-cyan-200 uppercase tracking-wider"><i class="fas fa-exchange-alt mr-1"></i>抵免</span>`;
-      if (status === 'cross') return `<span class="shrink-0 px-2 py-1 bg-purple-50 text-purple-700 rounded text-[10px] font-bold border border-purple-200 uppercase tracking-wider"><i class="fas fa-random mr-1"></i>跨域</span>`;
-      if (status === 'overflow') return `<span class="shrink-0 px-2 py-1 bg-amber-50 text-amber-700 rounded text-[10px] font-bold border border-amber-200 uppercase tracking-wider"><i class="fas fa-plus mr-1"></i>超額</span>`;
-      return ''; 
-    };
+    function getDomainList() {
+      const names = new Set(["共同/通識"]);
+      Object.keys(rulesData || {}).forEach(key => names.add(rulesData[key].name));
+      names.add("自由選修/其他");
+      return Array.from(names);
+    }
 
-    const renderProgressBar = (label, current, pending, max, colorTheme) => {
-      const currentPct = Math.min(100, (current / max) * 100) || 0;
-      const pendingPct = Math.min(100 - currentPct, (pending / max) * 100) || 0;
-      const colorMap = { blue: "bg-blue-500", purple: "bg-purple-500", emerald: "bg-emerald-500" };
-      const themeClass = colorMap[colorTheme] || colorMap.blue;
-      
+    function renderProgressRow(name, earned, pending, required) {
+      const earnedPct = pct(earned, required);
+      const pendingPct = Math.min(100 - earnedPct, pct(pending, required));
+      const totalPct = Math.min(100, earnedPct + pendingPct);
+
       return `
-        <div class="w-full">
-          <div class="flex items-center justify-between text-sm mb-1.5">
-            <span class="text-slate-600 font-medium truncate pr-2">${label}</span>
-            <div class="text-right shrink-0">
-              <span class="text-slate-700 font-bold mr-1">${current}${pending > 0 ? `<span class="text-slate-400 font-normal text-[11px] ml-1">+${pending}</span>` : ''} <span class="text-slate-400 font-normal text-xs">/ ${max}</span></span>
-              <span class="text-slate-400 text-xs w-9 inline-block text-right">${(currentPct + pendingPct).toFixed(0)}%</span>
+        <div class="progress-row">
+          <div class="progress-name">${escapeHTML(name)}</div>
+          <div class="progress-number">${fmt(earned)}${pending > 0 ? ` +${fmt(pending)}` : ""} / ${fmt(required)}</div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" style="width:${totalPct}%">
+              <div class="progress-pending" style="width:${pendingPct > 0 ? (pendingPct / Math.max(totalPct, 1)) * 100 : 0}%"></div>
             </div>
           </div>
-          <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
-            <div class="${themeClass} transition-all duration-700" style="width: ${currentPct}%"></div>
-            <div class="${themeClass} opacity-30 transition-all duration-700" style="width: ${pendingPct}%"></div>
+          <div class="progress-percent">${totalPct.toFixed(0)}%</div>
+        </div>
+      `;
+    }
+
+    function renderMetrics() {
+      const gpa = calculateOverallGPA();
+      const totalEarned = coursesData
+        .filter(c => isPassed(c.grade) && c.grade !== "未登")
+        .reduce((sum, c) => sum + Number(c.credits || 0), 0);
+      const totalPending = coursesData
+        .filter(c => c.grade === "未登")
+        .reduce((sum, c) => sum + Number(c.credits || 0), 0);
+      const gpaCourses = coursesData.filter(c => getGpaPoints(c.grade) !== undefined).length;
+
+      return `
+        <div class="metric-grid">
+          <div class="metric">
+            <p class="metric-label">累積 GPA</p>
+            <p class="metric-value">${gpa.value.toFixed(2)}</p>
+            <p class="metric-sub">4.3 制｜${fmt(gpa.credits)} GPA credits</p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">已取得學分</p>
+            <p class="metric-value">${fmt(totalEarned)}</p>
+            <p class="metric-sub">passed credits</p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">修習中學分</p>
+            <p class="metric-value">${fmt(totalPending)}</p>
+            <p class="metric-sub">pending credits</p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">修課門數</p>
+            <p class="metric-value">${coursesData.length}</p>
+            <p class="metric-sub">${gpaCourses} GPA-counted courses</p>
           </div>
         </div>
       `;
-    };
+    }
 
-    window.handleTableSort = (key) => {
-      if (currentSort.key === key) {
-        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-      } else {
-        currentSort.key = key;
-        currentSort.direction = 'desc';
-      }
-      
-      ['semester', 'code', 'credits', 'grade'].forEach(k => {
-        const iconEl = document.getElementById(`sort-icon-${k}`);
-        if (iconEl) {
-          if (currentSort.key !== k) {
-            iconEl.className = 'fas fa-sort text-slate-300 ml-1 transition-colors';
-          } else {
-            iconEl.className = currentSort.direction === 'asc' ? 'fas fa-sort-up text-indigo-500 ml-1 transition-colors' : 'fas fa-sort-down text-indigo-500 ml-1 transition-colors';
-          }
-        }
-      });
-      
-      handleCourseSearch();
-    };
-
-    const renderSortIcon = (key) => {
-      if (currentSort.key !== key) return `<i id="sort-icon-${key}" class="fas fa-sort text-slate-300 ml-1 transition-colors"></i>`;
-      return currentSort.direction === 'asc' 
-        ? `<i id="sort-icon-${key}" class="fas fa-sort-up text-indigo-500 ml-1 transition-colors"></i>` 
-        : `<i id="sort-icon-${key}" class="fas fa-sort-down text-indigo-500 ml-1 transition-colors"></i>`;
-    };
-
-    // --- 視圖渲染 ---
-
-    const renderOverview = () => {
-      const totalEarned = coursesData.filter(c => isPassed(c.grade) && c.grade !== '未登').reduce((sum, c) => sum + (c.credits||0), 0);
-      const totalPending = coursesData.filter(c => c.grade === '未登').reduce((sum, c) => sum + (c.credits||0), 0);
-      const gpaValue = calculateOverallGPA();
-
-      let programCardsHTML = '';
-      if (Object.keys(generatedReports).length > 0) {
-        programCardsHTML = `<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">`;
-        Object.keys(generatedReports).forEach(key => {
+    function renderOverview() {
+      const progressHTML = Object.keys(generatedReports)
+        .map(key => {
           const report = generatedReports[key];
-          let barsHTML = report.categories.map(cat => 
-            renderProgressBar(cat.name, cat.earned, cat.pending, cat.required, report.color)
-          ).join('<div class="h-4"></div>');
+          return renderProgressRow(report.name, report.totalEarned, report.totalPending, report.totalRequired);
+        }).join("");
 
-          const iconStyles = report.color === 'purple' ? 'bg-purple-50 text-purple-600' : 
-                             report.color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 
-                             'bg-blue-50 text-blue-600';
-          const iconClass = key.includes('Major') ? 'fa-graduation-cap' : 'fa-book-open';
-
-          programCardsHTML += `
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col hover:shadow-md transition-shadow">
-              <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 rounded-xl ${iconStyles} flex items-center justify-center font-bold text-xl shrink-0">
-                  <i class="fas ${iconClass}"></i>
-                </div>
-                <div>
-                  <h3 class="text-lg font-bold text-slate-800 leading-tight">${report.name}</h3>
-                  <p class="text-xs text-slate-400 mt-1">Ver: ${report.year}</p>
-                </div>
+      document.getElementById("content").innerHTML = `
+        <div class="view">
+          <section class="section">
+            <div class="section-header"><h3 class="section-title">總覽指標</h3></div>
+            ${renderMetrics()}
+          </section>
+          <section class="section">
+            <div class="section-header"><h3 class="section-title">學程完成率</h3></div>
+            <div class="progress-list">${progressHTML}</div>
+          </section>
+          <section class="section">
+            <div class="section-header"><h3 class="section-title">學期學分與 GPA</h3></div>
+            <div class="chart-grid">
+              <div class="chart-panel">
+                <h4 class="section-caption">各學期修課學分</h4>
+                <div class="chart-frame"><canvas id="semesterCreditsChart"></canvas></div>
               </div>
-              <div class="space-y-2 flex-1">
-                ${barsHTML}
-              </div>
-              <div class="mt-6 pt-5 border-t border-slate-100">
-                ${renderProgressBar('總學程進度', report.totalEarned, report.totalPending, report.totalRequired, report.color)}
-              </div>
-            </div>
-          `;
-        });
-        programCardsHTML += `</div>`;
-      }
-
-      document.getElementById('content-area').innerHTML = `
-        <div class="space-y-6 animate-fade-in">
-          <div>
-            <h2 class="text-2xl font-bold text-slate-800">學業總覽</h2>
-            <p class="text-slate-500 mt-1">跨學程學分統計與全域修課狀態</p>
-          </div>
-          
-          <!-- 全局統計四本柱 -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
-              <div class="p-3 bg-rose-50 text-rose-600 rounded-xl"><i class="fas fa-star text-2xl"></i></div>
-              <div>
-                <p class="text-sm text-slate-500 font-medium">總學業平均 (GPA)</p>
-                <p class="text-3xl font-bold text-slate-800">${gpaValue} <span class="text-lg text-slate-400 font-normal">/ 4.3</span></p>
+              <div class="chart-panel">
+                <h4 class="section-caption">各學期 GPA</h4>
+                <div class="chart-frame"><canvas id="semesterGpaChart"></canvas></div>
               </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
-              <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fas fa-check-circle text-2xl"></i></div>
-              <div>
-                <p class="text-sm text-slate-500 font-medium">已取得實得學分</p>
-                <p class="text-3xl font-bold text-slate-800">${totalEarned}</p>
-              </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
-              <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i class="fas fa-clock text-2xl"></i></div>
-              <div>
-                <p class="text-sm text-slate-500 font-medium">修習中學分</p>
-                <p class="text-3xl font-bold text-slate-800">${totalPending}</p>
-              </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
-              <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fas fa-award text-2xl"></i></div>
-              <div>
-                <p class="text-sm text-slate-500 font-medium">修課總門數</p>
-                <p class="text-3xl font-bold text-slate-800">${coursesData.length} <span class="text-lg text-slate-400 font-normal">門</span></p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 學程進度追蹤卡片 (移至圖表之上) -->
-          ${programCardsHTML ? `<div>${programCardsHTML}</div>` : ''}
-
-          <!-- 堆疊圖表與折線混合區塊 -->
-          <div class="mt-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
-              <h3 class="text-base font-bold text-slate-800 mb-1">學期學分領域分布與成績趨勢</h3>
-              <p class="text-xs text-slate-400 mb-6">各學期實得學分數之領域組成與當學期 GPA 表現</p>
-              <div class="relative w-full min-h-[350px]">
-                <canvas id="semesterChart"></canvas>
-              </div>
-            </div>
-          </div>
+          </section>
         </div>
       `;
-
-      setTimeout(renderCharts, 0);
-    };
-
-    const renderCharts = () => {
-      if (chartInstances.semester) chartInstances.semester.destroy();
-
-      const validCourses = coursesData.filter(c => isPassed(c.grade));
-      const semesters = [...new Set(validCourses.map(c => c.semester))].sort();
-      
-      const gpaData = semesters.map(sem => {
-        let semGpaCredits = 0;
-        let semGpaPoints = 0;
-        validCourses.forEach(c => {
-          if (c.semester === sem) {
-            const pts = getGpaPoints(c.grade);
-            if (pts !== undefined && c.credits > 0) {
-              semGpaCredits += c.credits;
-              semGpaPoints += (pts * c.credits);
-            }
-          }
-        });
-        return semGpaCredits > 0 ? parseFloat((semGpaPoints / semGpaCredits).toFixed(2)) : null;
+      requestAnimationFrame(() => {
+        renderSemesterCreditsChart();
+        renderSemesterGpaChart();
       });
+    }
+function getFilteredCourses() {
+      const term = activeFilters.search.trim().toLowerCase();
 
-      // 1. 動態建立圖表領域清單，嚴格對應 program.json 內的學程
-      const domainsMap = new Map();
-      domainsMap.set('共同/通識', { key: '共同/通識', color: '#fbbf24' }); // 通識用黃色
-      
-      const themeHexMap = { blue: '#60a5fa', purple: '#c084fc', emerald: '#34d399', red: '#f87171', orange: '#fb923c' };
-      const fallbackHex = ['#60a5fa', '#c084fc', '#34d399', '#f87171', '#38bdf8'];
-      let cIdx = 0;
-      
-      Object.keys(rulesData).forEach(key => {
-        const pName = rulesData[key].name;
-        const hexColor = themeHexMap[rulesData[key].color] || fallbackHex[cIdx % fallbackHex.length];
-        domainsMap.set(pName, { key: pName, color: hexColor });
-        cIdx++;
+      let filtered = coursesData.filter(course => {
+        const matchesTerm = !term ||
+          course.name.toLowerCase().includes(term) ||
+          getCourseCode(course).toLowerCase().includes(term) ||
+          String(course.teacher || "").toLowerCase().includes(term);
+
+        const matchesSemester = activeFilters.semester === "all" || course.semester === activeFilters.semester;
+        const matchesGrade = activeFilters.grade === "all" || course.grade === activeFilters.grade;
+        const matchesPass = activeFilters.pass === "all" ||
+          (activeFilters.pass === "passed" && isPassed(course.grade) && course.grade !== "未登") ||
+          (activeFilters.pass === "pending" && course.grade === "未登") ||
+          (activeFilters.pass === "failed" && !isPassed(course.grade));
+        const matchesProgram = activeFilters.program === "all" ||
+          (course.allocations && course.allocations[activeFilters.program]);
+
+        return matchesTerm && matchesSemester && matchesGrade && matchesPass && matchesProgram;
       });
-      
-      domainsMap.set('自由選修/其他', { key: '自由選修/其他', color: '#cbd5e1' }); // 其他用灰色
-
-      // 2. 嚴格依據 rulesData (program.json) 的審查結果判定歸屬，不依賴課碼前綴
-      const getCourseDomain = (c) => {
-        if (!c.allocations || Object.keys(c.allocations).length === 0) return '自由選修/其他';
-
-        const allocs = Object.values(c.allocations);
-        
-        // 優先篩選出：共同/通識 (特徵：類別名稱包含共同或通識)
-        if (allocs.some(a => a.category.includes('共同') || a.category.includes('通識'))) {
-          return '共同/通識';
-        }
-        
-        // 接著篩選出：專業必選修 (排除自由選修)
-        const specializedAllocs = allocs.filter(a => !a.category.includes('自由'));
-        
-        if (specializedAllocs.length > 0) {
-           return specializedAllocs[0].programName; // 精準對應到 program.json 的學程名稱
-        }
-
-        return '自由選修/其他';
-      };
-
-      const datasets = Array.from(domainsMap.values()).map(domain => {
-        const data = semesters.map(sem => {
-          return validCourses
-            .filter(c => c.semester === sem && getCourseDomain(c) === domain.key)
-            .reduce((sum, c) => sum + (c.credits || 0), 0);
-        });
-
-        return {
-          type: 'bar',
-          label: domain.key,
-          data: data,
-          backgroundColor: domain.color,
-          borderWidth: 0,
-          barPercentage: 0.6,
-          yAxisID: 'y',
-          order: 1
-        };
-      });
-
-      // 3. 加入 GPA 折線圖
-      datasets.push({
-        type: 'line',
-        label: '學期 GPA',
-        data: gpaData,
-        borderColor: '#777777',
-        backgroundColor: '#1e293b',
-        borderWidth: 3,
-        pointBackgroundColor: '#ffffff',
-        pointBorderColor: '#777777',
-        pointBorderWidth: 3,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        yAxisID: 'yGpa',
-        tension: 0.3,
-        order: 0 // 確保折線圖在最頂層
-      });
-
-      const lineShadowPlugin = {
-        id: 'lineShadow',
-        beforeDatasetDraw: (chart, args) => {
-          if (chart.data.datasets[args.index].type === 'line') {
-            chart.ctx.save();
-            chart.ctx.shadowColor = 'rgba(15, 23, 42, 0.3)';
-            chart.ctx.shadowBlur = 10;
-            chart.ctx.shadowOffsetX = 0;
-            chart.ctx.shadowOffsetY = 4;
-          }
-        },
-        afterDatasetDraw: (chart, args) => {
-          if (chart.data.datasets[args.index].type === 'line') {
-            chart.ctx.restore();
-          }
-        }
-      };
-
-      const ctxSem = document.getElementById('semesterChart').getContext('2d');
-      chartInstances.semester = new Chart(ctxSem, {
-        data: {
-          labels: semesters,
-          datasets: datasets
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { stacked: true, grid: { display: false } },
-            y: { 
-              stacked: true, 
-              beginAtZero: true, 
-              grid: { borderDash: [4, 4], color: '#f1f5f9' },
-              title: { display: true, text: '學分數', color: '#94a3b8', font: {size: 11} }
-            },
-            yGpa: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              min: 0,
-              max: 4.3,
-              grid: { display: false },
-              title: { display: true, text: 'GPA (4.3制)', color: '#94a3b8', font: {size: 11} }
-            }
-          },
-          plugins: {
-            legend: { 
-              position: 'top', 
-              labels: { usePointStyle: true, boxWidth: 8, font: { family: "'Noto Sans TC', sans-serif" } } 
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  let label = context.dataset.label || '';
-                  if (label) label += ': ';
-                  if (context.dataset.type === 'line') {
-                    if (context.parsed.y !== null) label += context.parsed.y.toFixed(2);
-                  } else {
-                    if (context.parsed.y !== null) label += context.parsed.y + ' 學分';
-                  }
-                  return label;
-                }
-              }
-            }
-          }
-        },
-        plugins: [lineShadowPlugin]
-      });
-    };
-
-    const renderCourseList = (filteredCourses = coursesData) => {
-      let tbodyHTML = '';
-      
-      if (filteredCourses.length === 0) {
-        tbodyHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-slate-400"><i class="fas fa-search mb-3 text-2xl"></i><p>找不到符合條件的課程</p></td></tr>`;
-      } else {
-        tbodyHTML = filteredCourses.map((course) => {
-          
-          let auditBadges = '';
-          if (course.allocations) {
-            auditBadges = Object.keys(course.allocations).map(programKey => {
-              const a = course.allocations[programKey];
-              const isOverflow = a.status === 'overflow';
-              const isExempted = a.status === 'exempted';
-              const isCross = a.status === 'cross';
-              
-              let colorClass = 'bg-indigo-50 text-indigo-600 border-indigo-200';
-              if (isOverflow) colorClass = 'bg-amber-50 text-amber-600 border-amber-200';
-              else if (isExempted) colorClass = 'bg-cyan-50 text-cyan-700 border-cyan-200';
-              else if (isCross) colorClass = 'bg-purple-50 text-purple-700 border-purple-200';
-              
-              const shortName = a.programName.split('_')[0].split(' ')[0];
-              const tagSuffix = isOverflow ? '(超)' : (isExempted ? '(抵)' : (isCross ? '(跨)' : ''));
-              const catStr = a.subCategory ? `${a.category}-${a.subCategory}` : a.category;
-              return `<span class="inline-block px-1.5 py-0.5 text-[10px] border rounded ${colorClass} mr-1 mb-1 whitespace-nowrap" title="${a.programName}: ${catStr}\n狀態: ${a.reason}">
-                        ${shortName} ${tagSuffix}
-                      </span>`;
-            }).join('');
-          }
-          if(!auditBadges) auditBadges = '<span class="text-xs text-slate-400">-</span>';
-
-          return `
-          <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0">
-            <td class="px-4 py-3 font-medium text-slate-700 whitespace-nowrap text-center">${course.semester}</td>
-            <td class="px-4 py-3 font-mono text-xs text-slate-400 whitespace-nowrap text-center">${course.course_code || course.code}</td>
-            <td class="px-4 py-3 font-medium text-slate-800 min-w-[150px]">${course.name}</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-600 text-center">${course.credits ? course.credits.toFixed(1) : '0.0'}</td>
-            <td class="px-4 py-3 text-sm text-slate-500 whitespace-nowrap">${course.teacher || '-'}</td>
-            <td class="px-4 py-3 whitespace-nowrap text-center">${getGradeTag(course.grade)}</td>
-            <td class="px-4 py-3 min-w-[180px]">${auditBadges}</td>
-          </tr>
-        `}).join('');
-      }
-
-      if(!document.getElementById('course-search-input')) {
-        document.getElementById('content-area').innerHTML = `
-          <div class="space-y-6 animate-fade-in">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h2 class="text-2xl font-bold text-slate-800">修課清單與搜尋</h2>
-                <p class="text-slate-500 mt-1 text-sm">點擊表頭可排序。(抵)為等效抵免，(跨)為跨領域探索。</p>
-              </div>
-              <div class="flex flex-col sm:flex-row gap-2">
-                <div class="relative">
-                  <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm"></i>
-                  <input type="text" id="course-search-input" oninput="debounceSearch()" placeholder="搜尋課碼、名稱或教師..." class="pl-9 pr-4 py-2 w-full md:w-64 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
-                </div>
-              </div>
-            </div>
-            
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-slate-600">
-                  <thead class="bg-slate-50 text-slate-500 font-medium border-b border-slate-100">
-                    <tr>
-                      <th class="px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-slate-100 transition-colors select-none text-center" onclick="handleTableSort('semester')">學期 ${renderSortIcon('semester')}</th>
-                      <th class="px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-slate-100 transition-colors select-none text-center" onclick="handleTableSort('code')">代碼 ${renderSortIcon('code')}</th>
-                      <th class="px-4 py-3 whitespace-nowrap">課程名稱</th>
-                      <th class="px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-slate-100 transition-colors select-none text-center" onclick="handleTableSort('credits')">學分 ${renderSortIcon('credits')}</th>
-                      <th class="px-4 py-3 whitespace-nowrap">教師</th>
-                      <th class="px-4 py-3 whitespace-nowrap cursor-pointer hover:bg-slate-100 transition-colors select-none text-center" onclick="handleTableSort('grade')">等第 ${renderSortIcon('grade')}</th>
-                      <th class="px-4 py-3 whitespace-nowrap">認列軌跡</th>
-                    </tr>
-                  </thead>
-                  <tbody id="course-table-body" class="divide-y divide-slate-100">
-                    ${tbodyHTML}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        `;
-      } else {
-        document.getElementById('course-table-body').innerHTML = tbodyHTML;
-      }
-    };
-
-    let searchTimeout;
-    window.debounceSearch = () => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => handleCourseSearch(), 300);
-    };
-
-    window.handleCourseSearch = () => {
-      const term = document.getElementById('course-search-input') ? document.getElementById('course-search-input').value.toLowerCase() : '';
-      
-      let filtered = coursesData.filter(c => 
-        c.name.toLowerCase().includes(term) || 
-        (c.course_code||c.code).toLowerCase().includes(term) ||
-        (c.teacher && c.teacher.toLowerCase().includes(term))
-      );
 
       filtered.sort((a, b) => {
-        let modifier = currentSort.direction === 'asc' ? 1 : -1;
-        if (currentSort.key === 'semester') {
-          return modifier * String(a.semester || '').localeCompare(String(b.semester || ''));
-        } else if (currentSort.key === 'code') {
-          const codeA = a.course_code || a.code || '';
-          const codeB = b.course_code || b.code || '';
-          return modifier * String(codeA).localeCompare(String(codeB));
-        } else if (currentSort.key === 'credits') {
-          return modifier * ((parseFloat(a.credits) || 0) - (parseFloat(b.credits) || 0));
-        } else if (currentSort.key === 'grade') {
-          const gradeRank = {'A+': 100, 'A': 95, 'A-': 90, 'B+': 85, 'B': 80, 'B-': 75, 'C+': 70, 'C': 65, 'C-': 60, 'P': 55, '採': 50, 'D*': 40, 'E*': 30, 'E': 20, 'F': 10, 'X': 5, 'Q': 0, '未登': -10};
-          let rankA = gradeRank[a.grade] || -20;
-          let rankB = gradeRank[b.grade] || -20;
-          return modifier * (rankA - rankB);
+        const modifier = currentSort.direction === "asc" ? 1 : -1;
+        if (currentSort.key === "semester") return modifier * String(a.semester || "").localeCompare(String(b.semester || ""));
+        if (currentSort.key === "code") return modifier * getCourseCode(a).localeCompare(getCourseCode(b));
+        if (currentSort.key === "credits") return modifier * (Number(a.credits || 0) - Number(b.credits || 0));
+        if (currentSort.key === "grade") {
+          const rank = {
+            "A+": 100, "A": 95, "A-": 90,
+            "B+": 85, "B": 80, "B-": 75,
+            "C+": 70, "C": 65, "C-": 60,
+            "D": 50, "P": 45, "採": 44,
+            "D*": 30, "E*": 20, "E": 18, "F": 15, "X": 10, "Q": 5, "W": 4, "未登": 0
+          };
+          return modifier * ((rank[a.grade] ?? -1) - (rank[b.grade] ?? -1));
         }
         return 0;
       });
 
-      renderCourseList(filtered);
-    };
+      return filtered;
+    }
 
-    const renderProgramView = (programKey) => {
-      const report = generatedReports[programKey];
-      if (!report) return;
+    function renderAuditTags(course) {
+      if (!course.allocations || Object.keys(course.allocations).length === 0) return `<span class="audit-tag">-</span>`;
 
-      let categoriesHTML = '';
-      
-      report.categories.forEach(cat => {
-        let subCategoriesHTML = '';
-        
-        const renderItems = (items) => {
-          let displayItems = items.filter(item => item.status !== 'conflict');
-          
-          // 2. 將課程排序，優先展示「採計/抵免」，接著是「跨域」，最後顯示「超額」，次要依據「是否為修習中」排序，最後依學期排序
-          displayItems.sort((a, b) => {
-            const getRank = (status) => {
-              if (status === 'applied' || status === 'exempted') return 1;
-              if (status === 'cross') return 2;
-              if (status === 'overflow') return 3;
-              return 4;
-            };
-            if (getRank(a.status) !== getRank(b.status)) {
-              return getRank(a.status) - getRank(b.status);
-            }
-            const aPending = a.course.grade === '未登' ? 1 : 0;
-            const bPending = b.course.grade === '未登' ? 1 : 0;
-            if (aPending !== bPending) return aPending - bPending;
-            
-            // 加入學期新至舊的排序作為最次要條件，使版面極度整齊
-            return String(b.course.semester).localeCompare(String(a.course.semester));
-          });
+      return Object.keys(course.allocations).map(programKey => {
+        const allocation = course.allocations[programKey];
+        const label = `${allocation.programName}${allocation.status === "overflow" ? " 超" : ""}${allocation.status === "exempted" ? " 抵" : ""}${allocation.status === "cross" ? " 跨" : ""}`;
+        const title = `${allocation.programName}: ${allocation.category}${allocation.subCategory ? " / " + allocation.subCategory : ""}｜${allocation.reason}`;
+        return `<span class="audit-tag" data-status="${escapeHTML(allocation.status)}" title="${escapeHTML(title)}">${escapeHTML(label)}</span>`;
+      }).join("");
+    }
 
-          if (displayItems.length === 0) return `<p class="text-xs text-slate-400 mt-2 flex items-center"><i class="fas fa-inbox mr-1.5"></i> 尚無對應紀錄</p>`;
-          
-          return `<div class="space-y-2 mt-3">` + displayItems.map(item => `
-            <div class="bg-white p-3 rounded-lg border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div class="flex items-start md:items-center gap-3">
-                ${getStatusBadge(item.status)}
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="font-medium text-slate-700">${item.course.name}</span>
-                    <span class="font-mono text-xs text-slate-400">${item.course.course_code || item.course.code}</span>
-                  </div>
-                  ${item.status !== 'applied' ? `<p class="text-xs text-slate-500 mt-0.5"><i class="fas fa-info-circle mr-1 text-slate-400"></i>${item.reason}</p>` : ''}
-                </div>
-              </div>
-              <div class="flex items-center gap-3 shrink-0 self-end md:self-auto bg-slate-50 md:bg-transparent px-2 py-1 md:p-0 rounded">
-                <span class="text-slate-400 font-mono text-xs">${item.course.semester}</span>
-                <span class="text-slate-500 text-xs">${item.course.credits} 學分</span>
-                ${getGradeTag(item.course.grade)}
-              </div>
-            </div>
-          `).join('') + `</div>`;
-        };
+    function renderCourseRows(courses) {
+      if (!courses.length) return `<tr><td colspan="9" class="center">No records</td></tr>`;
 
-        if (cat.subCategories.length > 0) {
-          subCategoriesHTML = `<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">`;
-          cat.subCategories.forEach(sub => {
-            subCategoriesHTML += `
-              <div class="p-4 rounded-xl bg-slate-50/80 border border-slate-100">
-                <div class="flex justify-between items-center text-sm font-bold text-slate-700 mb-1 border-b border-slate-200/50 pb-2">
-                  <span>${sub.name}</span>
-                  <span class="text-slate-700">實得: ${sub.actualEarned}${sub.pendingEarned > 0 ? `<span class="text-slate-400 font-normal ml-0.5 text-xs">(+${sub.pendingEarned})</span>` : ''} / ${sub.required}</span>
-                </div>
-                ${renderItems(sub.items)}
-              </div>
-            `;
-          });
-          subCategoriesHTML += `</div>`;
-        } else {
-          subCategoriesHTML = `
-            <div class="bg-slate-50/80 rounded-xl border border-slate-100 p-4">
-              <div class="flex justify-between items-center text-sm font-bold text-slate-700 mb-1 border-b border-slate-200/50 pb-2">
-                <span>課程細目清單</span>
-                <span class="text-slate-700">實得：${cat.actualEarned}${cat.pendingEarned > 0 ? `<span class="text-slate-400 font-normal ml-1 text-xs">(修習中: ${cat.pendingEarned})</span>` : ''} 學分</span>
-              </div>
-              ${renderItems(cat.items)}
-            </div>`;
-        }
-        
-        categoriesHTML += `
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-            <div class="mb-5">
-              <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">${cat.name}</h3>
-              ${renderProgressBar('採計進度', cat.earned, cat.pending, cat.required, report.color)}
-            </div>
-            ${subCategoriesHTML}
-          </div>
+      return courses.map(course => {
+        const pts = getGpaPoints(course.grade);
+        const passState = course.grade === "未登" ? "未登" : (isPassed(course.grade) ? "通過" : "未通過");
+
+        return `
+          <tr>
+            <td class="mono center">${escapeHTML(course.semester)}</td>
+            <td class="mono">${escapeHTML(getCourseCode(course))}</td>
+            <td class="course-name">${escapeHTML(course.name)}</td>
+            <td class="num">${fmt(course.credits)}</td>
+            <td class="center">${getGradeTag(course.grade)}</td>
+            <td class="num">${pts === undefined ? "-" : pts.toFixed(1)}</td>
+            <td class="center"><span class="badge badge--neutral">${passState}</span></td>
+            <td><div class="audit-tags">${renderAuditTags(course)}</div></td>
+            <td>${escapeHTML(course.teacher || "-")}</td>
+          </tr>
         `;
-      });
+      }).join("");
+    }
 
-      document.getElementById('content-area').innerHTML = `
-        <div class="space-y-6 animate-fade-in">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <div>
-              <div class="flex items-center space-x-3 mb-1">
-                <h2 class="text-2xl font-bold text-slate-800">${report.name}</h2>
-                <span class="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-md border border-indigo-100 font-semibold flex items-center">
-                  <i class="fas fa-calendar-alt mr-1.5"></i>適用學年: ${report.year}
-                </span>
-              </div>
-              <p class="text-slate-500 text-sm">此頁面呈現可回溯的審查結果，清楚標示超額與抵免原因。</p>
-            </div>
-            <div class="text-left md:text-right border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 mt-2 md:mt-0 w-full md:w-auto">
-              ${renderProgressBar('總畢業學分', report.totalEarned, report.totalPending, report.totalRequired, report.color)}
-            </div>
+    function sortHeader(label, key) {
+      const icon = currentSort.key === key ? (currentSort.direction === "asc" ? "↑" : "↓") : "↕";
+      return `<button type="button" class="button" data-sort="${escapeHTML(key)}">${escapeHTML(label)} ${icon}</button>`;
+    }
+
+    function renderCourseFilters() {
+      const semesters = [...new Set(coursesData.map(c => c.semester))].sort();
+      const grades = [...new Set(coursesData.map(c => c.grade || "-"))].sort((a, b) => String(b).localeCompare(String(a)));
+      const programs = Object.keys(generatedReports);
+
+      return `
+        <div class="filter-bar">
+          <div class="field">
+            <label for="filter-search">搜尋</label>
+            <input id="filter-search" data-filter="search" value="${escapeHTML(activeFilters.search)}" placeholder="課碼 / 課名 / 教師">
           </div>
-          <div class="space-y-6">
-            ${categoriesHTML}
+          <div class="field">
+            <label for="filter-semester">學期</label>
+            <select id="filter-semester" data-filter="semester">
+              <option value="all">All</option>
+              ${semesters.map(s => `<option value="${escapeHTML(s)}" ${activeFilters.semester === s ? "selected" : ""}>${escapeHTML(s)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label for="filter-grade">等第</label>
+            <select id="filter-grade" data-filter="grade">
+              <option value="all">All</option>
+              ${grades.map(g => `<option value="${escapeHTML(g)}" ${activeFilters.grade === g ? "selected" : ""}>${escapeHTML(g)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label for="filter-pass">狀態</label>
+            <select id="filter-pass" data-filter="pass">
+              <option value="all" ${activeFilters.pass === "all" ? "selected" : ""}>All</option>
+              <option value="passed" ${activeFilters.pass === "passed" ? "selected" : ""}>通過</option>
+              <option value="pending" ${activeFilters.pass === "pending" ? "selected" : ""}>未登</option>
+              <option value="failed" ${activeFilters.pass === "failed" ? "selected" : ""}>未通過</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="filter-program">學程採計</label>
+            <select id="filter-program" data-filter="program">
+              <option value="all">All</option>
+              ${programs.map(key => `<option value="${escapeHTML(key)}" ${activeFilters.program === key ? "selected" : ""}>${escapeHTML(generatedReports[key].name)}</option>`).join("")}
+            </select>
           </div>
         </div>
       `;
-    };
+    }
 
-    const updateNavActiveState = (hash) => {
-      document.querySelectorAll('#sidebar-nav a').forEach(btn => {
-        btn.classList.remove('bg-indigo-50', 'text-indigo-700', 'font-medium');
-        btn.classList.add('text-slate-600');
-        btn.querySelector('i').classList.replace('text-indigo-600', 'text-slate-400');
+    function renderCoursesView() {
+      const filtered = getFilteredCourses();
+      document.getElementById("content").innerHTML = `
+        <div class="view">
+          <section class="section">
+            <div class="section-header">
+              <h3 class="section-title">課程資料</h3>
+              <div class="section-caption">${filtered.length} / ${coursesData.length} records</div>
+            </div>
+            ${renderCourseFilters()}
+          </section>
+          <section class="section">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="center">${sortHeader("學期", "semester")}</th>
+                    <th>${sortHeader("課碼", "code")}</th>
+                    <th>課程名稱</th>
+                    <th class="num">${sortHeader("學分", "credits")}</th>
+                    <th class="center">${sortHeader("等第", "grade")}</th>
+                    <th class="num">GPA</th>
+                    <th class="center">通過</th>
+                    <th>學程採計</th>
+                    <th>教師</th>
+                  </tr>
+                </thead>
+                <tbody>${renderCourseRows(filtered)}</tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderProgramView(programKey) {
+      const report = generatedReports[programKey];
+      if (!report) return;
+
+      const categoryRows = report.categories.map(cat => {
+        const detailHTML = cat.subCategories.length > 0
+          ? cat.subCategories.map(sub => renderSubAudit(sub)).join("")
+          : renderItemTable(cat.items);
+
+        return `
+          <details class="audit-category">
+            <summary class="audit-summary">
+              <div class="audit-name">${escapeHTML(cat.name)}</div>
+              <div class="audit-credit">${fmt(cat.earned)}${cat.pending > 0 ? ` +${fmt(cat.pending)}` : ""} / ${fmt(cat.required)}</div>
+              <div class="progress-track"><div class="progress-fill" style="width:${Math.min(100, pct(cat.earned + cat.pending, cat.required))}%"></div></div>
+              <div class="audit-percent">${Math.min(100, pct(cat.earned + cat.pending, cat.required)).toFixed(0)}%</div>
+            </summary>
+            <div class="audit-detail">${detailHTML}</div>
+          </details>
+        `;
+      }).join("");
+
+      document.getElementById("content").innerHTML = `
+        <div class="view">
+          <section class="section">
+            <div class="section-header">
+              <div>
+                <h3 class="section-title">${escapeHTML(report.name)}</h3>
+                <p class="section-caption">適用學年 ${escapeHTML(report.year)}</p>
+              </div>
+            </div>
+            ${renderProgressRow("總學程進度", report.totalEarned, report.totalPending, report.totalRequired)}
+          </section>
+          <section class="section">
+            <div class="audit-table">
+              <div class="audit-table-head" aria-hidden="true">
+                <div></div>
+                <div>分類</div>
+                <div class="audit-credit">採計 / 要求</div>
+                <div></div>
+                <div class="audit-percent">%</div>
+              </div>
+              ${categoryRows}
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderSubAudit(sub) {
+      return `
+        <div class="sub-audit">
+          <div class="sub-audit-title">
+            <span>${escapeHTML(sub.name)}</span>
+            <span class="mono">${fmt(sub.earned)}${sub.pending > 0 ? ` +${fmt(sub.pending)}` : ""} / ${fmt(sub.required)}</span>
+          </div>
+          ${renderItemTable(sub.items)}
+        </div>
+      `;
+    }
+
+    function renderItemTable(items) {
+      const visible = [...items].sort((a, b) => {
+        const rank = { applied: 1, exempted: 1, cross: 2, overflow: 3 };
+        const r = (rank[a.status] || 9) - (rank[b.status] || 9);
+        if (r !== 0) return r;
+        return String(b.course.semester || "").localeCompare(String(a.course.semester || ""));
       });
 
-      const activeBtn = document.getElementById(`nav-${hash}`);
-      if (activeBtn) {
-        activeBtn.classList.add('bg-indigo-50', 'text-indigo-700', 'font-medium');
-        activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-50');
-        activeBtn.querySelector('i').classList.replace('text-slate-400', 'text-indigo-600');
+      if (!visible.length) return `<p class="empty">No records</p>`;
+
+      return `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>課程</th>
+                <th>課碼</th>
+                <th class="num">學分</th>
+                <th class="center">等第</th>
+                <th class="center">狀態</th>
+                <th>備註</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${visible.map(item => `
+                <tr>
+                  <td class="course-name">${escapeHTML(item.course.name)}</td>
+                  <td class="mono">${escapeHTML(getCourseCode(item.course))}</td>
+                  <td class="num">${fmt(item.course.credits)}</td>
+                  <td class="center">${getGradeTag(item.course.grade)}</td>
+                  <td class="center">${getStatusBadge(item.status)}</td>
+                  <td class="status-line">${escapeHTML(item.reason)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderAnalyticsView() {
+      document.getElementById("content").innerHTML = `
+        <div class="view">
+          <section class="section">
+            <div class="section-header"><h3 class="section-title">統計分析</h3></div>
+            <div class="chart-grid">
+              <div class="chart-panel">
+                <h4 class="section-caption">等第分布</h4>
+                <div class="chart-frame"><canvas id="gradeDistributionChart"></canvas></div>
+              </div>
+              <div class="chart-panel">
+                <h4 class="section-caption">領域學分分布</h4>
+                <div class="chart-frame"><canvas id="domainCreditsChart"></canvas></div>
+              </div>
+              <div class="chart-panel">
+                <h4 class="section-caption">各學期通過學分</h4>
+                <div class="chart-frame"><canvas id="earnedCreditsChart"></canvas></div>
+              </div>
+              <div class="chart-panel">
+                <h4 class="section-caption">GPA 計入學分</h4>
+                <div class="chart-frame"><canvas id="gpaCreditsChart"></canvas></div>
+              </div>
+            </div>
+          </section>
+          <section class="section">
+            <div class="section-header"><h3 class="section-title">學期彙總</h3></div>
+            ${renderSemesterSummaryTable()}
+          </section>
+        </div>
+      `;
+      requestAnimationFrame(() => {
+        renderGradeDistributionChart();
+        renderDomainCreditsChart();
+        renderEarnedCreditsChart();
+        renderGpaCreditsChart();
+      });
+    }
+
+    function renderSemesterSummaryTable() {
+      const stats = getSemesterStats();
+      return `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>學期</th>
+                <th class="num">修課學分</th>
+                <th class="num">通過學分</th>
+                <th class="num">未登學分</th>
+                <th class="num">GPA</th>
+                <th class="num">GPA 學分</th>
+                <th class="num">門數</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${stats.map(row => `
+                <tr>
+                  <td class="mono">${escapeHTML(row.semester)}</td>
+                  <td class="num">${fmt(row.totalCredits)}</td>
+                  <td class="num">${fmt(row.earnedCredits)}</td>
+                  <td class="num">${fmt(row.pendingCredits)}</td>
+                  <td class="num">${row.gpa === null ? "-" : row.gpa.toFixed(2)}</td>
+                  <td class="num">${fmt(row.gpaCredits)}</td>
+                  <td class="num">${row.count}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function destroyChart(id) {
+      if (charts[id]) {
+        charts[id].destroy();
+        charts[id] = null;
       }
-    };
+    }
 
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '') || 'overview';
-      updateNavActiveState(hash);
-      if(isMobileMenuOpen) toggleMobileMenu();
-      
-      const searchInput = document.getElementById('course-search-input');
-      if(searchInput && hash !== 'courses') searchInput.value = '';
+    function createChart(id, config) {
+      const el = document.getElementById(id);
+      if (!el || !window.Chart) return;
+      destroyChart(id);
+      charts[id] = new Chart(el.getContext("2d"), config);
+    }
 
-      if (hash === 'overview') renderOverview();
-      else if (hash === 'courses') {
-        renderCourseList();
-        handleCourseSearch();
+    function defaultChartOptions(extra = {}) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 450 },
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              boxWidth: 10,
+              boxHeight: 10,
+              color: palette.muted,
+              font: { family: "Noto Sans TC, sans-serif", size: 11 }
+            }
+          },
+          tooltip: {
+            backgroundColor: "#1f2421",
+            titleColor: "#fffdfa",
+            bodyColor: "#fffdfa",
+            padding: 10,
+            displayColors: true,
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: palette.muted, font: { size: 11 } } },
+          y: { beginAtZero: true, grid: { color: "#e7e1d5" }, ticks: { color: palette.muted, font: { size: 11 } } }
+        },
+        ...extra
+      };
+    }
+
+    function renderSemesterCreditsChart() {
+      const stats = getSemesterStats();
+      createChart("semesterCreditsChart", {
+        type: "bar",
+        data: {
+          labels: stats.map(s => s.semester),
+          datasets: [
+            {
+              label: "修課學分",
+              data: stats.map(s => s.totalCredits),
+              backgroundColor: palette.accent,
+              borderWidth: 0,
+              borderRadius: 4,
+            },
+            {
+              label: "未登學分",
+              data: stats.map(s => s.pendingCredits),
+              backgroundColor: "#a8a29a",
+              borderWidth: 0,
+              borderRadius: 4,
+            }
+          ]
+        },
+        options: defaultChartOptions()
+      });
+    }
+
+    function renderSemesterGpaChart() {
+      const stats = getSemesterStats();
+      createChart("semesterGpaChart", {
+        type: "line",
+        data: {
+          labels: stats.map(s => s.semester),
+          datasets: [{
+            label: "GPA",
+            data: stats.map(s => s.gpa),
+            borderColor: palette.accentStrong,
+            backgroundColor: palette.accentStrong,
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            tension: .28,
+            spanGaps: true,
+          }]
+        },
+        options: defaultChartOptions({
+          scales: {
+            x: { grid: { display: false }, ticks: { color: palette.muted, font: { size: 11 } } },
+            y: {
+              min: 0,
+              max: 4.3,
+              grid: { color: "#e7e1d5" },
+              ticks: { color: palette.muted, font: { size: 11 } }
+            }
+          }
+        })
+      });
+    }
+
+    function renderGradeDistributionChart() {
+      const order = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D", "D*", "E*", "E", "F", "X", "Q", "P", "採", "未登"];
+      const counts = new Map();
+      coursesData.forEach(course => counts.set(course.grade, (counts.get(course.grade) || 0) + 1));
+      const labels = order.filter(g => counts.has(g));
+
+      createChart("gradeDistributionChart", {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "門數",
+            data: labels.map(g => counts.get(g)),
+            backgroundColor: labels.map(g => palette.grade[g] || "#a8a29a"),
+            borderWidth: 0,
+            borderRadius: 4,
+          }]
+        },
+        options: defaultChartOptions({ plugins: { ...defaultChartOptions().plugins, legend: { display: false } } })
+      });
+    }
+
+    function renderDomainCreditsChart() {
+      const domains = getDomainList();
+      const credits = domains.map(domain => {
+        return coursesData
+          .filter(course => isPassed(course.grade) && getCourseDomain(course) === domain)
+          .reduce((sum, course) => sum + Number(course.credits || 0), 0);
+      });
+
+      createChart("domainCreditsChart", {
+        type: "bar",
+        data: {
+          labels: domains,
+          datasets: [{
+            label: "學分",
+            data: credits,
+            backgroundColor: domains.map((_, i) => palette.domain[i % palette.domain.length]),
+            borderWidth: 0,
+            borderRadius: 4,
+          }]
+        },
+        options: defaultChartOptions({
+          indexAxis: "y",
+          plugins: { ...defaultChartOptions().plugins, legend: { display: false } }
+        })
+      });
+    }
+
+    function renderEarnedCreditsChart() {
+      const stats = getSemesterStats();
+      createChart("earnedCreditsChart", {
+        type: "bar",
+        data: {
+          labels: stats.map(s => s.semester),
+          datasets: [{
+            label: "通過學分",
+            data: stats.map(s => s.earnedCredits),
+            backgroundColor: palette.accent,
+            borderWidth: 0,
+            borderRadius: 4,
+          }]
+        },
+        options: defaultChartOptions({ plugins: { ...defaultChartOptions().plugins, legend: { display: false } } })
+      });
+    }
+
+    function renderGpaCreditsChart() {
+      const stats = getSemesterStats();
+      createChart("gpaCreditsChart", {
+        type: "bar",
+        data: {
+          labels: stats.map(s => s.semester),
+          datasets: [{
+            label: "GPA 計入學分",
+            data: stats.map(s => s.gpaCredits),
+            backgroundColor: "#6e8273",
+            borderWidth: 0,
+            borderRadius: 4,
+          }]
+        },
+        options: defaultChartOptions({ plugins: { ...defaultChartOptions().plugins, legend: { display: false } } })
+      });
+    }
+
+    function renderProgramNav() {
+      const container = document.getElementById("program-nav");
+      container.innerHTML = `
+        <p class="nav-section-title">Programs</p>
+        ${Object.keys(generatedReports).map(key => `
+          <a class="nav-link" href="#program=${encodeURIComponent(key)}" data-program="${escapeHTML(key)}">
+            ${escapeHTML(generatedReports[key].name)}
+            <small>${escapeHTML(generatedReports[key].year)}</small>
+          </a>
+        `).join("")}
+      `;
+    }
+
+    function safeQuerySelector(selector) {
+      try { return document.querySelector(selector); } catch (_) { return null; }
+    }
+
+    function updateActiveNav(route, programKey = "") {
+      document.querySelectorAll(".nav-link").forEach(link => link.classList.remove("is-active"));
+
+      if (programKey) {
+        const target = safeQuerySelector(`.nav-link[data-program="${CSS.escape(programKey)}"]`);
+        target?.classList.add("is-active");
+        return;
       }
-      else renderProgramView(hash);
-    };
 
-    window.addEventListener('hashchange', handleHashChange);
+      const target = safeQuerySelector(`.nav-link[data-route="${CSS.escape(route)}"]`);
+      target?.classList.add("is-active");
+    }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      const loadingView = document.getElementById('loading-view');
-      const errorView = document.getElementById('error-view');
-      const appView = document.getElementById('app-view');
+    function route() {
+      const hash = window.location.hash.replace(/^#/, "") || "overview";
+      if (hash.startsWith("program=")) {
+        const programKey = decodeURIComponent(hash.slice("program=".length));
+        document.getElementById("page-title").textContent = generatedReports[programKey]?.name || "學程查核";
+        updateActiveNav("", programKey);
+        renderProgramView(programKey);
+        return;
+      }
+
+      const routeName = pageTitles[hash] ? hash : "overview";
+      document.getElementById("page-title").textContent = pageTitles[routeName];
+      updateActiveNav(routeName);
+
+      if (routeName === "overview") renderOverview();
+      else if (routeName === "courses") renderCoursesView();
+      else if (routeName === "analytics") renderAnalyticsView();
+    }
+
+    function bindEvents() {
+      window.addEventListener("hashchange", route);
+      document.getElementById("refresh-btn").addEventListener("click", () => init());
+
+      document.addEventListener("input", event => {
+        const key = event.target?.dataset?.filter;
+        if (!key) return;
+        activeFilters[key] = event.target.value;
+        renderCoursesView();
+      });
+
+      document.addEventListener("change", event => {
+        const key = event.target?.dataset?.filter;
+        if (!key) return;
+        activeFilters[key] = event.target.value;
+        renderCoursesView();
+      });
+
+      document.addEventListener("click", event => {
+        const sortButton = event.target.closest("[data-sort]");
+        if (!sortButton) return;
+
+        const key = sortButton.dataset.sort;
+        if (currentSort.key === key) {
+          currentSort.direction = currentSort.direction === "asc" ? "desc" : "asc";
+        } else {
+          currentSort.key = key;
+          currentSort.direction = "desc";
+        }
+
+        renderCoursesView();
+      });
+    }
+
+    async function init() {
+      const loading = document.getElementById("loading");
+      const app = document.getElementById("app");
+      const status = document.getElementById("data-status");
+
+      loading.hidden = false;
 
       try {
-        const [rulesRes, coursesRes] = await Promise.all([
-          fetch('program.json'),
-          fetch('courses.json')
+        const [programRes, coursesRes] = await Promise.all([
+          fetch("program.json", { cache: "no-store" }),
+          fetch("courses.json", { cache: "no-store" })
         ]);
 
-        if (!rulesRes.ok) throw new Error('無法取得 program.json');
-        if (!coursesRes.ok) throw new Error('無法取得 courses.json');
+        if (!programRes.ok) throw new Error("無法取得 program.json");
+        if (!coursesRes.ok) throw new Error("無法取得 courses.json");
 
-        const rawRules = await rulesRes.json();
+        const rawProgram = await programRes.json();
         const rawCourses = await coursesRes.json();
 
         coursesData = rawCourses.courses || [];
-        rulesData = rawRules.programs || rawRules;
-
-        const defaultColors = { EE_Major: 'blue', MA_DMajor: 'purple', IE_Minor: 'emerald' };
-        Object.keys(rulesData).forEach(k => {
-          if(!rulesData[k].color) rulesData[k].color = defaultColors[k] || 'blue';
-        });
+        rulesData = rawProgram.programs || rawProgram;
 
         runGlobalAudit();
+        renderProgramNav();
 
-        const container = document.getElementById('dynamic-nav-container');
-        let navHTML = `<p class="px-4 text-xs font-semibold text-slate-400 tracking-wider mb-2 mt-8 uppercase">Program Checks</p>`;
-        Object.keys(rulesData).forEach(key => {
-          const rule = rulesData[key];
-          const iconClass = key.includes('Major') ? 'fa-graduation-cap' : 'fa-book-open';
-          navHTML += `
-            <a href="#${key}" id="nav-${key}" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900 mt-1">
-              <i class="fas ${iconClass} w-5 text-center"></i>
-              <div class="flex flex-col items-start leading-tight">
-                <span>${rule.name}</span>
-                <span class="text-[10px] text-slate-400 font-normal">Ver: ${rule.applicable_year}</span>
-              </div>
-            </a>
-          `;
-        });
-        container.innerHTML = navHTML;
+        document.getElementById("data-foot").textContent = `${coursesData.length} courses`;
+        status.textContent = "Ready";
 
-        loadingView.classList.add('hide');
-        appView.classList.remove('hide');
-        
-        if(!window.location.hash) window.location.hash = 'overview';
-        else handleHashChange();
-
-      } catch (err) {
-        console.error("初始化錯誤:", err);
-        loadingView.classList.add('hide');
-        errorView.classList.remove('hide');
-        document.getElementById('error-message').textContent = err.message || '發生未知錯誤，請檢查 Console';
+        loading.hidden = true;
+        app.classList.remove("hidden");
+        route();
+      } catch (error) {
+        loading.innerHTML = `<div class="error-box">${escapeHTML(error.message || error)}</div>`;
       }
-    });
+    }
+
+    bindEvents();
+    init();
   </script>
-  <script src="../../assets/js/tool-shell.js" data-home="../../index.html#tools" data-section="成績追蹤"></script>
 </body>
 </html>

@@ -82,7 +82,19 @@ function bindEvents() {
   });
 
   document.addEventListener("click", event => {
-    if (!event.target.closest(".nav-menu")) closeMenus();
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    if (!target) return;
+
+    if (target.closest("[data-toggle-all-months]")) {
+      const groups = Array.from(document.querySelectorAll(".sidebar-month-group"));
+      const shouldOpen = groups.some(group => !group.open);
+      groups.forEach(group => {
+        group.open = shouldOpen;
+      });
+      return;
+    }
+
+    if (!target.closest(".nav-menu")) closeMenus();
   });
   document.addEventListener("keydown", event => {
     if (event.key === "Escape") closeMenus();
@@ -129,6 +141,7 @@ async function loadSiteManifest() {
         path: item.path.replace(/^\/+/, ""),
         title: item.title || fileTitle(item.path),
         date: item.date || "",
+        status: item.status || "",
         tags: Array.isArray(item.tags) ? item.tags : [],
         summary: item.summary || "",
       }))
@@ -400,13 +413,6 @@ async function loadArticle(record) {
   }
 }
 
-function articleList(activePath) {
-  return state.articles.map(article => `
-    <a class="${article.path === activePath ? "is-active" : ""}" href="#article=${encodeURIComponent(article.path)}">
-      ${escapeHTML(article.title)}<time>${escapeHTML(formatDate(article.date))}</time>
-    </a>`).join("");
-}
-
 function articlePreviewCards() {
   if (state.manifestError) return emptyState(state.manifestError);
   if (!state.articles.length) return emptyState("尚未有文章。");
@@ -479,14 +485,104 @@ function monthKey(dateValue, fallback = "") {
 }
 
 function articleListGrouped(activePath) {
-  return articleMonthGroups().map(([month, articles]) => `
-    <section class="article-month">
-      <h3>${escapeHTML(month)}</h3>
-      ${articles.map(article => `
-        <a class="${article.path === activePath ? "is-active" : ""}" href="#article=${encodeURIComponent(article.path)}">
-          ${escapeHTML(article.title)}
-        </a>`).join("")}
-    </section>`).join("");
+  const articles = state.articles
+    .filter(article => !isWelcomeArticle(article))
+    .slice()
+    .sort(compareArticlesForIndex);
+
+  if (!articles.length) {
+    return `<p class="toc-empty">目前沒有文章。</p>`;
+  }
+
+  return `
+    <button type="button" class="sidebar-index-toggle" data-toggle-all-months>
+      展開 / 收合所有月份
+    </button>
+
+    <div class="sidebar-month-list">
+      ${groupArticlesByMonth(articles).map(([month, monthArticles]) => `
+        <details class="sidebar-month-group" open>
+          <summary class="sidebar-month-label">
+            <span>${escapeHTML(month)}</span>
+            <small>${monthArticles.length}</small>
+          </summary>
+
+          <div class="sidebar-month-items">
+            ${monthArticles.map(article => `
+              <a class="sidebar-link ${article.path === activePath ? "is-active" : ""}" href="#article=${encodeURIComponent(article.path)}" data-path="${escapeHTML(article.path)}">
+                <span>${escapeHTML(article.title || "(無標題)")}</span>
+                ${article.status === "draft" ? `<small>draft</small>` : ""}
+              </a>
+            `).join("")}
+          </div>
+        </details>
+      `).join("")}
+    </div>
+  `;
+}
+
+function isWelcomeArticle(article) {
+  const path = String(article?.path || "").replace(/\\/g, "/").toLowerCase();
+  return path === "welcome.md" || path.endsWith("/welcome.md");
+}
+
+function groupArticlesByMonth(articles) {
+  const groups = new Map();
+
+  articles.forEach(article => {
+    const month = getArticleMonthLabel(article);
+
+    if (!groups.has(month)) groups.set(month, []);
+    groups.get(month).push(article);
+  });
+
+  return [...groups.entries()].sort(([a], [b]) => {
+    if (a === "無日期") return 1;
+    if (b === "無日期") return -1;
+    return getMonthSortKey(b).localeCompare(getMonthSortKey(a));
+  });
+}
+
+function getArticleMonthLabel(article) {
+  const path = String(article?.path || "").replace(/\\/g, "/");
+
+  const compactFolder = path.match(/^(\d{4})(\d{2})\//);
+  if (compactFolder) {
+    return `${compactFolder[1]} 年 ${Number(compactFolder[2])} 月`;
+  }
+
+  const dashedFolder = path.match(/^(\d{4})-(\d{2})\//);
+  if (dashedFolder) {
+    return `${dashedFolder[1]} 年 ${Number(dashedFolder[2])} 月`;
+  }
+
+  const date = String(article?.date || "").trim();
+  const dateMatch = date.match(/^(\d{4})-(\d{2})/);
+  if (dateMatch) {
+    return `${dateMatch[1]} 年 ${Number(dateMatch[2])} 月`;
+  }
+
+  return "無日期";
+}
+
+function getMonthSortKey(label) {
+  const match = String(label || "").match(/^(\d{4}) 年 (\d{1,2}) 月$/);
+  if (!match) return label === "無日期" ? "0000-00" : String(label || "");
+  return `${match[1]}-${String(match[2]).padStart(2, "0")}`;
+}
+
+function compareArticlesForIndex(a, b) {
+  const aDate = String(a.date || "");
+  const bDate = String(b.date || "");
+
+  if (aDate && bDate && aDate !== bDate) {
+    return bDate.localeCompare(aDate);
+  }
+
+  const aPath = String(a.path || "");
+  const bPath = String(b.path || "");
+
+  return bPath.localeCompare(aPath);
 }
 
 function articleOverviewByMonth() {

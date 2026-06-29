@@ -1,0 +1,2519 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+css/fonts.css
+css/site.css
+css/style.css
+css/tool-shell.css
+fonts/NotoColorEmoji-Regular.ttf
+fonts/NotoEmoji-VariableFont_wght.ttf
+fonts/NotoSans-Italic-VariableFont_wdth,wght.ttf
+fonts/NotoSans-VariableFont_wdth,wght.ttf
+fonts/NotoSansDevanagari-VariableFont_wdth,wght.ttf
+fonts/NotoSansMono-VariableFont_wdth,wght.ttf
+fonts/NotoSansTC-VariableFont_wght.ttf
+icons/bambook.svg
+js/main.js
+js/site.js
+js/tool-shell.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="css/fonts.css">
+/* assets/css/fonts.css */
+
+/* 策略調整：暫時停用 Noto 系列本地字體，改用系統預設字體以優化載入速度。
+   原有的 @font-face 設定已註解，不再請求網路下載字體檔。
+*/
+
+/* @font-face {
+    font-family: 'GeoGlobal-Sans';
+    src: url('../fonts/NotoColorEmoji-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+2300-23FF, U+2600-26FF, U+2700-27BF, U+1F000-1FAFF; 
+}
+
+@font-face {
+    font-family: 'GeoGlobal-Sans';
+    src: url('../fonts/NotoSans-VariableFont_wdth,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+2190-21FF, U+25A0-25FF, U+0000-00FF, U+0100-017F, U+0180-024F, U+0370-03FF, U+0400-04FF, U+0500-052F, U+1F00-1FFF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2200-22FF;
+}
+
+@font-face {
+    font-family: 'GeoGlobal-Sans';
+    src: url('../fonts/NotoSansDevanagari-VariableFont_wdth,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0900-097F, U+A8E0-A8FF;
+}
+
+@font-face {
+    font-family: 'GeoGlobal-Sans';
+    src: url('../fonts/NotoSansTC-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+2E80-9FFF, U+3000-303F, U+3040-309F, U+30A0-30FF, U+FF00-FFEF, U+20000-2EBE0;
+}
+
+@font-face {
+    font-family: 'GeoGlobal-Mono';
+    src: url('../fonts/NotoSansMono-VariableFont_wdth,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+*/
+
+:root {
+    /* font-main: 使用系統原生字體堆疊 (System Font Stack)
+       優先順序：
+       1. system-ui (瀏覽器自動選擇該系統最佳 UI 字體)
+       2. -apple-system, BlinkMacSystemFont (macOS/iOS San Francisco)
+       3. "Segoe UI" (Windows 預設)
+       4. Roboto (Android 預設)
+       5. "Helvetica Neue", Arial (通用無襯線)
+       6. "Microsoft JhengHei" (微軟正黑體 - Windows 繁體中文)
+       7. "PingFang TC" (蘋方 - macOS/iOS 繁體中文)
+       8. sans-serif (最後防線)
+    */
+    --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", "PingFang TC", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    
+    /* font-mono: 等寬字體系統堆疊 */
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+</file>
+
+<file path="css/site.css">
+:root {
+  color-scheme: light;
+  --bg: #f7f8f8;
+  --surface: #ffffff;
+  --surface-soft: #f1f5f4;
+  --text: #17221f;
+  --muted: #62716b;
+  --border: #dce6e2;
+  --accent: #0d9488;
+  --accent-strong: #0f766e;
+  --accent-soft: #d9f4ef;
+  --danger: #b42318;
+  --shadow: 0 16px 42px rgba(19, 45, 38, .08);
+  --radius: 16px;
+  --markdown-landscape-image-height: 18rem;
+  --markdown-portrait-image-width: 18rem;
+  --markdown-square-image-width: 20rem;
+  --font-sans: "Noto Sans TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Noto Sans Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #101816;
+  --surface: #18221f;
+  --surface-soft: #202e29;
+  --text: #e8f1ed;
+  --muted: #a6b6af;
+  --border: #31433c;
+  --accent: #40c8b8;
+  --accent-strong: #7ee4d7;
+  --accent-soft: #164b44;
+  --danger: #ffaaa2;
+  --shadow: 0 16px 42px rgba(0, 0, 0, .24);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
+.article-list::-webkit-scrollbar,
+.article-toc::-webkit-scrollbar,
+.article-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.article-list::-webkit-scrollbar-track,
+.article-toc::-webkit-scrollbar-track,
+.article-scroll::-webkit-scrollbar-track { background: transparent; }
+.article-list::-webkit-scrollbar-thumb,
+.article-toc::-webkit-scrollbar-thumb,
+.article-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.65;
+  -webkit-user-select: none;
+  user-select: none;
+}
+a { color: inherit; }
+button, input { font: inherit; }
+button { color: inherit; }
+input, textarea, select, [contenteditable="true"], [contenteditable="true"] * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.skip-link {
+  position: fixed; left: 1rem; top: -4rem; z-index: 100;
+  padding: .6rem .9rem; border-radius: 8px; background: var(--accent); color: white;
+}
+.skip-link:focus { top: 1rem; }
+
+.site-header {
+  position: sticky; top: 0; z-index: 30;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(14px);
+}
+.header-inner {
+  display: flex; align-items: center; gap: 1rem; width: min(1240px, calc(100% - 2.5rem)); max-width: none;
+  min-height: 4.5rem; margin: 0 auto; padding: .65rem 0rem;
+}
+.brand { display: inline-flex; flex: 0 0 auto; align-items: center; gap: .55rem; color: var(--text); font-size: 1.2rem; font-weight: 800; letter-spacing: -.03em; text-decoration: none; }
+.brand svg { width: 1.55rem; color: var(--accent); }
+.main-nav { display: flex; align-items: center; gap: .2rem; }
+.main-nav > a, .nav-menu > button {
+  display: inline-flex; align-items: center; gap: .25rem; min-height: 2.4rem; padding: .45rem .75rem;
+  border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; font-weight: 650; text-decoration: none;
+}
+.main-nav > a:hover, .main-nav > a.is-active, .nav-menu > button:hover, .nav-menu > button[aria-expanded="true"] { background: var(--accent-soft); color: var(--accent-strong); }
+.nav-menu { position: relative; }
+.nav-chevron { width: .9rem; height: .9rem; transition: transform .2s ease; }
+.nav-menu > button[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
+.menu-panel {
+  position: absolute; top: calc(100% + .35rem); left: 0; display: grid; width: max-content; min-width: 11.5rem;
+  padding: .4rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none; transform: translateY(-.45rem) scale(.98); transform-origin: top left;
+  transition: opacity .18s ease, transform .18s ease, visibility .18s ease; visibility: hidden;
+}
+.nav-menu.is-open .menu-panel { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); visibility: visible; }
+.menu-panel a { padding: .55rem .7rem; border-radius: 8px; color: var(--muted); font-size: .94rem; text-decoration: none; white-space: nowrap; }
+.menu-panel a:hover { background: var(--surface-soft); color: var(--accent-strong); }
+.menu-panel-wide { min-width: 13rem; }
+.icon-button { margin-left: auto; display: grid; width: 2.45rem; height: 2.45rem; place-items: center; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; }
+.icon-button:hover { border-color: var(--border); background: var(--surface); color: var(--accent-strong); }
+.icon-button svg { width: 1.2rem; }
+.theme-icon-moon { display: none; }
+html[data-theme="dark"] .theme-icon-sun { display: none; }
+html[data-theme="dark"] .theme-icon-moon { display: block; }
+
+.page-shell { width: min(1240px, calc(100% - 2.5rem)); min-height: calc(100vh - 8rem); margin: 0 auto; padding: 3.5rem 0 4rem; }
+.hero { position: relative; display: block; margin-bottom: 2.7rem; padding: 1rem 0 3rem; border-bottom: 1px solid var(--border); }
+.hero::after { position: absolute; bottom: -1px; left: 0; width: min(18rem, 40%); height: 3px; border-radius: 3px; background: var(--accent); content: ""; }
+.eyebrow { margin: 0 0 .7rem; color: var(--accent-strong); font-family: var(--font-mono); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+h1, h2, h3, p { margin-top: 0; }
+.hero h1, .page-heading h1 { margin-bottom: 0; font-size: clamp(2.2rem, 6vw, 4.7rem); line-height: 1.08; letter-spacing: -.055em; }
+.home-intro {
+  position: relative;
+  margin-bottom: 2.6rem;
+  padding: clamp(1.15rem, 3vw, 1.65rem);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 68%, transparent), transparent 58%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+.home-intro::before {
+  position: absolute;
+  inset: 1rem auto 1rem 0;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--accent);
+  content: "";
+}
+.home-intro, .home-intro * { -webkit-user-select: none; user-select: none; }
+.home-intro-label { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .85rem; padding-left: .55rem; color: var(--accent-strong); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.home-intro-label span { padding: .16rem .5rem; border-radius: 999px; background: color-mix(in srgb, var(--accent-soft) 70%, white); }
+.home-intro-body { max-width: 58rem; padding-left: .55rem; }
+.home-intro-body h1 { margin: 0 0 .8rem; font-size: clamp(1.45rem, 3vw, 2rem); line-height: 1.22; letter-spacing: -.035em; }
+.home-intro-body h2 { margin: 1.35rem 0 .55rem; font-size: 1.1rem; letter-spacing: -.02em; }
+.home-intro-body p { margin-bottom: .85rem; color: color-mix(in srgb, var(--text) 90%, var(--muted)); }
+.home-intro-body ul { margin: .3rem 0 .9rem; padding-left: 1.25rem; }
+.home-intro-body li { margin: .2rem 0; color: color-mix(in srgb, var(--text) 88%, var(--muted)); }
+.section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 2.75rem 0 1rem; }
+.section-heading h2 { margin: 0; font-size: 1.25rem; letter-spacing: -.02em; }
+.section-heading a, .inline-link { color: var(--accent-strong); font-size: .9rem; font-weight: 700; text-decoration: none; }
+.section-heading a:hover, .inline-link:hover { text-decoration: underline; }
+
+.card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.card {
+  display: flex; flex-direction: column; min-height: 13rem; padding: 1.35rem; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); box-shadow: 0 4px 15px rgba(19, 45, 38, .035); text-decoration: none; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-3px); }
+.card-icon { display: grid; width: 2.55rem; height: 2.55rem; place-items: center; margin-bottom: 1.5rem; border-radius: 10px; background: var(--accent-soft); color: var(--accent-strong); font-size: 1.25rem; }
+.card h3 { margin-bottom: .45rem; font-size: 1.08rem; }
+.card p { margin-bottom: 1.2rem; color: var(--muted); font-size: .94rem; }
+.card .card-action { margin-top: auto; color: var(--accent-strong); font-size: .9rem; font-weight: 750; }
+.tool-card { min-height: 15rem; }
+.card-icon .ui-icon { width: 1.35rem; height: 1.35rem; }
+.card .card-action { display: inline-flex; align-items: center; gap: .3rem; }
+.card .card-action .ui-icon { width: .95rem; height: .95rem; }
+.tag-list { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: 1.15rem; }
+.tag { padding: .14rem .5rem; border-radius: 999px; background: var(--surface-soft); color: var(--muted); font-size: .74rem; font-weight: 650; }
+
+.page-heading { max-width: 48rem; margin-bottom: 2.4rem; }
+.page-heading h1 { font-size: clamp(2rem, 5vw, 3.3rem); }
+.page-heading p { color: var(--muted); font-size: 1.05rem; }
+.back-link { display: inline-flex; align-items: center; gap: .35rem; margin-bottom: 1.4rem; color: var(--accent-strong); font-size: .92rem; font-weight: 700; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+
+.course-layout { display: grid; grid-template-columns: minmax(0, 1fr) 15.5rem; gap: 2rem; align-items: start; }
+.course-content { min-width: 0; }
+.course-sidebar { position: sticky; top: 6rem; padding: .65rem; border: 1px solid var(--border); border-radius: 13px; background: var(--surface); }
+.course-sidebar h2 { margin: .35rem .5rem .65rem; color: var(--muted); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+.course-sidebar a { display: block; padding: .55rem .6rem; border-radius: 8px; color: var(--muted); font-size: .93rem; text-decoration: none; }
+.course-sidebar a:hover, .course-sidebar a.is-active { background: var(--accent-soft); color: var(--accent-strong); font-weight: 700; }
+.resource-section { margin-bottom: 1.15rem; padding: 1.35rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.resource-section h2 { display: flex; align-items: center; gap: .55rem; margin-bottom: 1.1rem; font-size: 1.15rem; }
+.resource-section h2 .ui-icon { width: 1.15rem; height: 1.15rem; color: var(--accent-strong); }
+.resource-grid { display: block; }
+.resource-item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; padding: .85rem 0; border-top: 1px solid var(--border); }
+.resource-grid > .resource-item:first-child { padding-top: 0; border-top: 0; }
+.resource-name { min-width: 0; font-size: .92rem; font-weight: 650; overflow-wrap: anywhere; }
+.resource-meta { margin-top: .15rem; color: var(--muted); font-size: .8rem; }
+.resource-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: .35rem; padding: .4rem .6rem; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--accent-strong); font-size: .84rem; font-weight: 700; text-decoration: none; }
+.resource-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+.resource-link .ui-icon { width: .95rem; height: .95rem; }
+.resource-document-link { display: inline-flex; align-items: center; gap: .45rem; margin: -.35rem; padding: .35rem; border-radius: 7px; color: var(--text); font: inherit; text-decoration: none; transition: background .18s ease, color .18s ease; }
+.resource-document-link:hover { background: var(--accent-soft); color: var(--accent-strong); }
+.resource-document-link .ui-icon { width: 1.3rem; height: 1.3rem; flex: 0 0 auto; color: var(--accent-strong); }
+details.resource-details { border-top: 1px solid var(--border); }
+details.resource-details:first-of-type { border-top: 0; }
+details.resource-details summary { padding: .85rem 0; cursor: pointer; font-weight: 700; }
+details.resource-details[open] { padding-bottom: .55rem; }
+details.resource-details[open] .resource-grid {
+  margin: .15rem 0 .45rem;
+  padding: .25rem 0 .25rem 1rem;
+  border-left: 2px solid var(--border);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--surface-soft) 72%, transparent), transparent 72%);
+}
+details.resource-details[open] .resource-item { padding-left: .35rem; }
+.syllabus-list { margin: 0; padding-left: 1.15rem; color: var(--muted); }
+
+.article-mode {
+  height: 100vh;
+  overflow: hidden;
+}
+.article-mode .page-shell {
+  width: min(1240px, calc(100% - 2.5rem));
+  height: calc(100vh - 4.5rem);
+  min-height: 0;
+  padding: 1rem 0 0;
+  overflow: hidden;
+}
+.article-mode .site-footer { display: none; }
+.article-reader { height: 100%; min-height: 0; }
+.articles-layout {
+  display: grid;
+  grid-template-columns: minmax(13rem, .85fr) minmax(0, 2.4fr) minmax(12rem, .75fr);
+  gap: 2rem;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.article-list, .article-toc {
+  position: static;
+  width: auto;
+  max-height: none;
+}
+
+.article-list h2 { margin-bottom: .75rem; color: var(--muted); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+
+/* === Article index panel: Bamboo-style scroll container === */
+
+.article-list {
+  min-height: 0;
+  padding-right: 1.25rem;
+  border-right: 1px solid var(--border);
+}
+
+.article-list,
+.article-panel-scroll {
+  scrollbar-gutter: stable;
+}
+
+.article-list,
+.article-panel-scroll,
+.article-scroll {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.article-list::-webkit-scrollbar,
+.article-panel-scroll::-webkit-scrollbar,
+.article-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.article-list::-webkit-scrollbar-track,
+.article-panel-scroll::-webkit-scrollbar-track,
+.article-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.article-list::-webkit-scrollbar-thumb,
+.article-panel-scroll::-webkit-scrollbar-thumb,
+.article-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+/* === Bamboo-style article index === */
+
+.sidebar-index-toggle {
+  width: calc(100% - 1rem);
+  margin: 0 .5rem .75rem;
+  padding: .42rem .55rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .02em;
+}
+
+.sidebar-index-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+}
+
+.sidebar-index-toggle::before {
+  content: "↕";
+  font-size: .8rem;
+  color: var(--muted);
+}
+
+.sidebar-index-toggle:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.sidebar-index-toggle:hover::before {
+  color: var(--accent-strong);
+}
+
+.article-month {
+  margin: 0 0 1rem;
+}
+
+.article-month + .article-month {
+  margin-top: 1.15rem;
+}
+
+.article-month > h3 {
+  margin: .75rem .75rem .45rem;
+  color: var(--text);
+  font-size: .78rem;
+  font-weight: 850;
+  letter-spacing: .03em;
+}
+
+.sidebar-month-group {
+  margin: .45rem 0 .75rem;
+}
+
+.sidebar-month-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin: .55rem .65rem .3rem;
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  list-style: none;
+}
+
+.sidebar-month-label::-webkit-details-marker {
+  display: none;
+}
+
+.sidebar-month-label::before {
+  content: "▾";
+  margin-right: .35rem;
+  color: var(--muted);
+  font-size: .7rem;
+}
+
+.sidebar-month-group:not([open]) .sidebar-month-label::before {
+  content: "▸";
+}
+
+.sidebar-month-label span {
+  flex: 1;
+}
+
+.sidebar-month-label small {
+  color: var(--muted);
+  font-size: .64rem;
+}
+
+.sidebar-month-items {
+  margin-left: 1rem;
+  padding-left: .65rem;
+  border-left: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+}
+
+.sidebar-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .45rem;
+  margin: .12rem .45rem .12rem 0;
+  padding: .42rem .55rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: .82rem;
+  line-height: 1.35;
+}
+
+.sidebar-link span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-link:hover {
+  background: color-mix(in srgb, var(--surface-soft) 76%, transparent);
+  color: var(--text);
+}
+
+.sidebar-link.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 760;
+}
+
+.sidebar-link small {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  font-weight: 800;
+}
+
+.sidebar-month-items {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .16s ease, transform .16s ease;
+}
+
+.sidebar-month-group:not([open]) .sidebar-month-items {
+  opacity: 0;
+  transform: translateY(-3px);
+}
+
+@supports selector(::details-content) {
+  .sidebar-month-group::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size .18s ease,
+      content-visibility .18s allow-discrete;
+  }
+
+  .sidebar-month-group[open]::details-content {
+    block-size: auto;
+  }
+}
+
+.article-scroll {
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: .25rem;
+  background: transparent;
+}
+.article { min-width: 0; padding: 0 0 2rem; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.article-toc {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--border);
+}
+.article-toc h2 { margin-bottom: .75rem; color: var(--muted); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+.toc-nav { display: grid; gap: .15rem; }
+.toc-link { display: block; width: 100%; padding: .42rem .55rem; border: 0; border-left: 2px solid transparent; border-radius: 0 8px 8px 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; font-size: .86rem; line-height: 1.35; text-align: left; transition: background .18s ease, border-color .18s ease, color .18s ease; }
+.toc-link:hover { background: var(--surface-soft); color: var(--text); }
+.toc-link.is-active { border-left-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); font-weight: 800; }
+.toc-link--h3 { padding-left: 1rem; font-size: .82rem; }
+.toc-link--h4 { padding-left: 1.45rem; font-size: .8rem; }
+.toc-link--h5, .toc-link--h6 { padding-left: 1.85rem; font-size: .78rem; }
+.toc-empty {
+  margin: 0;
+  padding: .65rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--surface-soft) 62%, transparent);
+  color: color-mix(in srgb, var(--muted) 78%, transparent);
+  font-size: .86rem;
+}
+.article, .article * { -webkit-user-select: text; user-select: text; }
+.article-header { padding-bottom: 1.55rem; border-bottom: 1px solid var(--border); }
+.article-header h1 { margin: .6rem 0 .7rem; font-size: clamp(1.8rem, 4vw, 2.8rem); line-height: 1.15; letter-spacing: -.04em; }
+.article-date { color: var(--muted); font-family: var(--font-mono); font-size: .82rem; }
+.article-summary { margin: 0; color: var(--muted); }
+.article-body { padding-top: 2rem; overflow-wrap: anywhere; }
+.article-body h1, .article-body h2, .article-body h3, .article-body h4, .article-body h5, .article-body h6 { margin: 2.15rem 0 .75rem; line-height: 1.25; letter-spacing: -.025em; }
+.article-body h1:first-child, .article-body h2:first-child { margin-top: 0; }
+.article-body h2 { font-size: 1.45rem; }
+.article-body h3 { font-size: 1.15rem; }
+.article-body h4 { font-size: 1rem; }
+.article-body h5, .article-body h6 { color: var(--muted); font-size: .92rem; }
+.article-body p, .article-body li { color: color-mix(in srgb, var(--text) 88%, var(--muted)); }
+.article-body a { color: var(--accent-strong); }
+.article-body code { padding: .1rem .32rem; border-radius: 5px; background: var(--surface-soft); font-family: var(--font-mono); font-size: .88em; }
+.article-body pre { overflow-x: auto; padding: 1rem; border-radius: 10px; background: #15201d; color: #e8f1ed; }
+.article-body pre code { padding: 0; background: transparent; }
+.article-body blockquote { margin: 1rem 0; padding: .25rem 1rem; border-left: 3px solid var(--accent); color: var(--muted); }
+.article-body .math-block, .home-intro-body .math-block,
+.article-body .katex-display, .home-intro-body .katex-display {
+  display: block;
+  width: 100%;
+  margin: 1.35rem auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center !important;
+}
+.article-body .math-block > span, .home-intro-body .math-block > span { display: block; width: 100%; text-align: center !important; }
+.article-body .math-block .katex-display, .home-intro-body .math-block .katex-display { margin: 0 auto; }
+.article-body .katex-display > .katex, .home-intro-body .katex-display > .katex { display: inline-block; text-align: initial; }
+.article-body .math-block > .katex, .home-intro-body .math-block > .katex,
+.article-body .math-block > span > .katex, .home-intro-body .math-block > span > .katex { display: inline-block; text-align: initial; }
+.article-body img, .home-intro-body img { display: block; max-width: 100%; height: auto; margin: 1.15rem auto; border-radius: 10px; object-fit: contain; }
+.article-body img[data-orientation="landscape"], .home-intro-body img[data-orientation="landscape"] {
+  width: 100%;
+  max-height: min(var(--markdown-landscape-image-height), 55vh);
+  height: auto;
+}
+.article-body img[data-orientation="portrait"], .home-intro-body img[data-orientation="portrait"] {
+  width: min(var(--markdown-portrait-image-width), 82%);
+  height: auto;
+  max-height: 72vh;
+}
+.article-body img[data-orientation="square"], .home-intro-body img[data-orientation="square"] {
+  width: min(var(--markdown-square-image-width), 82%);
+  height: auto;
+}
+.article-body hr { height: 1px; margin: 2rem 0; border: 0; background: var(--border); }
+.article-body ul, .article-body ol { padding-left: 1.45rem; }
+.article-body li + li { margin-top: .25rem; }
+.article-body li > ul, .article-body li > ol { margin-top: .3rem; }
+.article-body table { display: block; max-width: 100%; margin: 1.25rem 0; overflow-x: auto; border-collapse: collapse; font-size: .94rem; }
+.article-body th, .article-body td { padding: .65rem .8rem; border: 1px solid var(--border); vertical-align: top; }
+.article-body th { background: var(--surface-soft); color: var(--text); font-weight: 800; }
+.article-body tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-soft) 54%, transparent); }
+.article-body mark { padding: .05rem .22rem; border-radius: 4px; background: #fff1a8; color: #5b4a00; }
+.article-body ins { color: var(--accent-strong); text-decoration-thickness: .08em; text-underline-offset: .18em; }
+.article-body abbr[title] { cursor: help; text-decoration: underline dotted; text-underline-offset: .18em; }
+.article-body kbd { padding: .12rem .35rem; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; background: var(--surface-soft); font-family: var(--font-mono); font-size: .82em; }
+.article-body sub, .article-body sup { line-height: 0; }
+.article-body dl { margin: 1.1rem 0; }
+.article-body dt { color: var(--text); font-weight: 800; }
+.article-body dd { margin: .25rem 0 .85rem 1.25rem; color: var(--muted); }
+.article-body .task-list-item { list-style: none; }
+.article-body .task-list-item input { width: 1rem; height: 1rem; margin: 0 .45rem 0 -1.35rem; vertical-align: -.14rem; accent-color: var(--accent); }
+.article-body .footnotes { margin-top: 2.3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .9rem; }
+.article-body .footnotes p { margin-bottom: .35rem; }
+.article-body .footnote-ref, .article-body .footnote-backref { text-decoration: none; }
+.article-body details { margin: 1rem 0; padding: .9rem 1rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-soft); }
+.article-body summary { cursor: pointer; font-weight: 800; }
+
+.empty-state { padding: 1.35rem; border: 1px dashed var(--border); border-radius: 12px; color: var(--muted); text-align: center; }
+.notice { padding: .8rem 1rem; border-left: 3px solid var(--accent); border-radius: 8px; background: var(--accent-soft); color: var(--text); font-size: .93rem; }
+.error { color: var(--danger); }
+.site-footer { width: 100%; margin: 0; padding: 2rem 0 2.5rem; border-top: 1px solid color-mix(in srgb, var(--border) 86%, transparent); color: var(--muted); font-size: .8rem; line-height: 1.75; }
+.site-footer > * { width: min(1240px, calc(100% - 2.5rem)); margin-right: auto; margin-left: auto; }
+.site-footer a { color: var(--muted); }
+.site-footer a:hover { color: var(--accent-strong); }
+.footer-contact { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .85rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); color: var(--muted); }
+.footer-contact strong { color: var(--text); font-size: .95rem; }
+.legal-disclaimer { max-width: 74rem; padding-top: 1rem; }
+.legal-disclaimer p { margin: 0 0 .7rem; }
+
+/* Resource pages use section panels and compact rows, not a card per file. */
+.resource-section { box-shadow: none; }
+.resource-actions { display: flex; flex: 0 0 auto; gap: .6rem; align-items: center; }
+.resource-link--icon { width: 3.1rem; height: 3.1rem; justify-content: center; padding: 0; }
+.resource-link.resource-link--icon .ui-icon { width: 2rem; height: 2rem; }
+.resource-link--handout { width: 5rem; height: 2.4rem; justify-content: center; gap: .1rem; padding: 0; }
+.resource-link.resource-link--handout .ui-icon { width: 1.15rem; height: 1.15rem; opacity: 1; }
+.resource-link--blank { border-color: #dfcfaf; background: #fcf8ef; color: #84693d; }
+.resource-link--blank:hover { border-color: #c9ae78; background: #f8f0df; }
+.resource-link--sol { border-color: #bfd7ca; background: #f1f8f4; color: #39715d; }
+.resource-link--sol:hover { border-color: #91bba7; background: #e4f1e9; }
+.article-overview { max-width: 58rem; }
+.article-overview-list { border-top: 1px solid var(--border); }
+.article-overview-month { padding: 1.1rem 0 0; }
+.article-overview-month > h2 { margin: 0 0 .25rem; color: var(--muted); font-size: .85rem; letter-spacing: .06em; }
+.article-overview-item { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 1rem; padding: 1.25rem 0; border-bottom: 1px solid var(--border); text-decoration: none; }
+.article-overview-item:hover h2 { color: var(--accent-strong); }
+.article-overview-item time { color: var(--muted); font-family: var(--font-mono); font-size: .78rem; }
+.article-overview-item h2 { margin: 0 0 .35rem; font-size: 1.15rem; transition: color .18s ease; }
+.article-overview-item p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+@media (max-width: 1100px) {
+  .article-mode .articles-layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .article-mode .article-list,
+  .article-mode .article-toc { display: none; }
+  .article-mode .article-scroll {
+    height: 100%;
+    margin: 0;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .header-inner { flex-wrap: wrap; gap: .3rem .65rem; width: min(100% - 1.5rem, 1240px); padding: 1.6rem 0; }
+  .brand { margin-right: auto; }
+  .icon-button { margin-left: 0; }
+  .main-nav { order: 3; width: 100%; overflow-x: auto; padding-bottom: .15rem; }
+  .main-nav > a, .nav-menu > button { padding-inline: .6rem; font-size: .9rem; }
+  .menu-panel { position: fixed; left: 1rem; right: 1rem; top: 7.75rem; width: auto; }
+  .page-shell { width: min(100% - 1.5rem, 1240px); padding-top: 2.2rem; }
+  .course-layout { grid-template-columns: 1fr; }
+  .article-mode .page-shell { height: calc(100vh - 7.75rem); padding-top: 1rem; }
+  .hero { margin-bottom: 2rem; padding-bottom: 2rem; }
+  .card-grid { grid-template-columns: 1fr; }
+  .course-sidebar { position: static; max-height: none; }
+  .course-sidebar { display: flex; gap: .25rem; overflow-x: auto; padding: .45rem; }
+  .course-sidebar h2 { display: none; }
+  .course-sidebar a { flex: 0 0 auto; }
+  .article { padding: 0 0 2rem; }
+  .site-footer > * { width: min(100% - 1.5rem, 1240px); }
+  .article-overview-item { grid-template-columns: 1fr; gap: .3rem; }
+}
+</file>
+
+<file path="css/style.css">
+/* assets/css/style.css */
+
+:root {
+    /* --- 色彩系統 --- */
+    --bg-body: #f0f2f5;
+    --bg-white: #ffffff;
+    --bg-light-gray: #f7f9fa;
+    --bg-hover: #f1f1f1;
+    
+    --text-primary: #333333;
+    --text-title: #1a1a1a;
+    --text-secondary: #555555;
+    --text-muted: #888888;
+    
+    --border-color: #e1e4e8;
+    
+    --color-accent: #2196f3;
+    --color-header-blue: #2c3e50;
+    --color-accent-red: #d9534f;
+
+    --shadow-card: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-hover: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-main);
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    line-height: 1.6;
+    /* 開啟 iOS 慣性捲動 */
+    -webkit-overflow-scrolling: touch;
+    
+    /* 新增：確保網頁內容不夠時，Footer 依然置底 */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+
+    /* 新增：禁止文字選取 */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none; /* Standard */
+}
+
+.allow-select {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    
+    /* 新增：讓 Container 填滿剩下的高度，把 Footer 往下推 */
+    flex: 1;
+    width: 100%;
+}
+
+/* --- Header --- */
+.header-card {
+    background: var(--bg-white);
+    padding: 12px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
+    border: 1px solid var(--border-color);
+    position: sticky;
+    top: 15px;
+    z-index: 100;
+    
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px 30px;
+
+    /* GPU 加速提示，優化 Sticky 效果 */
+    will-change: transform;
+    transform: translateZ(0); 
+}
+
+.header-title {
+    font-size: 1.1rem;
+    margin: 0;
+    color: var(--text-secondary);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    opacity: 0.8;
+}
+
+.header-title:hover {
+    opacity: 1;
+    color: var(--color-accent);
+    cursor: default;
+    transition: 0.2s;
+}
+
+.semester-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0;
+    border: none;
+    margin: 0;
+    flex-grow: 1;
+    justify-content: flex-end;
+}
+
+.nav-btn {
+    appearance: none;
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-family: var(--font-main);
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    touch-action: manipulation;
+}
+
+.nav-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.nav-btn.active {
+    background: var(--bg-active, #e3f2fd);
+    color: var(--color-accent);
+    border-color: rgba(33, 150, 243, 0.2);
+    box-shadow: none;
+    transform: none;
+}
+
+@media (max-width: 600px) {
+    .header-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .semester-nav {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        scrollbar-width: none; 
+    }
+    .semester-nav::-webkit-scrollbar { display: none; }
+}
+
+/* --- Content Cards --- */
+.content-card {
+    background: var(--bg-white);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    animation: fadeIn 0.3s ease-out;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+}
+
+.card-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- List Items --- */
+.resource-list { list-style: none; padding: 0; margin: 0; }
+
+.resource-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+    border-radius: 6px;
+}
+.resource-item:last-child { border-bottom: none; }
+.resource-item:hover { background-color: #fcfcfc; }
+
+.item-info { display: flex; flex-direction: column; }
+.item-title { font-weight: 600; color: var(--text-title); font-size: 1.05rem; }
+.item-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+/* --- Buttons --- */
+.action-group { display: flex; gap: 8px; }
+
+.btn {
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid transparent;
+}
+
+.btn-primary { background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; }
+.btn-primary:hover { background: #bbdefb; }
+
+.btn-sol { background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; }
+.btn-sol:hover { background: #bbdefb; }
+
+.btn-blank { background: #fff8e1; color: #f57f17; border: 1px solid #ffecb3; }
+.btn-blank:hover { background: #ffecb3; }
+
+/* Grid Layouts */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.textbook-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.grid-item {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s;
+}
+.grid-item:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-3px);
+    border-color: var(--color-accent);
+}
+
+/* 移除原有的 .grid-compact 樣式，改統一使用下方 Practice Compact List 的樣式 */
+.slides-container { margin-bottom: 20px; }
+
+/* Practice Compact List (與 Slides 區塊共用) */
+.practice-grid-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 10px 20px;
+}
+.practice-item-compact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    border-radius: 4px;
+}
+.practice-item-compact:hover { background-color: #f9f9f9; }
+
+/* Accordion */
+.slide-accordion-group {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    background: #fff;
+    transition: box-shadow 0.2s;
+    transform: translate3d(0, 0, 0);
+}
+
+.slide-accordion-header {
+    padding: 15px;
+    background: #fcfcfc;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    border-left: 4px solid var(--color-header-blue);
+    -webkit-tap-highlight-color: transparent;
+}
+.slide-accordion-header:hover { background: #f0f4f8; }
+.slide-header-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+.slide-toggle-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.3s ease; }
+
+.slide-accordion-header.active { background: #eef2f5; }
+.slide-accordion-header.active .slide-toggle-icon { transform: rotate(180deg); }
+
+.slide-accordion-body {
+    display: none;
+    padding: 15px;
+    border-top: 1px solid var(--border-color);
+    background: #fff;
+}
+.slide-accordion-body.open { display: grid; }
+
+/* --- Footer 滿版樣式 --- */
+.site-footer {
+    width: 100%;
+    background-color: #f5f5f7;
+    color: #86868b;
+    font-size: 12px;
+    line-height: 1.33337;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    font-family: var(--font-main);
+    border-top: 1px solid #d2d2d7;
+    padding: 20px 0;
+    margin-top: auto;
+}
+
+.footer-content {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 22px;
+}
+
+.legal-disclaimer {
+    padding-bottom: 12px;
+    border-bottom: 1px solid #d2d2d7;
+    margin-bottom: 12px;
+    text-align: justify;
+    /*-webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;*/
+}
+
+.legal-disclaimer p {
+    margin-bottom: 8px;
+}
+
+.legal-disclaimer p:last-child {
+    margin-bottom: 0;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+.footer-bottom p {
+    margin: 4px 0;
+}
+
+.footer-bottom a {
+    color: #515154;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-bottom a:hover {
+    color: #1d1d1f;
+    text-decoration: underline;
+}
+</file>
+
+<file path="css/tool-shell.css">
+:root { --bambook-bar-height: 2.75rem; }
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input, textarea, select, [contenteditable="true"], [contenteditable="true"] * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+body.bambook-tool-page { padding-top: var(--bambook-bar-height) !important; flex-wrap: wrap !important; }
+
+.bambook-toolbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 2147483640;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: var(--bambook-bar-height);
+  padding: .45rem max(1rem, env(safe-area-inset-right)) .45rem max(1rem, env(safe-area-inset-left));
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(15, 118, 110, .96);
+  color: #f4fffc;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, .18);
+  font-family: "Noto Sans TC", "Noto Sans", system-ui, sans-serif;
+  font-size: .84rem;
+  line-height: 1.2;
+}
+.bambook-toolbar a { color: inherit; font-weight: 800; text-decoration: none; }
+.bambook-toolbar a:hover { text-decoration: underline; }
+.bambook-toolbar__divider { opacity: .55; }
+.bambook-toolbar__section { overflow: hidden; opacity: .88; text-overflow: ellipsis; white-space: nowrap; }
+.bambook-toolbar__theme {
+  display: inline-grid;
+  width: 1.85rem;
+  height: 1.85rem;
+  place-items: center;
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.bambook-toolbar__theme:hover { background: rgba(255,255,255,.13); }
+
+.bambook-tool-footer {
+  box-sizing: border-box;
+  flex: 0 0 100%;
+  width: 100%;
+  margin-top: auto;
+  padding: 1.5rem max(1rem, env(safe-area-inset-right)) 2rem max(1rem, env(safe-area-inset-left));
+  border-top: 1px solid #dce6e2;
+  background: #f7f8f8;
+  color: #62716b;
+  font: .78rem/1.7 "Noto Sans TC", "Noto Sans", system-ui, sans-serif;
+}
+.bambook-tool-footer__contact { display: flex; flex-wrap: wrap; gap: .35rem .8rem; max-width: 1240px; margin: 0 auto; padding-bottom: .8rem; border-bottom: 1px solid #dce6e2; }
+.bambook-tool-footer__contact strong { color: #17221f; }
+.bambook-tool-footer a { color: #0f766e; }
+.bambook-tool-footer__legal { max-width: 1240px; margin: .8rem auto 0; }
+.bambook-tool-footer__legal p { margin: 0 0 .55rem; }
+
+@media (max-width: 450px) {
+  .bambook-toolbar { gap: .3rem; font-size: .78rem; }
+  .bambook-toolbar__section { max-width: 42vw; }
+}
+</file>
+
+<file path="icons/bambook.svg">
+<!--
+tags: [read, dictionary, magazine, library, booklet, novel, book, file, paper, text]
+category: Document
+version: "1.50"
+unicode: "efc5"
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="#ffffff"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12" />
+  <path d="M19 16h-12a2 2 0 0 0 -2 2" />
+  <path d="M9 8h6" />
+</svg>
+</file>
+
+<file path="js/main.js">
+// assets/js/main.js
+
+const SiteIcons = {
+    // Bambook 主站
+    logo: `     <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12z" />
+                    <path d="M19 16h-12a2 2 0 0 0 -2 2" />
+                    <path d="M9 8h6" />
+                </svg>`,
+    semester: ` <svg style="vertical-align: -0.3em;" xmlns="http://www.w3.org/2000/svg" width="1.6em" height="1.6em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l-8 4l8 4l8 -4l-8 -4" />
+                    <path d="M4 14l8 4l8 -4" />
+                </svg>`,
+    schedule: `<svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 16l6 -7l5 5l5 -6" />
+                    <path d="M15 14m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                    <path d="M10 9m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                    <path d="M4 16m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                    <path d="M20 8m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                </svg>`,
+                
+    // 資源分類
+    textbook: ` <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                    <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+                    <path d="M3 6l0 13" /><path d="M12 6l0 13" />
+                    <path d="M21 6l0 13" />
+                </svg>`,
+    handout: `  <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                    <path d="M9 17h6" />
+                    <path d="M9 13h6" />
+                </svg>`,
+    slide: `    <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4l18 0" />
+                    <path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" />
+                    <path d="M12 16l0 4" />
+                    <path d="M9 20l6 0" />
+                    <path d="M8 12l3 -3l2 2l3 -3" />
+                </svg>`,
+    practice: ` <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">  
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                    <path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" />
+                    <path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6" />
+                    <path d="M17 18h2" />
+                    <path d="M20 15h-3v6" />
+                    <path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1" />
+                </svg>`,
+    pdf: `      <svg xmlns="http://www.w3.org/2000/svg"  width="2em"  height="2em"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="1.6"  stroke-linecap="round"  stroke-linejoin="round">
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                    <path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" />
+                    <path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6" />
+                    <path d="M17 18h2" />
+                    <path d="M20 15h-3v6" />
+                    <path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1" />
+                </svg>`,
+    
+    // 練習題區塊
+    bookmarks: `    <svg style="vertical-align: -0.25em;" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 10v11l-5 -3l-5 3v-11a3 3 0 0 1 3 -3h4a3 3 0 0 1 3 3z" />
+                        <path d="M11 3h5a3 3 0 0 1 3 3v11" />
+                    </svg>`,
+    archive: `  <svg style="vertical-align: -0.25em;" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 15l6 -6" />
+                    <path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464" />
+                    <path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463" />
+                </svg>`,
+    key: `  <svg style="vertical-align: -0.25em;" xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16.555 3.843l3.602 3.602a2.877 2.877 0 0 1 0 4.069l-2.643 2.643a2.877 2.877 0 0 1 -4.069 0l-.301 -.301l-6.558 6.558a2 2 0 0 1 -1.239 .578l-.175 .008h-1.172a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.172a2 2 0 0 1 .467 -1.284l.119 -.13l.414 -.414h2v-2h2v-2l2.144 -2.144l-.301 -.301a2.877 2.877 0 0 1 0 -4.069l2.643 -2.643a2.877 2.877 0 0 1 4.069 0z" />
+                <path d="M15 9h.01" />
+            </svg>`,
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const data = window.COURSE_DATA;
+    const nav = document.getElementById('semester-nav');
+    const content = document.getElementById('content-area');
+
+    // 通用排序函式
+    const sortByName = (array, key) => {
+        return array.sort((a, b) => {
+            const nameA = a[key].toString().toUpperCase(); 
+            const nameB = b[key].toString().toUpperCase();
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
+        });
+    };
+
+    // 手風琴切換
+    window.toggleSlide = function(headerElement) {
+        headerElement.classList.toggle('active');
+        const body = headerElement.nextElementSibling;
+        body.classList.toggle('open');
+    };
+
+    if (!data || Object.keys(data).length === 0) {
+        content.innerHTML = '<div class="content-card" style="text-align:center; color:#888;">尚未生成 course_data.js 或無資料</div>';
+    } else {
+        const semesters = Object.keys(data).sort();
+        semesters.forEach((sem, index) => {
+            const btn = document.createElement('button');
+            btn.className = index === 0 ? 'nav-btn active' : 'nav-btn';
+            btn.innerHTML = `<span>${SiteIcons.semester}</span> ${sem}`; 
+            btn.onclick = () => renderSemester(sem, btn);
+            nav.appendChild(btn);
+        });
+        renderSemester(semesters[0], nav.children[0]);
+    }
+
+    function renderSemester(sem, activeBtn) {
+        // 更新按鈕狀態
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        if(activeBtn) activeBtn.classList.add('active');
+
+        // 1. 立即清空內容，給使用者即時回饋
+        content.innerHTML = ''; 
+
+        const d = data[sem];
+        
+        // 2. 定義渲染任務佇列 (Render Queue)
+        const tasks = [
+            () => getSyllabusHTML(d.syllabus),
+            () => getTextbooksHTML(d.textbooks),
+            () => getHandoutsHTML(d.handouts),
+            () => getSlidesHTML(d.slides),
+            () => getPracticeHTML(d.practice)
+        ];
+
+        // 3. 開始執行分段渲染
+        processRenderQueue(tasks);
+    }
+
+    // 佇列處理器：利用 requestAnimationFrame 分散主線程壓力
+    function processRenderQueue(tasks) {
+        if (tasks.length === 0) return;
+
+        // 取出下一個任務
+        const task = tasks.shift();
+        const html = task();
+
+        if (html) {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.innerHTML = html;
+            sectionDiv.style.animation = 'fadeIn 0.3s ease-out';
+            content.appendChild(sectionDiv);
+        }
+
+        // 預約下一幀執行下一個任務
+        requestAnimationFrame(() => processRenderQueue(tasks));
+    }
+
+    // --- 以下為各區塊的 HTML 生成器 ---
+
+function generateSyllabusTable(data) {
+    if (!Array.isArray(data) || data.length === 0) {
+        return `<div style="color: var(--text-muted); padding: 10px;">目前尚無課綱排程。</div>`;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return data.map((entry, index) => {
+        const isLast = index === data.length - 1;
+        const items = entry.items || [];
+        
+        const eventDate = new Date(entry.date);
+        const isPast = !isNaN(eventDate) && eventDate < today;
+
+        // 簡化顏色邏輯：過去的事件全部統一變淡，未來的事件日期使用次要文字色
+        const dotColor = isPast ? 'var(--text-muted, #a0aec0)' : 'var(--color-accent)';
+        const dateColor = isPast ? 'var(--text-muted, #a0aec0)' : 'var(--color-accent)';
+        const titleColor = isPast ? 'var(--text-muted, #a0aec0)' : 'var(--text-title)';
+        const nodeOpacity = isPast ? 'opacity: 0.7;' : 'opacity: 1;';
+        
+        return `
+        <div class="timeline-node" style="position: relative; padding-left: 28px; padding-bottom: 20px; transition: opacity 0.3s; ${nodeOpacity}">
+            ${!isLast ? `<div style="position: absolute; left: 9px; top: 24px; bottom: 0; width: 2px; background: #edf2f7;"></div>` : ''}
+            
+            <div style="position: absolute; left: 4px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: ${dotColor}; border: 2px solid var(--bg-card, #fff); box-shadow: 0 0 0 1px #e2e8f0; z-index: 2;"></div>
+            
+            <div style="background: transparent; padding: 2px 0 0 4px;">
+                <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-bottom: 6px;">
+                    <span style="font-weight: 600; color: ${titleColor}; font-size: 1rem;">
+                        ${entry.title || '-'}
+                    </span>
+                    <span style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 1rem; color: ${dateColor}; background-color: #f3f4f6; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(0, 0, 0, 0.05); display: inline-block; line-height: 1.2; letter-spacing: -0.02em;">
+                        ${entry.date || '-'}
+                    </span>
+                </div>
+                
+                <ul style="margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                    ${items.map(item => `<li style="margin-bottom: 3px;">${item}</li>`).join('')}
+                </ul>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function getSyllabusHTML(syllabusPath) {
+    if (!syllabusPath) return '';
+
+    const containerId = 'syllabus-container-' + Date.now();
+
+    // 執行非同步抓取
+    fetch(syllabusPath)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById(containerId);
+            if (container) container.innerHTML = generateSyllabusTable(data);
+        })
+        .catch(error => {
+            console.error('Syllabus Fetch Error:', error);
+            const container = document.getElementById(containerId);
+            if (container) container.innerHTML = `<div style="color: #ff4d4f; padding: 15px;">⚠️ 無法載入 JSON 資料。</div>`;
+        });
+
+    // 根據需求設計獨立的樣式
+    // 外層 slide-accordion-group 負責容器邊距與背景
+    // slide-accordion-header 承載你要求的 flex 樣式與左側粗邊框
+    return `
+    <div class="slide-accordion-group" style="margin-bottom: 24px; background: var(--bg-card, #fff); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;">
+        <div class="slide-accordion-header" onclick="toggleSlide(this)" 
+             style="padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--color-accent); cursor: pointer; user-select: none;">
+            
+            <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-title); display: flex; align-items: center; gap: 12px;">
+                ${SiteIcons.schedule || '📅'} 研討期程
+            </div>
+            
+            <span class="slide-toggle-icon" style="transition: transform 0.3s ease; color: var(--text-muted); font-size: 0.75rem;">▼</span>
+        </div>
+        
+        <div class="slide-accordion-body" style="padding: 0 25px 20px 25px; border-top: 1px solid rgba(0,0,0,0.04);">
+            <div id="${containerId}" style="padding-top: 20px;">
+                <div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">同步雲端課綱中...</div>
+            </div>
+        </div>
+    </div>`;
+}
+
+    function getTextbooksHTML(textbooks) {
+        if (!textbooks || textbooks.length === 0) return '';
+        const sorted = sortByName([...textbooks], 'title');
+        
+        let html = `
+        <div class="content-card">
+            <div class="card-label">Textbooks</div>
+            <div class="textbook-grid">`;
+        
+        sorted.forEach(tb => {
+            html += `
+            <div class="grid-item">
+                <div class="item-title" style="margin-bottom:5px;">${tb.title}</div>
+                <div class="item-meta" style="flex-grow:1;">
+                    ${tb.author} <br> 
+                    <span style="background:#f0f2f5; padding:2px 6px; border-radius:4px; font-size:0.75em;">${tb.version || 'Unknown Ver.'}</span>
+                </div>
+                <div class="action-group" style="margin-top: 15px;">
+                    <a href="${tb.path}" class="btn btn-primary" target="_blank">${SiteIcons.pdf}</a>
+                </div>
+            </div>`;
+        });
+        html += `</div></div>`;
+        return html;
+    }
+
+    function getHandoutsHTML(handouts) {
+        if (!handouts || handouts.length === 0) return '';
+        const sorted = sortByName([...handouts], 'title');
+
+        let html = `
+        <div class="content-card">
+            <div class="card-label">Handouts</div>
+            <ul class="resource-list">`;
+        
+        sorted.forEach(ho => {
+            html += `
+            <li class="resource-item">
+                <div class="item-info"><span class="item-title">${ho.title}</span></div>
+                <div class="action-group">
+                    ${ho.blank ? `<a href="${ho.blank}" class="btn btn-blank" target="_blank">填空${SiteIcons.pdf}</a>` : ''}
+                    ${ho.sol ? `<a href="${ho.sol}" class="btn btn-sol" target="_blank">解答${SiteIcons.pdf}</a>` : ''}
+                </div>
+            </li>`;
+        });
+        html += `</ul></div>`;
+        return html;
+    }
+
+    function getSlidesHTML(slides) {
+        if (!slides || slides.length === 0) return '';
+        const sortedCategories = slides.sort((a, b) => a.category.localeCompare(b.category));
+        
+        let html = `<div class="content-card"><div class="card-label">Slides</div>`;
+        
+        sortedCategories.forEach(cat => {
+            const sortedFiles = sortByName([...cat.files], 'name');
+            html += `
+            <div class="slide-accordion-group">
+                <div class="slide-accordion-header" onclick="toggleSlide(this)">
+                    <span class="slide-header-title">${cat.category}</span>
+                    <span class="slide-toggle-icon">▼</span>
+                </div>
+                <div class="slide-accordion-body">
+                    <!-- 使用與歷屆試題相同的網格類別 -->
+                    <div class="practice-grid-list">`; 
+            
+            sortedFiles.forEach(f => {
+                html += `
+                <div class="practice-item-compact">
+                    <span style="font-size:0.9rem;">${f.name}</span>
+                    <div class="action-group">
+                        <a href="${f.path}" class="btn btn-primary" target="_blank">${SiteIcons.pdf}</a>
+                    </div>
+                </div>`;
+            });
+            html += `</div></div></div>`;
+        });
+        html += `</div>`;
+        return html;
+    }
+
+    function getPracticeHTML(practice) {
+        if (!practice) return '';
+        const { exams = [], midterm_answers = [], final_answers = [], other_answers = [], answers: legacy_answers = [], links = [] } = practice;
+        
+        const hasAnswers = midterm_answers.length > 0 || final_answers.length > 0 || other_answers.length > 0 || legacy_answers.length > 0;
+
+        if (exams.length === 0 && !hasAnswers && links.length === 0) return '';
+
+        let html = `<div class="content-card"><div class="card-label">Practice & Resources</div>`;
+
+        // 1. 常用連結
+        if (links.length > 0) {
+            html += `<div style="margin-bottom:25px; padding-bottom:15px; border-bottom:1px dashed #eee;">
+                <h4 style="margin:0 0 10px 0; color:var(--text-title);">${SiteIcons.archive} 常用連結</h4>
+                <div style="display:flex; flex-wrap:wrap; gap:10px;">`;
+            links.forEach(l => {
+                html += `<a href="${l.url}" class="nav-btn" style="background:#fff; border:1px solid #ddd;" target="_blank">➜ ${l.title}</a>`;
+            });
+            html += `</div></div>`;
+        }
+
+        if (exams.length > 0 || hasAnswers) {
+            html += `<div style="display:flex; flex-direction:column; gap:20px;">`;
+            
+            // 試題區 (A-Z)
+            if (exams.length > 0) {
+                const sortedExams = sortByName([...exams], 'name');
+                html += `<div>
+                    <h4 style="margin:0 0 10px 0; color:var(--text-title);">${SiteIcons.bookmarks} 歷屆試題</h4>
+                    <div class="practice-grid-list">`;
+                sortedExams.forEach(ex => {
+                    html += `
+                    <div class="practice-item-compact">
+                        <span style="font-size:0.9rem;">${ex.name}</span>
+                        <div class="action-group">
+                            <a href="${ex.path}" class="btn btn-primary" target="_blank">${SiteIcons.pdf}</a>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            }
+
+            // 詳解區：將各類別包裝成獨立的手風琴 (Accordion)
+            if (hasAnswers) {
+                html += `<div>
+                    <h4 style="margin:0 0 10px 0; color:var(--text-title);">${SiteIcons.key} 參考詳解</h4>
+                    <div style="display:flex; flex-direction:column; gap:10px;">`;
+                
+                const generateAnswerAccordion = (title, answersList, icon) => {
+                    if (!answersList || answersList.length === 0) return '';
+                    const sortedAnswers = sortByName([...answersList], 'name').reverse(); // Z-A 排序
+                    
+                    let accHtml = `
+                    <div class="slide-accordion-group" style="margin-bottom:0;">
+                        <div class="slide-accordion-header" onclick="toggleSlide(this)">
+                            <span class="slide-header-title">${icon} ${title}</span>
+                            <span class="slide-toggle-icon">▼</span>
+                        </div>
+                        <div class="slide-accordion-body">
+                            <div class="practice-grid-list">`;
+                    
+                    sortedAnswers.forEach(ans => {
+                        accHtml += `
+                        <div class="practice-item-compact">
+                            <span style="font-size:0.9rem;">${ans.name}</span>
+                            <div class="action-group">
+                                <a href="${ans.path}" class="btn btn-sol" target="_blank">${SiteIcons.pdf}</a>
+                            </div>
+                        </div>`;
+                    });
+                    
+                    accHtml += `</div></div></div>`;
+                    return accHtml;
+                };
+
+                html += generateAnswerAccordion('期中考參考詳解', midterm_answers, '');
+                html += generateAnswerAccordion('期末考參考詳解', final_answers, '');
+                html += generateAnswerAccordion('其他參考詳解', other_answers, '');
+                html += generateAnswerAccordion('參考詳解', legacy_answers, ''); // 相容舊資料
+
+                html += `</div></div>`;
+            }
+            html += `</div>`;
+        }
+        html += `</div>`;
+        return html;
+    }
+});
+</file>
+
+<file path="js/site.js">
+import MarkdownIt from "https://cdn.jsdelivr.net/npm/markdown-it@14.2.0/+esm";
+import markdownItAbbr from "https://cdn.jsdelivr.net/npm/markdown-it-abbr@2.0.0/+esm";
+import markdownItDeflist from "https://cdn.jsdelivr.net/npm/markdown-it-deflist@3.0.0/+esm";
+import markdownItFootnote from "https://cdn.jsdelivr.net/npm/markdown-it-footnote@4.0.0/+esm";
+import markdownItIns from "https://cdn.jsdelivr.net/npm/markdown-it-ins@4.0.0/+esm";
+import markdownItMark from "https://cdn.jsdelivr.net/npm/markdown-it-mark@4.0.0/+esm";
+import markdownItSub from "https://cdn.jsdelivr.net/npm/markdown-it-sub@2.0.0/+esm";
+import markdownItSup from "https://cdn.jsdelivr.net/npm/markdown-it-sup@2.0.0/+esm";
+import markdownItTaskLists from "https://cdn.jsdelivr.net/npm/markdown-it-task-lists@2.1.1/+esm";
+import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.4.11/+esm";
+import renderMathInElement from "https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/contrib/auto-render.mjs";
+
+const markdown = new MarkdownIt({ html: true, linkify: true, typographer: true })
+  .use(markdownItAbbr)
+  .use(markdownItDeflist)
+  .use(markdownItFootnote)
+  .use(markdownItIns)
+  .use(markdownItMark)
+  .use(markdownItSub)
+  .use(markdownItSup)
+  .use(markdownItTaskLists, { enabled: true, label: true });
+
+const markdownSanitizeOptions = {
+  USE_PROFILES: { html: true, svg: true, mathMl: true },
+  ADD_TAGS: ["input"],
+  ADD_ATTR: ["checked", "disabled", "type", "class", "id", "for", "aria-hidden", "aria-label"],
+};
+
+// Inline Tabler Icons (outline set) keep the public site independent of icon CDNs.
+const tablerIcon = paths => `<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+const ICONS = {
+  book: tablerIcon('<path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/>'),
+  math: tablerIcon('<path d="M19 5h-7l-4 14l-3 -6h-2"/><path d="M14 13l6 6"/><path d="M14 19l6 -6"/>'),
+  pdf: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"/><path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"/><path d="M17 18h2"/><path d="M20 15h-3v6"/><path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1"/>'),
+  download: tablerIcon('<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 11l5 5l5 -5"/><path d="M12 4l0 12"/>'),
+  external: tablerIcon('<path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/>'),
+  link: tablerIcon('<path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/>'),
+  presentation: tablerIcon('<path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/><path d="M12 16l0 4"/><path d="M9 20l6 0"/><path d="M8 12l3 -3l2 2l3 -3"/>'),
+  terminal: tablerIcon('<path d="M8 9l3 3l-3 3"/><path d="M13 15l3 0"/><path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -12"/>'),
+  world: tablerIcon('<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/>'),
+  chart: tablerIcon('<path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"/><path d="M4 20h14"/>'),
+  wave: tablerIcon('<path d="M21 12h-2c-.894 0 -1.662 -.857 -1.761 -2c-.296 -3.45 -.749 -6 -2.749 -6s-2.5 3.582 -2.5 8s-.5 8 -2.5 8s-2.452 -2.547 -2.749 -6c-.1 -1.147 -.867 -2 -1.763 -2h-2"/>'),
+  camera: tablerIcon('<path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>'),
+};
+
+const app = document.querySelector("#app");
+const materialMenu = document.querySelector("[data-material-menu]");
+const state = {
+  courses: {},
+  homeIntro: null,
+  articles: [],
+  entries: [],
+  tools: [],
+  articleBodies: new Map(),
+  tocScrollHandler: null,
+  tocScrollRoot: null,
+  manifestError: "",
+};
+
+document.addEventListener("DOMContentLoaded", initialise);
+
+async function initialise() {
+  bindEvents();
+  await loadSiteManifest();
+  buildMaterialMenu();
+  route();
+}
+
+function bindEvents() {
+  window.addEventListener("hashchange", route);
+
+  document.querySelectorAll(".nav-menu > button").forEach(button => {
+    button.addEventListener("click", () => {
+      const menu = button.closest(".nav-menu");
+      const willOpen = !menu.classList.contains("is-open");
+      closeMenus();
+      if (willOpen) {
+        menu.classList.add("is-open");
+        button.setAttribute("aria-expanded", "true");
+      }
+    });
+  });
+
+  document.addEventListener("click", event => {
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    if (!target) return;
+
+    if (target.closest("[data-toggle-all-months]")) {
+      const groups = Array.from(document.querySelectorAll(".sidebar-month-group"));
+      const shouldOpen = groups.some(group => !group.open);
+      groups.forEach(group => {
+        group.open = shouldOpen;
+      });
+      return;
+    }
+
+    if (!target.closest(".nav-menu")) closeMenus();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeMenus();
+  });
+}
+
+function closeMenus() {
+  document.querySelectorAll(".nav-menu.is-open").forEach(menu => {
+    menu.classList.remove("is-open");
+    menu.querySelector("button")?.setAttribute("aria-expanded", "false");
+  });
+}
+
+function buildMaterialMenu() {
+  const names = courseNames();
+  materialMenu.innerHTML = names.length
+    ? names.map(name => `<a href="#materials=${encodeURIComponent(name)}">${escapeHTML(name)}</a>`).join("")
+    : `<span class="menu-message">教材資料尚未載入</span>`;
+}
+
+async function loadSiteManifest() {
+  try {
+    const response = await fetch(assetURL("site-manifest.json"), { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const manifest = await response.json();
+    if (!manifest || typeof manifest !== "object") throw new Error("site-manifest.json 格式不正確");
+    state.courses = manifest.materials && typeof manifest.materials === "object" ? manifest.materials : {};
+    const legacyTools = Array.isArray(manifest.tools) ? manifest.tools : [];
+    state.entries = (Array.isArray(manifest.entries) ? manifest.entries : []).map(normaliseEntryCard);
+    state.tools = [...legacyTools.map(normaliseEntryCard), ...state.entries];
+    const homeIntro = manifest.home_intro && typeof manifest.home_intro === "object" ? manifest.home_intro : null;
+    state.homeIntro = homeIntro && typeof homeIntro.path === "string"
+      ? {
+        path: homeIntro.path.replace(/^\/+/, ""),
+        title: homeIntro.title || fileTitle(homeIntro.path),
+        date: homeIntro.date || "",
+        tags: Array.isArray(homeIntro.tags) ? homeIntro.tags : [],
+        summary: homeIntro.summary || "",
+      }
+      : null;
+    state.articles = (Array.isArray(manifest.articles) ? manifest.articles : [])
+      .filter(item => item && typeof item.path === "string")
+      .map(item => ({
+        path: item.path.replace(/^\/+/, ""),
+        title: item.title || fileTitle(item.path),
+        date: item.date || "",
+        status: item.status || "",
+        tags: Array.isArray(item.tags) ? item.tags : [],
+        summary: item.summary || "",
+      }))
+      .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  } catch (error) {
+    state.manifestError = `網站索引無法載入：${error.message}`;
+  }
+}
+
+function route() {
+  closeMenus();
+  clearArticleTocScroll();
+  document.body.classList.remove("article-mode");
+  const hash = decodedHash();
+  const [name, value = ""] = hash.split(/=(.*)/s);
+
+  if (name === "materials") renderCourse(value);
+  else if (name === "articles") renderArticlesPage();
+  else if (name === "article") renderArticlesPage(value);
+  else if (name === "tools") renderTools();
+  else renderHome();
+}
+
+function clearArticleTocScroll() {
+  if (!state.tocScrollHandler) return;
+  (state.tocScrollRoot || window).removeEventListener("scroll", state.tocScrollHandler);
+  state.tocScrollHandler = null;
+  state.tocScrollRoot = null;
+}
+
+function renderHome() {
+  setActiveNav("");
+  document.title = "Bambook";
+  const names = courseNames();
+  const materialCards = names.map((name, index) => card({
+    href: `#materials=${encodeURIComponent(name)}`,
+    icon: courseIcon(name),
+    title: name,
+    description: `${name}的課本、講義、投影片與練習資源。`,
+    action: "開啟教材 →",
+  })).join("") || emptyState("教材資料尚未載入。請先執行 build_manifest.py。");
+
+  app.innerHTML = `
+    ${homeIntroShell()}
+    <section>
+      <div class="section-heading"><h2>教材</h2><a href="#materials=${encodeURIComponent(names[0] || "")}">全部教材 →</a></div>
+      <div class="card-grid">${materialCards}</div>
+    </section>
+    <section>
+      <div class="section-heading"><h2>文章</h2><a href="#articles">全部文章 →</a></div>
+      <div class="card-grid">${articlePreviewCards()}</div>
+    </section>
+    <section>
+      <div class="section-heading"><h2>其他工具</h2><a href="#tools">全部工具 →</a></div>
+      <div class="card-grid">${toolCards().slice(0, 3).map(card).join("")}</div>
+    </section>`;
+  loadHomeIntro();
+}
+
+function homeIntroShell() {
+  if (!state.homeIntro) return "";
+  return `
+    <section class="home-intro" aria-label="網站首頁使用說明">
+      <div class="home-intro-label">
+        <span>網站首頁</span>
+        <span>使用說明</span>
+      </div>
+      <div class="home-intro-content" data-home-intro>
+        <p class="notice">正在載入網站說明…</p>
+      </div>
+    </section>`;
+}
+
+async function loadHomeIntro() {
+  const target = document.querySelector("[data-home-intro]");
+  if (!target || !state.homeIntro) return;
+  try {
+    const cacheKey = `home:${state.homeIntro.path}`;
+    let parsed = state.articleBodies.get(cacheKey);
+    if (!parsed) {
+      const response = await fetch(assetURL(`content/${state.homeIntro.path}`), { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      parsed = parseFrontMatter(await response.text());
+      state.articleBodies.set(cacheKey, parsed);
+    }
+    const dirtyHTML = renderMarkdown(parsed.body);
+    target.innerHTML = `<div class="home-intro-body">${DOMPurify.sanitize(dirtyHTML, markdownSanitizeOptions)}</div>`;
+    const body = target.querySelector(".home-intro-body");
+    hydrateMarkdownBody(body);
+  } catch (error) {
+    target.innerHTML = `<p class="error">網站說明無法載入：${escapeHTML(error.message)}</p>`;
+  }
+}
+
+function renderCourse(name) {
+  const course = state.courses[name];
+  if (!course) {
+    renderNotFound("找不到這份教材", "請從上方的「教材」選單重新選擇課程。");
+    return;
+  }
+
+  setActiveNav("");
+  document.title = `${name} | Bambook`;
+  const courseLinks = courseNames().map(courseName => `<a class="${courseName === name ? "is-active" : ""}" href="#materials=${encodeURIComponent(courseName)}">${escapeHTML(courseName)}</a>`).join("");
+
+  app.innerHTML = `
+    <div class="course-layout">
+      <div class="course-content">
+        <header class="page-heading">
+          <p class="eyebrow">Course materials</p>
+          <h1>${escapeHTML(name)}</h1>
+          <p>課本、講義、投影片及歷屆練習均由此頁統一整理；點選檔案即可在新分頁開啟。</p>
+        </header>
+        <div id="syllabus-slot"></div>
+        ${resourceSection("課本", textbookItems(course.textbooks), ICONS.book)}
+        ${resourceSection("講義", handoutItems(course.handouts), ICONS.pdf)}
+        ${slidesSection(course.slides)}
+        ${practiceSection(course.practice)}
+      </div>
+      <aside class="course-sidebar"><h2>教材</h2>${courseLinks}</aside>
+    </div>`;
+
+  renderSyllabus(course.syllabus);
+}
+
+function renderSyllabus(path) {
+  const slot = document.querySelector("#syllabus-slot");
+  if (!slot || !path) return;
+  slot.innerHTML = resourceSection("課程進度", `<p class="notice">正在載入課程進度…</p>`, ICONS.book);
+  fetch(assetURL(path), { cache: "no-store" })
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    })
+    .then(items => {
+      if (!Array.isArray(items)) throw new Error("資料格式不正確");
+      slot.innerHTML = resourceSection("課程進度", syllabusItems(items), ICONS.book);
+    })
+    .catch(() => {
+      slot.innerHTML = resourceSection("課程進度", `<p class="notice">課程進度檔暫時無法讀取。</p>`, ICONS.book);
+    });
+}
+
+function textbookItems(items = []) {
+  if (!items.length) return emptyState("尚無課本資料。");
+  return `<div class="resource-grid">${items.map(item => `
+    <article class="resource-item">
+      <div><div class="resource-name">${documentResourceLink(item.path, item.title || "未命名課本")}</div><div class="resource-meta">${escapeHTML([item.author, item.version].filter(Boolean).join(" · "))}</div></div>
+    </article>`).join("")}</div>`;
+}
+
+function handoutItems(items = []) {
+  if (!items.length) return emptyState("尚無講義資料。");
+  return `<div class="resource-grid">${items.map(item => `
+    <article class="resource-item">
+      <div class="resource-name">${escapeHTML(item.title || "未命名講義")}</div>
+      <div class="resource-actions">${handoutLink(item.blank, "填空", "blank")}${handoutLink(item.sol, "解答", "sol")}</div>
+    </article>`).join("")}</div>`;
+}
+
+function slidesSection(slides = []) {
+  if (!slides.length) return resourceSection("投影片", emptyState("尚無投影片資料。"), ICONS.presentation);
+  const content = slides.map(group => `
+    <details class="resource-details">
+      <summary>${escapeHTML(group.category || "未分類")}</summary>
+      <div class="resource-grid">${(group.files || []).map(item => `
+        <article class="resource-item"><div class="resource-name">${documentResourceLink(item.path, item.name || "未命名投影片")}</div></article>`).join("")}</div>
+    </details>`).join("");
+  return resourceSection("投影片", content, ICONS.presentation);
+}
+
+function practiceSection(practice = {}) {
+  const groups = [
+    ["試題", practice.exams],
+    ["期中詳解", practice.midterm_answers],
+    ["期末詳解", practice.final_answers],
+    ["其他詳解", practice.other_answers || practice.answers],
+  ].filter(([, items]) => Array.isArray(items) && items.length);
+  const links = Array.isArray(practice.links) ? practice.links : [];
+  if (!groups.length && !links.length) return resourceSection("練習與資源", emptyState("尚無練習資料。"), ICONS.math);
+
+  const external = links.length ? `<div class="resource-grid">${links.map(item => `
+    <article class="resource-item"><div class="resource-name">${externalResourceLink(item.url, item.title || item.url)}</div></article>`).join("")}</div>` : "";
+  const detail = groups.map(([title, items]) => `
+    <details class="resource-details"><summary>${escapeHTML(title)}</summary>
+    <div class="resource-grid">${items.map(item => `<article class="resource-item"><div class="resource-name">${documentResourceLink(item.path, item.name || "未命名檔案")}</div></article>`).join("")}</div></details>`).join("");
+  return resourceSection("練習與資源", external + detail, ICONS.math);
+}
+
+function syllabusItems(items) {
+  return `<ol class="syllabus-list">${items.map(item => {
+    const text = [item.date, item.title, ...(item.items || [])].filter(Boolean).join(" · ");
+    return `<li>${escapeHTML(text)}</li>`;
+  }).join("")}</ol>`;
+}
+
+function resourceSection(title, content, icon = ICONS.book) {
+  return `<section class="resource-section"><h2>${icon}<span>${escapeHTML(title)}</span></h2>${content}</section>`;
+}
+
+
+function documentResourceLink(path, label) {
+  if (!path) return "";
+  return `<a class="resource-document-link" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="開啟 PDF：${escapeHTML(label)}" title="開啟 PDF">${escapeHTML(label)}${ICONS.pdf}</a>`;
+}
+
+function externalResourceLink(url, label) {
+  if (!url) return "";
+  return `<a class="resource-document-link" href="${safeURL(url)}" target="_blank" rel="noopener" aria-label="開啟連結：${escapeHTML(label)}" title="開啟連結">${escapeHTML(label)}${ICONS.link}</a>`;
+}
+
+function handoutLink(path, label, variant) {
+  if (!path) return "";
+  return `<a class="resource-link resource-link--handout resource-link--${variant}" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="${escapeHTML(label)}講義" title="${escapeHTML(label)}講義"><span>${escapeHTML(label)}</span>${ICONS.pdf}</a>`;
+}
+
+function normaliseArticleReaderShell() {
+  document.querySelector(".article-reader > .back-link")?.remove();
+  const articleView = document.querySelector("#article-view");
+  if (articleView && !document.querySelector("#content-scroll")) {
+    const wrapper = document.createElement("div");
+    wrapper.id = "content-scroll";
+    wrapper.className = "article-scroll";
+    articleView.replaceWith(wrapper);
+    wrapper.appendChild(articleView);
+  }
+  const listTitle = document.querySelector(".article-list h2");
+  if (listTitle) listTitle.textContent = "文章索引";
+  const tocTitle = document.querySelector(".article-toc h2");
+  if (tocTitle) tocTitle.textContent = "文章目錄";
+  const tocEmpty = document.querySelector(".article-toc .toc-empty");
+  if (tocEmpty) tocEmpty.textContent = "正在建立目錄…";
+}
+
+function articleOverviewItem(article) {
+  return `<a class="article-overview-item" href="#article=${encodeURIComponent(article.path)}">
+    <time>${escapeHTML(formatDate(article.date))}</time>
+    <div><h2>${escapeHTML(article.title)}</h2><p>${escapeHTML(article.summary || "閱讀這篇文章。")}</p></div>
+  </a>`;
+}
+
+async function loadArticle(record) {
+  const view = document.querySelector("#article-view");
+  if (!view) return;
+  try {
+    let parsed = state.articleBodies.get(record.path);
+    if (!parsed) {
+      const response = await fetch(assetURL(`content/${record.path}`), { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      parsed = parseFrontMatter(await response.text());
+      state.articleBodies.set(record.path, parsed);
+    }
+    const article = { ...record, ...parsed.info, tags: normaliseTags(parsed.info.tags || record.tags) };
+    document.title = `${article.title} | Bambook`;
+    const dirtyHTML = renderMarkdown(parsed.body);
+    view.innerHTML = `
+      <header class="article-header">
+        <div class="article-date">${escapeHTML(formatDate(article.date))}</div>
+        <h1>${escapeHTML(article.title)}</h1>
+        <div class="tag-list">${article.tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</div>
+        ${article.summary ? `<p class="article-summary">${escapeHTML(article.summary)}</p>` : ""}
+      </header>
+      <div class="article-body">${DOMPurify.sanitize(dirtyHTML, markdownSanitizeOptions)}</div>`;
+    hydrateMarkdownBody(view.querySelector(".article-body"));
+    buildArticleTocForPage(view);
+    document.querySelector("#content-scroll")?.scrollTo({ top: 0 });
+  } catch (error) {
+    view.innerHTML = `<p class="error">文章無法載入：${escapeHTML(error.message)}</p>`;
+  }
+}
+
+function articleList(activePath) {
+  return state.articles.map(article => `
+    <a class="${article.path === activePath ? "is-active" : ""}" href="#article=${encodeURIComponent(article.path)}">
+      ${escapeHTML(article.title)}<time>${escapeHTML(formatDate(article.date))}</time>
+    </a>`).join("");
+}
+
+function articlePreviewCards() {
+  if (state.manifestError) return emptyState(state.manifestError);
+  if (!state.articles.length) return emptyState("尚未有文章。");
+  return state.articles.slice(0, 3).map(article => card({
+    href: `#article=${encodeURIComponent(article.path)}`,
+    icon: ICONS.book,
+    title: article.title,
+    description: article.summary || "閱讀這篇 Markdown 文章。",
+    action: formatDate(article.date),
+  })).join("");
+}
+
+function renderArticlesPage(requestedPath = "") {
+  setActiveNav("articles");
+  if (state.manifestError) {
+    renderNotFound("文章資料無法載入", state.manifestError);
+    return;
+  }
+  if (!state.articles.length) {
+    renderNotFound("尚未有文章", "在 content/月份資料夾 中建立 Markdown 檔後，執行 build_manifest.py 重新建立網站索引即可。");
+    return;
+  }
+  if (!requestedPath) {
+    document.title = "文章 | Bambook";
+    app.innerHTML = `
+      <section class="article-overview">
+        <header class="page-heading"><p class="eyebrow">Articles</p><h1>文章</h1><p>筆記、故事與碎碎念。</p></header>
+        ${articleOverviewByMonth()}
+      </section>`;
+    return;
+  }
+
+  const record = state.articles.find(article => article.path === requestedPath);
+  if (!record) {
+    renderNotFound("找不到文章", "這篇文章可能已被移動、重新命名，或尚未被 site-manifest.json 收錄。");
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="article-reader">
+      <div class="articles-layout">
+        <aside class="article-list"><h2>文章索引</h2>${articleListGrouped(record.path)}</aside>
+        <div id="content-scroll" class="article-scroll">
+          <article id="article-view" class="article"><p class="notice">正在載入文章…</p></article>
+        </div>
+        <aside class="article-toc" data-article-toc><h2>文章目錄</h2><p class="toc-empty">正在建立目錄…</p></aside>
+      </div>
+    </div>`;
+  document.body.classList.add("article-mode");
+  normaliseArticleReaderShell();
+  loadArticle(record);
+}
+
+function articleMonthGroups() {
+  const groups = new Map();
+  state.articles.forEach(article => {
+    const key = monthKey(article.date, article.path);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(article);
+  });
+  return [...groups.entries()];
+}
+
+function monthKey(dateValue, fallback = "") {
+  const match = String(dateValue || "").match(/^(\d{4})-(\d{2})/);
+  if (match) return `${match[1]} 年 ${Number(match[2])} 月`;
+  const folder = String(fallback || "").match(/^(\d{4})(\d{2})\//);
+  if (folder) return `${folder[1]} 年 ${Number(folder[2])} 月`;
+  return "未分類";
+}
+
+function articleListGrouped(activePath) {
+  const folderGroups = new Map();
+
+  state.articles.forEach(article => {
+    const folder = articleFolderKey(article.path);
+    if (!folderGroups.has(folder)) folderGroups.set(folder, []);
+    folderGroups.get(folder).push(article);
+  });
+
+  return `
+    <button type="button" class="sidebar-index-toggle" data-toggle-all-months>
+      展開 / 收合所有月份
+    </button>
+
+    ${[...folderGroups.entries()].map(([folder, articles]) => `
+      <section class="article-month">
+        <h3>${escapeHTML(folder || "content")}</h3>
+
+        ${groupArticlesByMonth(articles).map(([month, monthArticles]) => `
+          <details class="sidebar-month-group" open>
+            <summary class="sidebar-month-label">
+              <span>${escapeHTML(month)}</span>
+              <small>${monthArticles.length}</small>
+            </summary>
+
+            <div class="sidebar-month-items">
+              ${monthArticles.map(article => `
+                <a class="sidebar-link ${article.path === activePath ? "is-active" : ""}" href="#article=${encodeURIComponent(article.path)}" data-path="${escapeHTML(article.path)}">
+                  <span>${escapeHTML(article.title || "(無標題)")}</span>
+                  ${article.status === "draft" ? `<small>draft</small>` : ""}
+                </a>`).join("")}
+            </div>
+          </details>
+        `).join("")}
+      </section>`).join("")}
+  `;
+}
+
+function articleFolderKey(path = "") {
+  const parts = String(path || "").split("/").filter(Boolean);
+  if (parts.length <= 1) return "content";
+  return parts.slice(0, -1).join("/");
+}
+
+function groupArticlesByMonth(articles) {
+  const groups = new Map();
+
+  articles.forEach(article => {
+    const date = String(article.date || "").trim();
+    const month = /^\d{4}-\d{2}/.test(date) ? date.slice(0, 7) : "無日期";
+    if (!groups.has(month)) groups.set(month, []);
+    groups.get(month).push(article);
+  });
+
+  return [...groups.entries()].sort(([a], [b]) => {
+    if (a === "無日期") return 1;
+    if (b === "無日期") return -1;
+    return b.localeCompare(a);
+  });
+}
+
+function articleOverviewByMonth() {
+  return `<div class="article-overview-list">${articleMonthGroups().map(([month, articles]) => `
+    <section class="article-overview-month">
+      <h2>${escapeHTML(month)}</h2>
+      ${articles.map(articleOverviewItem).join("")}
+    </section>`).join("")}</div>`;
+}
+
+function buildArticleTocForPage(view) {
+  const toc = document.querySelector("[data-article-toc]");
+  const body = view?.querySelector(".article-body");
+  if (!toc || !body) return;
+
+  if (state.tocScrollHandler) {
+    (state.tocScrollRoot || window).removeEventListener("scroll", state.tocScrollHandler);
+    state.tocScrollHandler = null;
+    state.tocScrollRoot = null;
+  }
+
+  const headings = [...body.querySelectorAll("h1, h2, h3, h4, h5, h6")];
+  if (!headings.length) {
+    toc.innerHTML = `<h2>文章目錄</h2><p class="toc-empty">此文章沒有標題層級，因此沒有可跳轉的文章目錄。</p>`;
+    return;
+  }
+
+  const usedIds = new Set();
+  headings.forEach((heading, index) => {
+    let id = heading.id || slugifyHeading(heading.textContent || "", index);
+    while (usedIds.has(id)) id = `${id}-${index + 1}`;
+    heading.id = id;
+    usedIds.add(id);
+  });
+
+  toc.innerHTML = `
+    <h2>文章目錄</h2>
+    <nav class="toc-nav" aria-label="文章目錄">
+      ${headings.map((heading, index) => `
+        <button class="toc-link toc-link--${heading.tagName.toLowerCase()}" type="button" data-toc-target="${escapeHTML(heading.id)}">
+          ${escapeHTML(heading.textContent || `段落 ${index + 1}`)}
+        </button>`).join("")}
+    </nav>`;
+
+  const links = [...toc.querySelectorAll("[data-toc-target]")];
+  const scrollRoot = document.querySelector("#content-scroll") || window;
+  const setActive = activeId => {
+    links.forEach(link => link.classList.toggle("is-active", link.dataset.tocTarget === activeId));
+  };
+  const updateActive = () => {
+    let current = headings[0];
+    if (scrollRoot === window) {
+      headings.forEach(heading => {
+        if (heading.getBoundingClientRect().top <= 110) current = heading;
+      });
+    } else {
+      const anchorLine = scrollRoot.scrollTop + 36;
+      headings.forEach(heading => {
+        if (heading.offsetTop <= anchorLine) current = heading;
+      });
+    }
+    setActive(current.id);
+  };
+
+  links.forEach(link => {
+    link.addEventListener("click", () => {
+      const target = document.getElementById(link.dataset.tocTarget);
+      if (!target) return;
+      if (scrollRoot === window) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      else scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: "smooth" });
+      setActive(target.id);
+    });
+  });
+
+  let ticking = false;
+  state.tocScrollHandler = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      updateActive();
+      ticking = false;
+    });
+  };
+  state.tocScrollRoot = scrollRoot;
+  scrollRoot.addEventListener("scroll", state.tocScrollHandler, { passive: true });
+  updateActive();
+}
+
+function renderTools() {
+  setActiveNav("");
+  document.title = "其他工具 | Bambook";
+  app.innerHTML = `
+    <header class="page-heading"><p class="eyebrow">Other tools</p><h1>其他工具</h1><p>這些工具都保留為可單獨開啟的靜態頁面，資料與功能已整合進 Bambook。</p></header>
+    <div class="card-grid">${toolCards().map(card).join("") || emptyState("尚未找到工具資料夾。")}</div>`;
+}
+
+function toolCards() {
+  return state.tools.map(tool => {
+    const id = tool.id || String(tool.path || "").split("/").filter(Boolean).pop() || "";
+    return {
+    href: tool.path || "#tools",
+    icon: toolIcon(id),
+    title: tool.title || id || "未命名項目",
+    description: tool.description || "開啟這個工具。",
+    action: tool.action || "開啟工具 →",
+    tags: Array.isArray(tool.tags) ? tool.tags : [],
+    };
+  });
+}
+
+function normaliseEntryCard(item) {
+  const path = String(item?.path || item?.url || "");
+  const id = String(item?.id || path.split("/").filter(Boolean).pop() || "");
+  return {
+    ...item,
+    id,
+    path,
+    title: item?.title || id,
+    description: item?.description || item?.summary || "",
+    tags: Array.isArray(item?.tags) ? item.tags : [],
+    action: item?.action || "開啟頁面 →",
+  };
+}
+
+function card({ href, icon, title, description, action, tags = [] }) {
+  return `<a class="card ${tags.length ? "tool-card" : ""}" href="${safeURL(href)}">
+    <span class="card-icon" aria-hidden="true">${icon}</span>
+    <h3>${escapeHTML(title)}</h3><p>${escapeHTML(description)}</p>
+    ${tags.length ? `<span class="tag-list">${tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</span>` : ""}
+    <span class="card-action">${escapeHTML(action)}</span>
+  </a>`;
+}
+
+function renderNotFound(title, detail) {
+  setActiveNav("");
+  document.title = `${title} | Bambook`;
+  app.innerHTML = `<a class="back-link" href="#home">← 回到首頁</a><section class="page-heading"><h1>${escapeHTML(title)}</h1><p>${escapeHTML(detail)}</p></section>`;
+}
+
+function setActiveNav(name) {
+  document.querySelectorAll("[data-nav]").forEach(link => link.classList.toggle("is-active", link.dataset.nav === name));
+}
+
+function courseNames() {
+  return Object.keys(state.courses).sort((a, b) => a.localeCompare(b, "zh-Hant"));
+}
+
+function courseIcon(name) {
+  return name.includes("微積") ? ICONS.math : ICONS.book;
+}
+
+function toolIcon(id) {
+  return ({
+    cs2commands: ICONS.terminal,
+    geomaster: ICONS.world,
+    grades: ICONS.chart,
+    spectrumAnalysis: ICONS.wave,
+    topo: ICONS.math,
+    kaohsiung: ICONS.camera,
+  })[id] || ICONS.book;
+}
+
+function decodedHash() {
+  try { return decodeURIComponent(location.hash.slice(1)); }
+  catch { return location.hash.slice(1); }
+}
+
+function assetURL(path) {
+  return new URL(path, new URL("./", window.location.href)).href;
+}
+
+function slugifyHeading(text, index) {
+  const slug = String(text || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKC")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
+  return `heading-${index + 1}${slug ? `-${slug}` : ""}`;
+}
+
+function renderMarkdown(source) {
+  const mathSegments = [];
+  const stash = (value, display = false) => {
+    const token = `@@BAMBOOK_MATH_${mathSegments.length}@@`;
+    mathSegments.push({ token, value, display });
+    return token;
+  };
+
+  let protectedSource = String(source || "")
+    .replace(/\$\$[\s\S]+?\$\$/g, match => stash(match, true))
+    .replace(/\\\[[\s\S]+?\\\]/g, match => stash(match, true))
+    .replace(/\\\([\s\S]+?\\\)/g, match => stash(match))
+    .replace(/(^|[^$])\$(?!\$)((?:\\.|[^\n$\\])+)\$(?!\$)/g, (_, prefix, body) => `${prefix}${stash(`$${body}$`)}`);
+
+  let html = markdown.render(protectedSource);
+  mathSegments.forEach(({ token, value, display }) => {
+    const replacement = display
+      ? `<div class="math-block">${escapeHTML(value)}</div>`
+      : escapeHTML(value);
+    if (display) {
+      html = html.replace(new RegExp(`<p>\\s*${escapeRegExp(token)}\\s*</p>`, "g"), replacement);
+    }
+    html = html.replaceAll(token, replacement);
+  });
+  return html;
+}
+
+function hydrateMarkdownBody(root) {
+  if (!root) return;
+  renderMathInElement(root, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true }, { left: "\\[", right: "\\]", display: true },
+      { left: "\\(", right: "\\)", display: false }, { left: "$", right: "$", display: false },
+    ],
+    throwOnError: false,
+  });
+  normaliseDisplayMathBlocks(root);
+  classifyMarkdownImages(root);
+  bindMarkdownFootnotes(root);
+}
+
+function normaliseDisplayMathBlocks(root) {
+  root.querySelectorAll("p").forEach(paragraph => {
+    const katexNodes = paragraph.querySelectorAll(".katex");
+    if (katexNodes.length !== 1) return;
+    const hasNonWhitespaceText = [...paragraph.childNodes].some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+    if (hasNonWhitespaceText) return;
+    const children = [...paragraph.children];
+    if (children.length !== 1 || !(children[0].classList.contains("katex") || children[0].querySelector(".katex"))) return;
+    paragraph.classList.add("math-block", "math-block--paragraph");
+  });
+}
+
+function classifyMarkdownImages(root) {
+  root.querySelectorAll("img").forEach(image => {
+    const applyOrientation = () => {
+      if (!image.naturalWidth || !image.naturalHeight) return;
+      const ratio = image.naturalWidth / image.naturalHeight;
+      image.dataset.orientation = ratio > 1.08 ? "landscape" : ratio < .92 ? "portrait" : "square";
+    };
+
+    if (image.complete) applyOrientation();
+    else image.addEventListener("load", applyOrientation, { once: true });
+  });
+}
+
+function bindMarkdownFootnotes(root) {
+  root.addEventListener("click", event => {
+    const link = event.target.closest?.("a[href]");
+    if (!link || !root.contains(link)) return;
+    const href = link.getAttribute("href") || "";
+    if (!/^#fn(?:ref)?\d+/i.test(href)) return;
+
+    const id = decodeURIComponent(href.slice(1));
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    event.preventDefault();
+    const scrollRoot = document.querySelector("#content-scroll");
+    if (scrollRoot) {
+      scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: "smooth" });
+    } else {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
+}
+
+function parseFrontMatter(source) {
+  const text = source.replace(/\r\n/g, "\n");
+  if (!text.startsWith("---\n")) return { info: {}, body: text };
+  const end = text.indexOf("\n---", 4);
+  if (end === -1) return { info: {}, body: text };
+  const info = {};
+  text.slice(4, end).trim().split("\n").forEach(line => {
+    const match = line.match(/^([^:]+):\s*(.*)$/);
+    if (!match) return;
+    const key = match[1].trim();
+    const value = match[2].replace(/^["']|["']$/g, "").trim();
+    info[key] = key === "tags" ? normaliseTags(value) : value;
+  });
+  return { info, body: text.slice(end + 4).replace(/^\n+/, "") };
+}
+
+function normaliseTags(tags) {
+  if (Array.isArray(tags)) return tags.map(String).map(tag => tag.trim()).filter(Boolean);
+  return String(tags || "").split(/[,，]/).map(tag => tag.trim()).filter(Boolean);
+}
+
+function fileTitle(path) {
+  return decodeURIComponent(path.split("/").pop() || path).replace(/\.md$/i, "");
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function formatDate(value) {
+  if (!value) return "未標示日期";
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.valueOf()) ? value : date.toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric" });
+}
+
+function emptyState(message) { return `<p class="empty-state">${escapeHTML(message)}</p>`; }
+function safeURL(value) { return escapeHTML(String(value || "#")); }
+function escapeHTML(value) { return String(value ?? "").replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]); }
+</file>
+
+<file path="js/tool-shell.js">
+(() => {
+  const root = document.documentElement;
+  root.dataset.theme = "light";
+})();
+</file>
+
+</files>
