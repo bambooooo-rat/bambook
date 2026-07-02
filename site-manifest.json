@@ -179,34 +179,9 @@
       ],
       "handouts": [
         {
-          "title": "handout1",
-          "blank": "materials/微積分乙/handout/handout1_填空版.pdf",
-          "sol": null
-        },
-        {
-          "title": "handout2",
-          "blank": "materials/微積分乙/handout/handout2_填空版.pdf",
-          "sol": null
-        },
-        {
-          "title": "handout3",
-          "blank": "materials/微積分乙/handout/handout3_填空版.pdf",
-          "sol": null
-        },
-        {
-          "title": "handout4",
-          "blank": "materials/微積分乙/handout/handout4_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout4_解答版.pdf"
-        },
-        {
-          "title": "handout5",
-          "blank": "materials/微積分乙/handout/handout5_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout5_解答版.pdf"
-        },
-        {
-          "title": "handout6",
-          "blank": "materials/微積分乙/handout/handout6_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout6_解答版.pdf"
+          "title": "handout0",
+          "blank": "materials/微積分乙/handout/handout0_填空版.pdf",
+          "sol": "materials/微積分乙/handout/handout0_解答版.pdf"
         }
       ],
       "slides": [
