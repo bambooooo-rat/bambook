@@ -184,9 +184,9 @@
           "sol": "materials/微積分乙/handout/handout0_解答版.pdf"
         },
         {
-          "title": "handout1_解答板",
+          "title": "handout1",
           "blank": null,
-          "sol": "materials/微積分乙/handout/handout1_解答板.pdf"
+          "sol": "materials/微積分乙/handout/handout1_解答版.pdf"
         }
       ],
       "slides": [
@@ -274,12 +274,12 @@
         ],
         "exams": [
           {
-            "name": "NTNU_微積分乙期中考歷屆(更新至113)",
-            "path": "materials/微積分乙/practice/NTNU_微積分乙期中考歷屆(更新至113).pdf"
+            "name": "NTNU_微積分乙期中考歷屆(更新至114)",
+            "path": "materials/微積分乙/practice/NTNU_微積分乙期中考歷屆(更新至114).pdf"
           },
           {
-            "name": "NTNU_微積分乙期末考歷屆(更新至113)",
-            "path": "materials/微積分乙/practice/NTNU_微積分乙期末考歷屆(更新至113).pdf"
+            "name": "NTNU_微積分乙期末考歷屆(更新至114)",
+            "path": "materials/微積分乙/practice/NTNU_微積分乙期末考歷屆(更新至114).pdf"
           }
         ],
         "midterm_answers": [
