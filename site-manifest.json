@@ -180,8 +180,13 @@
       "handouts": [
         {
           "title": "handout0",
-          "blank": "materials/微積分乙/handout/handout0_填空版.pdf",
+          "blank": null,
           "sol": "materials/微積分乙/handout/handout0_解答版.pdf"
+        },
+        {
+          "title": "handout1_解答板",
+          "blank": null,
+          "sol": "materials/微積分乙/handout/handout1_解答板.pdf"
         }
       ],
       "slides": [
