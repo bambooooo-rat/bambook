@@ -187,6 +187,11 @@
           "title": "handout1",
           "blank": null,
           "sol": "materials/微積分乙/handout/handout1_解答版.pdf"
+        },
+        {
+          "title": "handout2",
+          "blank": null,
+          "sol": "materials/微積分乙/handout/handout2_解答版.pdf"
         }
       ],
       "slides": [
