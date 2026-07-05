@@ -197,6 +197,16 @@
           "title": "handout3",
           "blank": "materials/微積分乙/handout/handout3_填空版.pdf",
           "sol": "materials/微積分乙/handout/handout3_解答版.pdf"
+        },
+        {
+          "title": "handout4",
+          "blank": null,
+          "sol": "materials/微積分乙/handout/handout4_解答版.pdf"
+        },
+        {
+          "title": "handout5",
+          "blank": null,
+          "sol": "materials/微積分乙/handout/handout5_解答版.pdf"
         }
       ],
       "slides": [
