@@ -200,13 +200,18 @@
         },
         {
           "title": "handout4",
-          "blank": null,
+          "blank": "materials/微積分乙/handout/handout4_填空版.pdf",
           "sol": "materials/微積分乙/handout/handout4_解答版.pdf"
         },
         {
           "title": "handout5",
-          "blank": null,
+          "blank": "materials/微積分乙/handout/handout5_填空版.pdf",
           "sol": "materials/微積分乙/handout/handout5_解答版.pdf"
+        },
+        {
+          "title": "handout6",
+          "blank": "materials/微積分乙/handout/handout6_填空版.pdf",
+          "sol": "materials/微積分乙/handout/handout6_解答版.pdf"
         }
       ],
       "slides": [
