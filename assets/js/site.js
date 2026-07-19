@@ -43,6 +43,7 @@ const ICONS = {
   camera: tablerIcon('<path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>'),
 };
 
+const SITE_BASE_URL = new URL("../../", import.meta.url);
 const app = document.querySelector("#app");
 const materialMenu = document.querySelector("[data-material-menu]");
 const state = {
@@ -445,7 +446,7 @@ function renderArticlesPage(requestedPath = "") {
     return;
   }
 
-  const record = state.articles.find(article => article.path === requestedPath);
+  const record = findArticleByPath(requestedPath);
   if (!record) {
     renderNotFound("找不到文章", "這篇文章可能已被移動、重新命名，或尚未被 site-manifest.json 收錄。");
     return;
@@ -466,6 +467,15 @@ function renderArticlesPage(requestedPath = "") {
   loadArticle(record);
 }
 
+function findArticleByPath(requestedPath) {
+  const normalisedPath = String(requestedPath || "").replace(/^\/+/, "").replace(/\\/g, "/");
+  const exact = state.articles.find(article => article.path === normalisedPath);
+  if (exact) return exact;
+
+  const filename = normalisedPath.split("/").pop();
+  if (!filename) return null;
+  return state.articles.find(article => String(article.path || "").split("/").pop() === filename) || null;
+}
 function articleMonthGroups() {
   const groups = new Map();
   state.articles.forEach(article => {
@@ -473,7 +483,7 @@ function articleMonthGroups() {
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(article);
   });
-  return [...groups.entries()];
+  return sortArticleGroups(groups);
 }
 
 function articleListGrouped(activePath) {
@@ -528,6 +538,10 @@ function groupArticlesByMonth(articles) {
     groups.get(month).push(article);
   });
 
+  return sortArticleGroups(groups);
+}
+
+function sortArticleGroups(groups) {
   return [...groups.entries()].sort(([a], [b]) => {
     if (a === "未分類") return 1;
     if (b === "未分類") return -1;
@@ -541,7 +555,6 @@ function articleFolderLabel(article) {
   if (folder && !folder.toLowerCase().endsWith(".md")) return folder;
   return "未分類";
 }
-
 function compareArticlesForIndex(a, b) {
   const aDate = String(a.date || "");
   const bDate = String(b.date || "");
@@ -722,7 +735,7 @@ function decodedHash() {
 }
 
 function assetURL(path) {
-  return new URL(path, new URL("./", window.location.href)).href;
+  return new URL(String(path || "").replace(/^\/+/, ""), SITE_BASE_URL).href;
 }
 
 function slugifyHeading(text, index) {
@@ -790,7 +803,7 @@ function resolveMarkdownAssetURLs(root, markdownPath) {
 function rewriteMarkdownAssetAttribute(element, attribute, basePath) {
   const value = element.getAttribute(attribute);
   if (!value || !shouldRewriteMarkdownURL(value)) return;
-  const normalised = value.replace(/\\/g, "/");
+  const normalised = value.replace(/\\/g, "/").replace(/^\/+/, "");
   const target = isSiteRootRelativePath(normalised)
     ? normalised.replace(/^\.?\//, "")
     : `${basePath}${normalised}`.replace(/\/\.\//g, "/");
@@ -799,7 +812,7 @@ function rewriteMarkdownAssetAttribute(element, attribute, basePath) {
 
 function shouldRewriteMarkdownURL(value) {
   const trimmed = String(value || "").trim();
-  if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("/")) return false;
+  if (!trimmed || trimmed.startsWith("#")) return false;
   if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(trimmed)) return false;
   return true;
 }
