@@ -405,6 +405,17 @@
   },
   "articles": [
     {
+      "path": "202607/function_and_formula.md",
+      "title": "函數特性與常用代數公式",
+      "date": "2026-07-19",
+      "tags": [
+        "函數",
+        "公式",
+        "化簡"
+      ],
+      "summary": "這篇文章紀錄一些常用的代數公式與函數性質"
+    },
+    {
       "path": "202606/test.md",
       "title": "Markdown 語法測試",
       "date": "2026-06-27",

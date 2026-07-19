@@ -230,7 +230,7 @@ async function loadHomeIntro() {
     const dirtyHTML = renderMarkdown(parsed.body);
     target.innerHTML = `<div class="home-intro-body">${DOMPurify.sanitize(dirtyHTML, markdownSanitizeOptions)}</div>`;
     const body = target.querySelector(".home-intro-body");
-    hydrateMarkdownBody(body);
+    hydrateMarkdownBody(body, state.homeIntro.path);
   } catch (error) {
     target.innerHTML = `<p class="error">網站說明無法載入：${escapeHTML(error.message)}</p>`;
   }
@@ -405,7 +405,7 @@ async function loadArticle(record) {
         ${article.summary ? `<p class="article-summary">${escapeHTML(article.summary)}</p>` : ""}
       </header>
       <div class="article-body">${DOMPurify.sanitize(dirtyHTML, markdownSanitizeOptions)}</div>`;
-    hydrateMarkdownBody(view.querySelector(".article-body"));
+    hydrateMarkdownBody(view.querySelector(".article-body"), record.path);
     buildArticleTocForPage(view);
     document.querySelector("#content-scroll")?.scrollTo({ top: 0 });
   } catch (error) {
@@ -469,19 +469,11 @@ function renderArticlesPage(requestedPath = "") {
 function articleMonthGroups() {
   const groups = new Map();
   state.articles.forEach(article => {
-    const key = monthKey(article.date, article.path);
+    const key = articleFolderLabel(article);
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(article);
   });
   return [...groups.entries()];
-}
-
-function monthKey(dateValue, fallback = "") {
-  const match = String(dateValue || "").match(/^(\d{4})-(\d{2})/);
-  if (match) return `${match[1]} 年 ${Number(match[2])} 月`;
-  const folder = String(fallback || "").match(/^(\d{4})(\d{2})\//);
-  if (folder) return `${folder[1]} 年 ${Number(folder[2])} 月`;
-  return "未分類";
 }
 
 function articleListGrouped(activePath) {
@@ -496,7 +488,7 @@ function articleListGrouped(activePath) {
 
   return `
     <button type="button" class="sidebar-index-toggle" data-toggle-all-months>
-      展開 / 收合所有月份
+      展開 / 收合所有分類
     </button>
 
     <div class="sidebar-month-list">
@@ -530,45 +522,24 @@ function groupArticlesByMonth(articles) {
   const groups = new Map();
 
   articles.forEach(article => {
-    const month = getArticleMonthLabel(article);
+    const month = articleFolderLabel(article);
 
     if (!groups.has(month)) groups.set(month, []);
     groups.get(month).push(article);
   });
 
   return [...groups.entries()].sort(([a], [b]) => {
-    if (a === "無日期") return 1;
-    if (b === "無日期") return -1;
-    return getMonthSortKey(b).localeCompare(getMonthSortKey(a));
+    if (a === "未分類") return 1;
+    if (b === "未分類") return -1;
+    return String(b).localeCompare(String(a), "zh-Hant", { numeric: true });
   });
 }
 
-function getArticleMonthLabel(article) {
+function articleFolderLabel(article) {
   const path = String(article?.path || "").replace(/\\/g, "/");
-
-  const compactFolder = path.match(/^(\d{4})(\d{2})\//);
-  if (compactFolder) {
-    return `${compactFolder[1]} 年 ${Number(compactFolder[2])} 月`;
-  }
-
-  const dashedFolder = path.match(/^(\d{4})-(\d{2})\//);
-  if (dashedFolder) {
-    return `${dashedFolder[1]} 年 ${Number(dashedFolder[2])} 月`;
-  }
-
-  const date = String(article?.date || "").trim();
-  const dateMatch = date.match(/^(\d{4})-(\d{2})/);
-  if (dateMatch) {
-    return `${dateMatch[1]} 年 ${Number(dateMatch[2])} 月`;
-  }
-
-  return "無日期";
-}
-
-function getMonthSortKey(label) {
-  const match = String(label || "").match(/^(\d{4}) 年 (\d{1,2}) 月$/);
-  if (!match) return label === "無日期" ? "0000-00" : String(label || "");
-  return `${match[1]}-${String(match[2]).padStart(2, "0")}`;
+  const folder = path.split("/").filter(Boolean)[0];
+  if (folder && !folder.toLowerCase().endsWith(".md")) return folder;
+  return "未分類";
 }
 
 function compareArticlesForIndex(a, b) {
@@ -791,8 +762,9 @@ function renderMarkdown(source) {
   return html;
 }
 
-function hydrateMarkdownBody(root) {
+function hydrateMarkdownBody(root, markdownPath = "") {
   if (!root) return;
+  resolveMarkdownAssetURLs(root, markdownPath);
   renderMathInElement(root, {
     delimiters: [
       { left: "$$", right: "$$", display: true }, { left: "\\[", right: "\\]", display: true },
@@ -803,6 +775,44 @@ function hydrateMarkdownBody(root) {
   normaliseDisplayMathBlocks(root);
   classifyMarkdownImages(root);
   bindMarkdownFootnotes(root);
+}
+
+function resolveMarkdownAssetURLs(root, markdownPath) {
+  const basePath = markdownAssetBasePath(markdownPath);
+  root.querySelectorAll("[src]").forEach(element => {
+    rewriteMarkdownAssetAttribute(element, "src", basePath);
+  });
+  root.querySelectorAll("a[href]").forEach(element => {
+    rewriteMarkdownAssetAttribute(element, "href", basePath);
+  });
+}
+
+function rewriteMarkdownAssetAttribute(element, attribute, basePath) {
+  const value = element.getAttribute(attribute);
+  if (!value || !shouldRewriteMarkdownURL(value)) return;
+  const normalised = value.replace(/\\/g, "/");
+  const target = isSiteRootRelativePath(normalised)
+    ? normalised.replace(/^\.?\//, "")
+    : `${basePath}${normalised}`.replace(/\/\.\//g, "/");
+  element.setAttribute(attribute, assetURL(target));
+}
+
+function shouldRewriteMarkdownURL(value) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("/")) return false;
+  if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(trimmed)) return false;
+  return true;
+}
+
+function isSiteRootRelativePath(value) {
+  return /^(?:assets|content|entries|materials|media|other|data)\//i.test(value) || value.startsWith("./media/");
+}
+
+function markdownAssetBasePath(markdownPath) {
+  const parts = String(markdownPath || "").replace(/\\/g, "/").split("/").filter(Boolean);
+  if (!parts.length || !parts.at(-1).toLowerCase().endsWith(".md")) return "content/";
+  parts.pop();
+  return parts.length ? `content/${parts.join("/")}/` : "content/";
 }
 
 function normaliseDisplayMathBlocks(root) {
