@@ -180,7 +180,7 @@ h1, h2, h3, p { margin-top: 0; }
 .resource-section h2 .ui-icon { width: 1.15rem; height: 1.15rem; color: var(--accent-strong); }
 .resource-grid { display: block; }
 .resource-item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem; padding: .85rem 0; border-top: 1px solid var(--border); }
-.resource-grid > .resource-item:first-child { padding-top: 0; border-top: 0; }
+.resource-grid > .resource-item:first-child {border-top: 0; }
 .resource-name { min-width: 0; font-size: .92rem; font-weight: 650; overflow-wrap: anywhere; }
 .resource-meta { margin-top: .15rem; color: var(--muted); font-size: .8rem; }
 .resource-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: .35rem; padding: .4rem .6rem; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--accent-strong); font-size: .84rem; font-weight: 700; text-decoration: none; }
