@@ -1,7 +1,0 @@
-{
-  "title": "GeoMaster",
-  "description": "GeoGuessr 的國家、地圖與地理特徵資料視覺化。",
-  "icon": "◎",
-  "tags": ["地理", "GeoGuessr"],
-  "order": 20
-}
