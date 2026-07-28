@@ -442,18 +442,6 @@
       "action": "開啟工具 →"
     },
     {
-      "id": "geomaster",
-      "path": "other/geomaster/",
-      "title": "geomaster",
-      "description": "GeoGuessr 的國家、地圖與地理特徵資料視覺化。",
-      "icon": "◎",
-      "tags": [
-        "地理",
-        "GeoGuessr"
-      ],
-      "action": "開啟工具 →"
-    },
-    {
       "id": "grades",
       "path": "other/grades/",
       "title": "grades",
@@ -462,18 +450,6 @@
       "tags": [
         "NTNU",
         "成績"
-      ],
-      "action": "開啟工具 →"
-    },
-    {
-      "id": "spectrumAnalysis",
-      "path": "other/spectrumAnalysis/",
-      "title": "spectrumAnalysis",
-      "description": "播放樣本、檢視波形並探索參數等化的音訊工具。",
-      "icon": "≈",
-      "tags": [
-        "音訊",
-        "EQ"
       ],
       "action": "開啟工具 →"
     }
