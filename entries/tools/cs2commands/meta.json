@@ -1,0 +1,9 @@
+{
+  "title": "CS2 指令",
+  "type": "tool",
+  "date": "2026-06-26",
+  "status": "active",
+  "visibility": "public",
+  "summary": "可搜尋、篩選與閱讀 Counter-Strike 2 主控台指令資料。",
+  "tags": ["資料庫", "遊戲"]
+}

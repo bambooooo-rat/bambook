@@ -1,15 +1,24 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="light">
+<html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Bambook：教材、文章與工具的知識站。">
+  <meta name="description" content="Bambook：放教材的地方">
   <title>Bambook</title>
   <link rel="icon" type="image/svg+xml" href="assets/icons/bambook.svg">
+  <!-- Applies a saved dark-mode choice before first paint (avoids a flash of
+       light-then-dark). Runs before the stylesheet so the attribute is on
+       <html> by the time site.css's html[data-theme="dark"] rule can match.
+       No stored choice, or anything other than "dark", means light — the
+       site never infers dark mode from the OS, only from this toggle. -->
+  <script>
+    try {
+      if (localStorage.getItem("bambook-theme") === "dark") document.documentElement.dataset.theme = "dark";
+    } catch (error) {}
+  </script>
   <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/site.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.css">
-  <script>document.documentElement.dataset.theme = "light";</script>
 </head>
 <body>
   <a class="skip-link" href="#app">跳到主要內容</a>
@@ -21,12 +30,16 @@
       </a>
       <nav class="main-nav" aria-label="主要導覽">
         <div class="nav-menu">
-          <button type="button" aria-expanded="false" aria-controls="materials-menu">教材 <svg class="nav-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6l6 -6"/></svg></button>
+          <a href="#materials" data-nav="materials" aria-haspopup="true" aria-controls="materials-menu">教材 <svg class="nav-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6l6 -6"/></svg></a>
           <div id="materials-menu" class="menu-panel" data-material-menu></div>
         </div>
         <a href="#articles" data-nav="articles">文章</a>
         <a href="#tools" data-nav="tools">其他</a>
       </nav>
+      <button type="button" class="icon-button" id="theme-toggle" aria-pressed="false" aria-label="切換為深色模式">
+        <svg class="theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/></svg>
+        <svg class="theme-icon-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/></svg>
+      </button>
     </div>
   </header>
 

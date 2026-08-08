@@ -1,4 +1,7 @@
 (() => {
   const root = document.documentElement;
-  root.dataset.theme = "light";
+  try {
+    if (localStorage.getItem("bambook-theme") === "dark") root.dataset.theme = "dark";
+    else delete root.dataset.theme;
+  } catch (error) {}
 })();

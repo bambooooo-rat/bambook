@@ -1,8 +1,8 @@
 """Build the static Bambook site index.
 
-Run this file after adding course files, Markdown articles, or a tool folder.
-The browser reads only site-manifest.json, which keeps the public site compatible
-with GitHub Pages and other static hosts.
+Run this file after adding course files, Markdown articles, or an entry
+(tool/work) under entries/. The browser reads only site-manifest.json, which
+keeps the public site compatible with GitHub Pages and other static hosts.
 """
 
 from __future__ import annotations
@@ -19,7 +19,6 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent
 MATERIALS_DIR = ROOT / "materials"
 CONTENT_DIR = ROOT / "content"
-OTHER_DIR = ROOT / "other"
 ENTRIES_DIR = ROOT / "entries"
 
 
@@ -186,24 +185,6 @@ def build_home_intro() -> dict[str, Any] | None:
     return markdown_record(direct_articles[0])
 
 
-def build_articles() -> list[dict[str, Any]]:
-    if not CONTENT_DIR.is_dir():
-        return []
-    articles = []
-    for file_path in sorted(CONTENT_DIR.rglob("*.md"), key=lambda item: item.as_posix().casefold()):
-        metadata, body = parse_front_matter(file_path.read_text(encoding="utf-8-sig"))
-        fallback_title = file_path.stem.replace("-", " ")
-        tags = [tag.strip() for tag in metadata.get("tags", "").replace("，", ",").split(",") if tag.strip()]
-        articles.append({
-            "path": file_path.relative_to(CONTENT_DIR).as_posix(),
-            "title": metadata.get("title") or first_heading(body, fallback_title),
-            "date": metadata.get("date", ""),
-            "tags": tags,
-            "summary": metadata.get("summary", ""),
-        })
-    return sorted(articles, key=lambda item: (item["date"], item["path"]), reverse=True)
-
-
 def build_public_articles() -> list[dict[str, Any]]:
     if not CONTENT_DIR.is_dir():
         return []
@@ -222,13 +203,6 @@ def html_title(index_file: Path) -> str:
         return index_file.parent.name
     title = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", match.group(1)))).strip()
     return title or index_file.parent.name
-
-
-def read_tool_metadata(tool_dir: Path) -> dict[str, Any]:
-    metadata_file = next((tool_dir / name for name in ("tool.json", "meta.json") if (tool_dir / name).is_file()), None)
-    if not metadata_file:
-        return {}
-    return read_json_object(metadata_file)
 
 
 def build_entries() -> list[dict[str, Any]]:
@@ -272,45 +246,13 @@ def build_entries() -> list[dict[str, Any]]:
     return sorted(entries, key=lambda item: (item.get("date") or "", item["title"].casefold()), reverse=True)
 
 
-def build_tools() -> list[dict[str, Any]]:
-    if not OTHER_DIR.is_dir():
-        return []
-    tools = []
-    for tool_dir in sorted((item for item in OTHER_DIR.iterdir() if item.is_dir() and item.name.casefold() != "private"), key=lambda item: item.name.casefold()):
-        index_file = next((tool_dir / name for name in ("index.html", "index.htm") if (tool_dir / name).is_file()), None)
-        if not index_file:
-            continue
-        metadata = read_tool_metadata(tool_dir)
-        title = tool_dir.name
-        raw_tags = metadata.get("tags", [])
-        tags = [str(tag).strip() for tag in raw_tags] if isinstance(raw_tags, list) else []
-        try:
-            order = int(metadata.get("order", 999))
-        except (TypeError, ValueError):
-            order = 999
-        tools.append({
-            "order": order,
-            "id": tool_dir.name,
-            "path": f"other/{tool_dir.name}/",
-            "title": title,
-            "description": str(metadata.get("description") or f"開啟「{title}」。"),
-            "icon": str(metadata.get("icon") or "↗"),
-            "tags": tags,
-            "action": str(metadata.get("action") or "開啟工具 →"),
-        })
-    tools.sort(key=lambda item: (item.pop("order"), item["title"].casefold()))
-    return tools
-
-
 def build_manifest() -> dict[str, Any]:
-    entries = build_entries()
     return {
         "schema": 1,
         "home_intro": build_home_intro(),
         "materials": build_materials(),
         "articles": build_public_articles(),
-        "entries": entries,
-        "tools": build_tools(),
+        "entries": build_entries(),
     }
 
 

@@ -31,29 +31,16 @@ def write_json(path: Path, value: Any) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build Bambook JSON indexes.")
+    parser = argparse.ArgumentParser(description="Build Bambook's site-manifest.json.")
     parser.add_argument("--manifest", type=Path, default=ROOT / "site-manifest.json", help="Main manifest output path.")
-    parser.add_argument("--data-dir", type=Path, default=ROOT / "data", help="Split data output directory.")
     args = parser.parse_args()
 
     manifest_path = args.manifest if args.manifest.is_absolute() else ROOT / args.manifest
-    data_dir = args.data_dir if args.data_dir.is_absolute() else ROOT / args.data_dir
 
-    manifest = build_manifest()
-    write_json(manifest_path, manifest)
-    write_json(data_dir / "articles.json", manifest.get("articles", []))
-    write_json(data_dir / "entries.json", manifest.get("entries", []))
-    write_json(data_dir / "site.json", {
-        "schema": manifest.get("schema", 1),
-        "home_intro": manifest.get("home_intro"),
-        "materials_count": len(manifest.get("materials", {})),
-        "articles_count": len(manifest.get("articles", [])),
-        "entries_count": len(manifest.get("entries", [])),
-        "tools_count": len(manifest.get("tools", [])),
-    })
+    write_json(manifest_path, build_manifest())
 
     display = manifest_path.relative_to(ROOT) if manifest_path.is_relative_to(ROOT) else manifest_path
-    print(f"Built {display} and split data indexes in {data_dir.relative_to(ROOT) if data_dir.is_relative_to(ROOT) else data_dir}")
+    print(f"Built {display}")
 
 
 if __name__ == "__main__":

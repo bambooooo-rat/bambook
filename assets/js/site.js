@@ -32,15 +32,10 @@ const ICONS = {
   book: tablerIcon('<path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/>'),
   math: tablerIcon('<path d="M19 5h-7l-4 14l-3 -6h-2"/><path d="M14 13l6 6"/><path d="M14 19l6 -6"/>'),
   pdf: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"/><path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"/><path d="M17 18h2"/><path d="M20 15h-3v6"/><path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1"/>'),
-  download: tablerIcon('<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 11l5 5l5 -5"/><path d="M12 4l0 12"/>'),
-  external: tablerIcon('<path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/>'),
   link: tablerIcon('<path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/>'),
   presentation: tablerIcon('<path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/><path d="M12 16l0 4"/><path d="M9 20l6 0"/><path d="M8 12l3 -3l2 2l3 -3"/>'),
-  terminal: tablerIcon('<path d="M8 9l3 3l-3 3"/><path d="M13 15l3 0"/><path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -12"/>'),
-  world: tablerIcon('<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/>'),
-  chart: tablerIcon('<path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"/><path d="M4 20h14"/>'),
-  wave: tablerIcon('<path d="M21 12h-2c-.894 0 -1.662 -.857 -1.761 -2c-.296 -3.45 -.749 -6 -2.749 -6s-2.5 3.582 -2.5 8s-.5 8 -2.5 8s-2.452 -2.547 -2.749 -6c-.1 -1.147 -.867 -2 -1.763 -2h-2"/>'),
-  camera: tablerIcon('<path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>'),
+  article: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>'),
+  tool: tablerIcon('<path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5"/>'),
 };
 
 const SITE_BASE_URL = new URL("../../", import.meta.url);
@@ -48,7 +43,6 @@ const app = document.querySelector("#app");
 const materialMenu = document.querySelector("[data-material-menu]");
 const state = {
   courses: {},
-  homeIntro: null,
   articles: [],
   entries: [],
   tools: [],
@@ -69,18 +63,7 @@ async function initialise() {
 
 function bindEvents() {
   window.addEventListener("hashchange", route);
-
-  document.querySelectorAll(".nav-menu > button").forEach(button => {
-    button.addEventListener("click", () => {
-      const menu = button.closest(".nav-menu");
-      const willOpen = !menu.classList.contains("is-open");
-      closeMenus();
-      if (willOpen) {
-        menu.classList.add("is-open");
-        button.setAttribute("aria-expanded", "true");
-      }
-    });
-  });
+  bindThemeToggle();
 
   document.addEventListener("click", event => {
     const target = event.target instanceof Element ? event.target : event.target?.parentElement;
@@ -94,19 +77,46 @@ function bindEvents() {
       });
       return;
     }
-
-    if (!target.closest(".nav-menu")) closeMenus();
   });
+  // "教材" now opens its course dropdown on hover/focus (pure CSS — see
+  // .nav-menu:hover/:focus-within in site.css) instead of a click-toggled
+  // .is-open class, so Escape's only job left is to blur out of it if a
+  // keyboard user tabbed in and wants the panel gone.
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape") closeMenus();
+    if (event.key === "Escape" && document.activeElement?.closest(".nav-menu")) {
+      document.activeElement.blur();
+    }
   });
 }
 
-function closeMenus() {
-  document.querySelectorAll(".nav-menu.is-open").forEach(menu => {
-    menu.classList.remove("is-open");
-    menu.querySelector("button")?.setAttribute("aria-expanded", "false");
+// Light is the only default — there's no OS-preference auto-detection (see
+// site.css). A saved choice is applied before first paint by the inline
+// script in index.html's <head>; this just wires up the button and keeps it
+// in sync with whichever theme ends up active.
+const THEME_STORAGE_KEY = "bambook-theme";
+
+function bindThemeToggle() {
+  const button = document.querySelector("#theme-toggle");
+  if (!button) return;
+  syncThemeToggle(button);
+  button.addEventListener("click", () => {
+    const goingDark = document.documentElement.dataset.theme !== "dark";
+    if (goingDark) document.documentElement.dataset.theme = "dark";
+    else delete document.documentElement.dataset.theme;
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, goingDark ? "dark" : "light");
+    } catch (error) {
+      // Private browsing / storage disabled — the toggle still works for
+      // this page load, it just won't be remembered next visit.
+    }
+    syncThemeToggle(button);
   });
+}
+
+function syncThemeToggle(button) {
+  const isDark = document.documentElement.dataset.theme === "dark";
+  button.setAttribute("aria-pressed", String(isDark));
+  button.setAttribute("aria-label", isDark ? "切換為亮色模式" : "切換為深色模式");
 }
 
 function buildMaterialMenu() {
@@ -123,19 +133,8 @@ async function loadSiteManifest() {
     const manifest = await response.json();
     if (!manifest || typeof manifest !== "object") throw new Error("site-manifest.json 格式不正確");
     state.courses = manifest.materials && typeof manifest.materials === "object" ? manifest.materials : {};
-    const legacyTools = Array.isArray(manifest.tools) ? manifest.tools : [];
     state.entries = (Array.isArray(manifest.entries) ? manifest.entries : []).map(normaliseEntryCard);
-    state.tools = [...legacyTools.map(normaliseEntryCard), ...state.entries];
-    const homeIntro = manifest.home_intro && typeof manifest.home_intro === "object" ? manifest.home_intro : null;
-    state.homeIntro = homeIntro && typeof homeIntro.path === "string"
-      ? {
-        path: homeIntro.path.replace(/^\/+/, ""),
-        title: homeIntro.title || fileTitle(homeIntro.path),
-        date: homeIntro.date || "",
-        tags: Array.isArray(homeIntro.tags) ? homeIntro.tags : [],
-        summary: homeIntro.summary || "",
-      }
-      : null;
+    state.tools = state.entries;
     state.articles = (Array.isArray(manifest.articles) ? manifest.articles : [])
       .filter(item => item && typeof item.path === "string")
       .map(item => ({
@@ -153,13 +152,12 @@ async function loadSiteManifest() {
 }
 
 function route() {
-  closeMenus();
   clearArticleTocScroll();
   document.body.classList.remove("article-mode");
   const hash = decodedHash();
   const [name, value = ""] = hash.split(/=(.*)/s);
 
-  if (name === "materials") renderCourse(value);
+  if (name === "materials") { if (value) renderCourse(value); else renderMaterialsIndex(); }
   else if (name === "articles") renderArticlesPage();
   else if (name === "article") renderArticlesPage(value);
   else if (name === "tools") renderTools();
@@ -177,64 +175,142 @@ function renderHome() {
   setActiveNav("");
   document.title = "Bambook";
   const names = courseNames();
-  const materialCards = names.map((name, index) => card({
-    href: `#materials=${encodeURIComponent(name)}`,
-    icon: courseIcon(name),
-    title: name,
-    description: `${name}的課本、講義、投影片與練習資源。`,
-    action: "開啟教材 →",
-  })).join("") || emptyState("教材資料尚未載入。請先執行 build_manifest.py。");
+  const materialRows = names.length
+    ? names.map(name => row({
+        href: `#materials=${encodeURIComponent(name)}`,
+        title: name,
+        desc: `${name}的課本、講義、投影片與練習資源。`,
+        meta: materialMeta(state.courses[name]),
+      })).join("")
+    : emptyState("教材資料尚未載入。請先執行 tools/build-index.py。");
+  const articleRows = state.manifestError
+    ? emptyState(state.manifestError)
+    : state.articles.length
+      ? state.articles.slice(0, 3).map(article => row({
+          href: `#article=${encodeURIComponent(article.path)}`,
+          title: article.title,
+          desc: article.summary || "閱讀這篇文章。",
+          meta: formatDate(article.date),
+        })).join("")
+      : emptyState("尚未有文章。");
+  const toolRows = toolCards().slice(0, 3).map(tool => row({
+    href: tool.href,
+    title: tool.title,
+    desc: tool.description,
+    tags: tool.tags,
+  })).join("") || emptyState("尚未找到工具資料夾。");
 
   app.innerHTML = `
-    ${homeIntroShell()}
-    <section>
-      <div class="section-heading"><h2>教材</h2><a href="#materials=${encodeURIComponent(names[0] || "")}">全部教材 →</a></div>
-      <div class="card-grid">${materialCards}</div>
-    </section>
-    <section>
-      <div class="section-heading"><h2>文章</h2><a href="#articles">全部文章 →</a></div>
-      <div class="card-grid">${articlePreviewCards()}</div>
-    </section>
-    <section>
-      <div class="section-heading"><h2>其他工具</h2><a href="#tools">全部工具 →</a></div>
-      <div class="card-grid">${toolCards().slice(0, 3).map(card).join("")}</div>
-    </section>`;
-  loadHomeIntro();
+    <div class="home-view">
+      ${homeIntroShell()}
+      <section class="block" id="home-materials">
+        <div class="block-head"><h2>教材</h2><a class="all-link" href="#materials">全部教材 →</a></div>
+        <div class="row-list">${materialRows}</div>
+      </section>
+      <section class="block" id="home-articles">
+        <div class="block-head"><h2>文章</h2><a class="all-link" href="#articles">全部文章 →</a></div>
+        <div class="row-list">${articleRows}</div>
+      </section>
+      <section class="block" id="home-tools">
+        <div class="block-head"><h2>其他工具</h2><a class="all-link" href="#tools">全部工具 →</a></div>
+        <div class="row-list">${toolRows}</div>
+      </section>
+    </div>`;
 }
 
+// Row-count summary shown next to a course's row-desc (e.g. "3 課本 · 6
+// 講義"). Only counts the two resource kinds every course is likely to have;
+// empty categories are omitted rather than shown as "0 ...".
+function materialMeta(course = {}) {
+  const parts = [];
+  if (Array.isArray(course.textbooks) && course.textbooks.length) parts.push(`${course.textbooks.length} 課本`);
+  if (Array.isArray(course.handouts) && course.handouts.length) parts.push(`${course.handouts.length} 講義`);
+  return parts.join(" · ");
+}
+
+// Replaces the old card-grid on the home page. Row-meta and row-tags are
+// deliberately nested INSIDE the row's first <div> alongside row-title/
+// row-desc — .row is a 2-column CSS grid (content, arrow), so a 3rd direct
+// child here would shove row-arrow onto its own line and break the layout.
+function row({ href, title, desc = "", meta = "", tags = [] }) {
+  return `<a class="row" href="${safeURL(href)}">
+    <div>
+      <div class="row-title">${escapeHTML(title)}</div>
+      ${desc ? `<div class="row-desc">${escapeHTML(desc)}</div>` : ""}
+      ${meta ? `<div class="row-meta">${escapeHTML(meta)}</div>` : ""}
+      ${tags.length ? `<div class="row-tags">${tags.map(tag => `<span>${escapeHTML(tag)}</span>`).join("")}</div>` : ""}
+    </div>
+    <span class="row-arrow" aria-hidden="true">→</span>
+  </a>`;
+}
+
+// Static, hand-written hero — deliberately NOT sourced from a Markdown file.
+// The home page's job is to hand people off to real content fast (usa.gov /
+// gov.uk / government.nl all do this: a short heading, then straight into a
+// plain grid of the site's actual sections), so there's no fetch, no
+// markdown-render pipeline, and no long explanatory paragraph here — that
+// belongs on the pages themselves, not the front door.
 function homeIntroShell() {
-  if (!state.homeIntro) return "";
   return `
-    <section class="home-intro" aria-label="網站首頁使用說明">
-      <div class="home-intro-label">
-        <span>網站首頁</span>
-        <span>使用說明</span>
-      </div>
-      <div class="home-intro-content" data-home-intro>
-        <p class="notice">正在載入網站說明…</p>
+    <section class="hero" aria-label="網站首頁">
+      <p class="eyebrow">Bambook</p>
+      <h1>放教材的地方</h1>
+      <p>涵蓋教材、文章與幾個小工具。</p>
+      <div class="hero-features">
+        <a class="hero-feature" href="#materials">
+          <span class="hero-feature-icon">${ICONS.book}</span>
+          <span class="hero-feature-title">教材</span>
+          <span class="hero-feature-desc">課本、講義與練習整理</span>
+        </a>
+        <a class="hero-feature" href="#articles">
+          <span class="hero-feature-icon">${ICONS.article}</span>
+          <span class="hero-feature-title">文章</span>
+          <span class="hero-feature-desc">數學筆記與說明</span>
+        </a>
+        <a class="hero-feature" href="#tools">
+          <span class="hero-feature-icon">${ICONS.tool}</span>
+          <span class="hero-feature-title">其他工具</span>
+          <span class="hero-feature-desc">獨立的小工具</span>
+        </a>
       </div>
     </section>`;
 }
 
-async function loadHomeIntro() {
-  const target = document.querySelector("[data-home-intro]");
-  if (!target || !state.homeIntro) return;
-  try {
-    const cacheKey = `home:${state.homeIntro.path}`;
-    let parsed = state.articleBodies.get(cacheKey);
-    if (!parsed) {
-      const response = await fetch(assetURL(`content/${state.homeIntro.path}`), { cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      parsed = parseFrontMatter(await response.text());
-      state.articleBodies.set(cacheKey, parsed);
-    }
-    const dirtyHTML = renderMarkdown(parsed.body);
-    target.innerHTML = `<div class="home-intro-body">${DOMPurify.sanitize(dirtyHTML, markdownSanitizeOptions)}</div>`;
-    const body = target.querySelector(".home-intro-body");
-    hydrateMarkdownBody(body, state.homeIntro.path);
-  } catch (error) {
-    target.innerHTML = `<p class="error">網站說明無法載入：${escapeHTML(error.message)}</p>`;
-  }
+// Breadcrumb path shown at the top of every page below home (usa.gov / gov.uk
+// / government.nl all surface a path once you're inside a section). Items
+// without an `href` — or the last item — render as plain text; only real
+// destination pages become links. items: [{ label, href? }].
+function breadcrumb(items) {
+  return `<nav class="breadcrumb" aria-label="麵包屑導覽">${items.map((item, index) => {
+    const isLast = index === items.length - 1;
+    const sep = index === 0 ? "" : `<span class="breadcrumb-sep" aria-hidden="true">›</span>`;
+    const segment = (item.href && !isLast)
+      ? `<a href="${safeURL(item.href)}">${escapeHTML(item.label)}</a>`
+      : `<span${isLast ? ' aria-current="page"' : ""}>${escapeHTML(item.label)}</span>`;
+    return sep + segment;
+  }).join("")}</nav>`;
+}
+
+// "#materials" with no course name — the hub page the home page's 教材 tile
+// and breadcrumbs actually land on. Mirrors renderArticlesPage()'s overview
+// and renderTools(): breadcrumb, page-heading, one flat row-list.
+function renderMaterialsIndex() {
+  setActiveNav("materials");
+  document.title = "教材 | Bambook";
+  const names = courseNames();
+  const rows = names.length
+    ? names.map(name => row({
+        href: `#materials=${encodeURIComponent(name)}`,
+        title: name,
+        desc: `${name}的課本、講義、投影片與練習資源。`,
+        meta: materialMeta(state.courses[name]),
+      })).join("")
+    : emptyState("教材資料尚未載入。請先執行 tools/build-index.py。");
+
+  app.innerHTML = `
+    ${breadcrumb([{ label: "首頁", href: "#home" }, { label: "教材" }])}
+    <header class="page-heading"><p class="eyebrow">Materials</p><h1>教材</h1><p>依科目整理的課本、講義、投影片與練習資源。</p></header>
+    <div class="row-list">${rows}</div>`;
 }
 
 function renderCourse(name) {
@@ -244,13 +320,14 @@ function renderCourse(name) {
     return;
   }
 
-  setActiveNav("");
+  setActiveNav("materials");
   document.title = `${name} | Bambook`;
   const courseLinks = courseNames().map(courseName => `<a class="${courseName === name ? "is-active" : ""}" href="#materials=${encodeURIComponent(courseName)}">${escapeHTML(courseName)}</a>`).join("");
 
   app.innerHTML = `
     <div class="course-layout">
       <div class="course-content">
+        ${breadcrumb([{ label: "首頁", href: "#home" }, { label: "教材", href: "#materials" }, { label: name }])}
         <header class="page-heading">
           <p class="eyebrow">Course materials</p>
           <h1>${escapeHTML(name)}</h1>
@@ -261,11 +338,28 @@ function renderCourse(name) {
         ${resourceSection("講義", handoutItems(course.handouts), ICONS.pdf)}
         ${slidesSection(course.slides)}
         ${practiceSection(course.practice)}
+        ${relatedArticlesSection(name)}
       </div>
       <aside class="course-sidebar"><h2>教材</h2>${courseLinks}</aside>
     </div>`;
 
   renderSyllabus(course.syllabus);
+}
+
+// Articles opt into a course page by adding a tag that matches the course
+// name exactly (e.g. tag "微積分乙" on an article shows it on that course's
+// page). This keeps content/ and materials/ independent while still letting
+// one article surface under multiple courses.
+function relatedArticlesSection(courseName) {
+  const related = state.articles.filter(article => article.tags.includes(courseName));
+  if (!related.length) return "";
+  const content = `<div class="row-list">${related.map(article => row({
+    href: `#article=${encodeURIComponent(article.path)}`,
+    title: article.title,
+    desc: article.summary || "閱讀這篇文章。",
+    meta: formatDate(article.date),
+  })).join("")}</div>`;
+  return resourceSection("延伸文章", content, ICONS.book);
 }
 
 function renderSyllabus(path) {
@@ -378,10 +472,12 @@ function normaliseArticleReaderShell() {
 }
 
 function articleOverviewItem(article) {
-  return `<a class="article-overview-item" href="#article=${encodeURIComponent(article.path)}">
-    <time>${escapeHTML(formatDate(article.date))}</time>
-    <div><h2>${escapeHTML(article.title)}</h2><p>${escapeHTML(article.summary || "閱讀這篇文章。")}</p></div>
-  </a>`;
+  return row({
+    href: `#article=${encodeURIComponent(article.path)}`,
+    title: article.title,
+    desc: article.summary || "閱讀這篇文章。",
+    meta: formatDate(article.date),
+  });
 }
 
 async function loadArticle(record) {
@@ -399,6 +495,7 @@ async function loadArticle(record) {
     document.title = `${article.title} | Bambook`;
     const dirtyHTML = renderMarkdown(parsed.body);
     view.innerHTML = `
+      ${breadcrumb([{ label: "首頁", href: "#home" }, { label: "文章", href: "#articles" }, { label: article.title }])}
       <header class="article-header">
         <div class="article-date">${escapeHTML(formatDate(article.date))}</div>
         <h1>${escapeHTML(article.title)}</h1>
@@ -412,18 +509,6 @@ async function loadArticle(record) {
   } catch (error) {
     view.innerHTML = `<p class="error">文章無法載入：${escapeHTML(error.message)}</p>`;
   }
-}
-
-function articlePreviewCards() {
-  if (state.manifestError) return emptyState(state.manifestError);
-  if (!state.articles.length) return emptyState("尚未有文章。");
-  return state.articles.slice(0, 3).map(article => card({
-    href: `#article=${encodeURIComponent(article.path)}`,
-    icon: ICONS.book,
-    title: article.title,
-    description: article.summary || "閱讀這篇 Markdown 文章。",
-    action: formatDate(article.date),
-  })).join("");
 }
 
 function renderArticlesPage(requestedPath = "") {
@@ -440,6 +525,7 @@ function renderArticlesPage(requestedPath = "") {
     document.title = "文章 | Bambook";
     app.innerHTML = `
       <section class="article-overview">
+        ${breadcrumb([{ label: "首頁", href: "#home" }, { label: "文章" }])}
         <header class="page-heading"><p class="eyebrow">Articles</p><h1>文章</h1><p>筆記、故事與碎碎念。</p></header>
         ${articleOverviewByMonth()}
       </section>`;
@@ -573,7 +659,7 @@ function articleOverviewByMonth() {
   return `<div class="article-overview-list">${articleMonthGroups().map(([month, articles]) => `
     <section class="article-overview-month">
       <h2>${escapeHTML(month)}</h2>
-      ${articles.map(articleOverviewItem).join("")}
+      <div class="row-list">${articles.map(articleOverviewItem).join("")}</div>
     </section>`).join("")}</div>`;
 }
 
@@ -635,8 +721,8 @@ function buildArticleTocForPage(view) {
     link.addEventListener("click", () => {
       const target = document.getElementById(link.dataset.tocTarget);
       if (!target) return;
-      if (scrollRoot === window) target.scrollIntoView({ behavior: "smooth", block: "start" });
-      else scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: "smooth" });
+      if (scrollRoot === window) target.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
+      else scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: scrollBehavior() });
       setActive(target.id);
     });
   });
@@ -656,11 +742,18 @@ function buildArticleTocForPage(view) {
 }
 
 function renderTools() {
-  setActiveNav("");
+  setActiveNav("tools");
   document.title = "其他工具 | Bambook";
+  const rows = toolCards().map(tool => row({
+    href: tool.href,
+    title: tool.title,
+    desc: tool.description,
+    tags: tool.tags,
+  })).join("") || emptyState("尚未找到工具資料夾。");
   app.innerHTML = `
+    ${breadcrumb([{ label: "首頁", href: "#home" }, { label: "其他工具" }])}
     <header class="page-heading"><p class="eyebrow">Other tools</p><h1>其他工具</h1><p>這些工具都保留為可單獨開啟的靜態頁面，資料與功能已整合進 Bambook。</p></header>
-    <div class="card-grid">${toolCards().map(card).join("") || emptyState("尚未找到工具資料夾。")}</div>`;
+    <div class="row-list">${rows}</div>`;
 }
 
 function toolCards() {
@@ -668,10 +761,8 @@ function toolCards() {
     const id = tool.id || String(tool.path || "").split("/").filter(Boolean).pop() || "";
     return {
     href: tool.path || "#tools",
-    icon: toolIcon(id),
     title: tool.title || id || "未命名項目",
     description: tool.description || "開啟這個工具。",
-    action: tool.action || "開啟工具 →",
     tags: Array.isArray(tool.tags) ? tool.tags : [],
     };
   });
@@ -687,17 +778,7 @@ function normaliseEntryCard(item) {
     title: item?.title || id,
     description: item?.description || item?.summary || "",
     tags: Array.isArray(item?.tags) ? item.tags : [],
-    action: item?.action || "開啟頁面 →",
   };
-}
-
-function card({ href, icon, title, description, action, tags = [] }) {
-  return `<a class="card ${tags.length ? "tool-card" : ""}" href="${safeURL(href)}">
-    <span class="card-icon" aria-hidden="true">${icon}</span>
-    <h3>${escapeHTML(title)}</h3><p>${escapeHTML(description)}</p>
-    ${tags.length ? `<span class="tag-list">${tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</span>` : ""}
-    <span class="card-action">${escapeHTML(action)}</span>
-  </a>`;
 }
 
 function renderNotFound(title, detail) {
@@ -714,21 +795,6 @@ function courseNames() {
   return Object.keys(state.courses).sort((a, b) => a.localeCompare(b, "zh-Hant"));
 }
 
-function courseIcon(name) {
-  return name.includes("微積") ? ICONS.math : ICONS.book;
-}
-
-function toolIcon(id) {
-  return ({
-    cs2commands: ICONS.terminal,
-    geomaster: ICONS.world,
-    grades: ICONS.chart,
-    spectrumAnalysis: ICONS.wave,
-    topo: ICONS.math,
-    kaohsiung: ICONS.camera,
-  })[id] || ICONS.book;
-}
-
 function decodedHash() {
   try { return decodeURIComponent(location.hash.slice(1)); }
   catch { return location.hash.slice(1); }
@@ -736,6 +802,12 @@ function decodedHash() {
 
 function assetURL(path) {
   return new URL(String(path || "").replace(/^\/+/, ""), SITE_BASE_URL).href;
+}
+
+// Respect the OS-level reduced-motion setting for JS-driven scrolling. CSS
+// smooth scrolling is handled separately in site.css.
+function scrollBehavior() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 }
 
 function slugifyHeading(text, index) {
@@ -867,9 +939,9 @@ function bindMarkdownFootnotes(root) {
     event.preventDefault();
     const scrollRoot = document.querySelector("#content-scroll");
     if (scrollRoot) {
-      scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: "smooth" });
+      scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: scrollBehavior() });
     } else {
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.scrollIntoView({ behavior: scrollBehavior(), block: "center" });
     }
   });
 }

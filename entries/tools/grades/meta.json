@@ -1,0 +1,9 @@
+{
+  "title": "成績追蹤",
+  "type": "tool",
+  "date": "2026-06-26",
+  "status": "active",
+  "visibility": "public",
+  "summary": "我的修課紀錄、學分、成績整理。",
+  "tags": ["NTNU", "成績"]
+}

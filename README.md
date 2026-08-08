@@ -14,30 +14,39 @@ GitHub Pages 用的純靜態教材、文章、工具與作品索引網站。目�
 
 - `content/`：Markdown 文章與首頁說明。
 - `materials/`：教材 PDF、講義、投影片與練習資源。
-- `entries/`：工具、作品、展示頁等獨立靜態頁面。
-- `other/`：舊版工具資料夾；目前仍保留相容。
-- `templates/`：新增內容時可複製的模板。
+- `entries/`：工具、作品、展示頁等獨立靜態頁面（唯一的工具/作品入口，取代舊的 `other/`）。
+- `templates/`：新增內容時可複製的模板，也包含一份 `markdown-showcase.md` 語法展示（不會被索引）。
 - `tools/`：產生索引與驗證內容的腳本。
 
 ## 新增文章
 
 文章主標題以檔名為準，front matter 只描述文章。
 
-建議放在月份資料夾，例如：
+建議依主題／科目分類，資料夾名稱盡量跟 `materials/` 底下的科目名稱一致，例如：
 
 ```text
 content/
-  202606/
-    2026-06-27-微積分學習地圖.md
+  微積分乙/
+    2026-07-19-函數與公式.md
+  工程數學/
+    2026-08-01-拉普拉斯轉換筆記.md
+  預備知識/
+    ...
+  其他/
+    ...
 ```
 
 可從 `templates/article.template.md` 複製。
 
 `content/` 根目錄下只保留一個 Markdown 檔，作為首頁說明文字。
 
+### 讓文章出現在教材頁的「延伸文章」區塊
+
+在文章的 front matter `tags` 裡加上一個跟科目資料夾（`materials/` 底下的名稱）完全相同的標籤，例如 `tags: 函數, 公式, 微積分乙`，這篇文章就會自動出現在「微積分乙」教材頁的延伸文章區塊。一篇文章可以同時掛多個科目 tag，不用擔心只能歸類到一個地方。
+
 ## 新增工具或作品
 
-新規格建議使用 `entries/`：
+統一使用 `entries/`：
 
 ```text
 entries/
@@ -60,8 +69,6 @@ entries/
 
 可從 `templates/entry.meta.template.json` 複製。
 
-`other/<工具名稱>/` 是舊工具位置，仍然會被掃描；若要新增大型獨立頁面，優先使用 `entries/`。
-
 ## 產生公開索引
 
 GitHub Pages 不能讓瀏覽器即時掃描資料夾，因此新增文章、教材、工具或作品後，需要執行：
@@ -70,18 +77,7 @@ GitHub Pages 不能讓瀏覽器即時掃描資料夾，因此新增文章、教�
 python tools/build-index.py
 ```
 
-它會產生：
-
-- `site-manifest.json`：網站實際讀取的主索引。
-- `data/articles.json`：文章索引。
-- `data/entries.json`：工具與作品入口索引。
-- `data/site.json`：站點摘要。
-
-若只想使用舊指令，仍可執行：
-
-```powershell
-python build_manifest.py
-```
+它會產生 `site-manifest.json`——網站唯一會讀取的主索引。
 
 ## 驗證內容
 

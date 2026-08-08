@@ -4,39 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS2 Commands Dashboard</title>
-    <link rel="stylesheet" href="../../assets/css/tool-shell.css">
+    <!-- Applies a saved dark-mode choice before first paint (avoids a flash of
+         light-then-dark), matching Bambook's main site. No stored choice means
+         light — this page never infers dark mode from the OS. -->
+    <script>
+      try {
+        if (localStorage.getItem("bambook-theme") === "dark") document.documentElement.dataset.theme = "dark";
+      } catch (error) {}
+    </script>
+    <link rel="stylesheet" href="../../../assets/css/tool-shell.css">
     <style>
-        /* --- 視覺收斂：觀測儀表板風格 --- */
+        /* --- 視覺收斂：Bambook 風格 --- */
         :root {
-            --bg-body: #f8fafc;
+            --bg-body: #f7f8f8;
             --bg-surface: #ffffff;
-            --bg-hover: #f1f5f9;
-            --bg-active: #e0f2fe;
-            
-            /* 文字灰階 */
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            
-            /* 邊框與分割線 */
-            --border-light: #e2e8f0;
-            --border-strong: #cbd5e1;
-            
-            /* 主題色 */
-            --color-accent: #0ea5e9;
-            --color-accent-hover: #0284c7;
+            --bg-hover: #f1f5f4;
+            --bg-active: #d9f4ef;
 
-            --flag-cheat-bg: #fef2f2;
-            --flag-cheat-text: #ef4444;
-            --flag-cheat-border: #fecaca;
-        
+            /* 文字灰階 */
+            --text-primary: #17221f;
+            --text-secondary: #45524d;
+            --text-muted: #62716b;
+
+            /* 邊框與分割線 */
+            --border-light: #dce6e2;
+            --border-strong: #c3d2cb;
+
+            /* 主題色 */
+            --color-accent: #0d9488;
+            --color-accent-hover: #0f766e;
+
+            --flag-cheat-bg: #fbe7e4;
+            --flag-cheat-text: #b42318;
+            --flag-cheat-border: #f0c4bd;
+
             /* 字體分工 */
-            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-            
+            --font-sans: "Noto Sans TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --font-mono: "Noto Sans Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+
             --radius-sm: 4px;
             --radius-md: 6px;
             --radius-lg: 8px;
+        }
+
+        /* Dark theme — manual toggle only, dark GRAY not black, matching the
+           main Bambook site's palette exactly. */
+        html[data-theme="dark"] {
+            color-scheme: dark;
+            --bg-body: #1c1c1e;
+            --bg-surface: #26262a;
+            --bg-hover: #2f2f34;
+            --bg-active: #1f3d3a;
+
+            --text-primary: #e8e8ea;
+            --text-secondary: #c2c3c7;
+            --text-muted: #9c9da3;
+
+            --border-light: #3a3a3f;
+            --border-strong: #4a4a50;
+
+            --color-accent: #2dd4bf;
+            --color-accent-hover: #5eead4;
+
+            --flag-cheat-bg: #3a1f1c;
+            --flag-cheat-text: #ff8a80;
+            --flag-cheat-border: #5c322d;
         }
 
         /* --- 全局禁止選取特性 --- */
@@ -116,6 +148,25 @@
             border: 1px solid var(--border-light);
             font-family: var(--font-mono);
         }
+
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+        .icon-button {
+            display: inline-grid;
+            width: 2.1rem;
+            height: 2.1rem;
+            place-items: center;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface);
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .icon-button:hover { border-color: var(--color-accent); color: var(--color-accent-hover); }
+        .icon-button svg { width: 1.05rem; }
+        .theme-icon-moon { display: none; }
+        html[data-theme="dark"] .theme-icon-sun { display: none; }
+        html[data-theme="dark"] .theme-icon-moon { display: block; }
 
         /* 內容容器 */
         .container {
@@ -255,7 +306,7 @@
 
         .search-input:focus {
             border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent);
         }
 
         .results-control {
@@ -304,14 +355,16 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02); 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
             transition: box-shadow 0.2s, border-color 0.2s;
         }
-        
+
         .data-item:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.06);
             border-color: var(--border-strong);
         }
+        html[data-theme="dark"] .data-item { box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
+        html[data-theme="dark"] .data-item:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.32); }
 
         .item-header {
             display: flex;
@@ -460,7 +513,7 @@
         }
         .editable-syntax-wrap:focus-within {
             border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent);
         }
         .editable-syntax-label {
             display: flex;
@@ -613,14 +666,14 @@
             position: relative;
             z-index: 1000; /* 確保 Footer 位於最高圖層，解決破圖疊加問題 */
             width: 100%;
-            background-color: #f5f5f7;
-            color: #86868b;
+            background-color: var(--bg-body);
+            color: var(--text-muted);
             font-size: 12px;
             line-height: 1.33337;
             font-weight: 400;
             letter-spacing: -0.01em;
             font-family: var(--font-sans);
-            border-top: 1px solid #d2d2d7;
+            border-top: 1px solid var(--border-light);
             padding: 20px 0;
             margin-top: auto; /* 置於最底 */
             flex-shrink: 0;
@@ -674,13 +727,13 @@
         }
 
         .footer-bottom a {
-            color: #515154;
+            color: var(--text-secondary);
             text-decoration: none;
             transition: color 0.2s ease;
         }
 
         .footer-bottom a:hover {
-            color: #1d1d1f;
+            color: var(--text-primary);
             text-decoration: underline;
         }
 
@@ -688,21 +741,27 @@
         [data-tooltip] { position: relative; cursor: help; }
         .btn-filter[data-tooltip] { cursor: pointer; }
         .global-tooltip {
-            position: fixed; background: var(--text-primary); color: var(--bg-surface); padding: 8px 12px;
+            /* Fixed dark chip, independent of the page theme (light or dark) —
+               using var(--text-primary)/var(--bg-surface) here would invert to
+               a light chip once dark mode makes --text-primary light. */
+            position: fixed; background: #1f2421; color: #fdfdfb; padding: 8px 12px;
             border-radius: var(--radius-sm); font-size: 0.75rem; white-space: normal; width: max-content;
             max-width: 260px; text-align: left; pointer-events: none; z-index: 99999;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15); line-height: 1.5; opacity: 0;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.25); line-height: 1.5; opacity: 0;
             transform: translate(-50%, calc(-100% - 2px)) scale(0.95); transition: opacity 0.1s ease, transform 0.1s ease;
             visibility: hidden; font-family: var(--font-sans);
         }
         .global-tooltip.show { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); visibility: visible; }
-        .global-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--text-primary); }
-        .global-tooltip b { color: var(--color-accent); }
-        .source-hl { color: #38bdf8; font-family: var(--font-mono); font-weight: 600;}
+        .global-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #1f2421; }
+        .global-tooltip b { color: #5eead4; }
+        .source-hl { color: #5eead4; font-family: var(--font-mono); font-weight: 600;}
 
         /* --- Toast --- */
         .toast-container { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: var(--text-primary); color: var(--bg-surface); padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .toast {
+            /* Same fixed dark chip as the tooltip, for the same reason. */
+            background: #1f2421; color: #fdfdfb; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 16px rgba(0,0,0,0.25); opacity: 0; transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
         .toast.show { opacity: 1; transform: translateY(0) scale(1); }
 
         @media (max-width: 992px) {
@@ -737,7 +796,13 @@
                 </svg>
                 CS2 Commands Dashboard
             </div>
-            <div class="stats-badge" id="stats-counter">Initializing...</div>
+            <div class="topbar-actions">
+                <div class="stats-badge" id="stats-counter">Initializing...</div>
+                <button type="button" class="icon-button" id="theme-toggle" aria-pressed="false" aria-label="切換為深色模式">
+                    <svg class="theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/></svg>
+                    <svg class="theme-icon-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/></svg>
+                </button>
+            </div>
         </header>
 
         <div class="container">
@@ -838,6 +903,31 @@
         document.getElementById('main-scroll-area').addEventListener('scroll', hideGlobalTooltip, true);
         document.querySelector('.sidebar').addEventListener('scroll', hideGlobalTooltip, true);
         window.addEventListener('scroll', hideGlobalTooltip, true);
+
+        // --- 深色模式切換（與 Bambook 主站共用 localStorage 設定）---
+        const THEME_STORAGE_KEY = 'bambook-theme';
+
+        function syncThemeToggle(button) {
+            const isDark = document.documentElement.dataset.theme === 'dark';
+            button.setAttribute('aria-pressed', String(isDark));
+            button.setAttribute('aria-label', isDark ? '切換為亮色模式' : '切換為深色模式');
+        }
+
+        function bindThemeToggle() {
+            const button = document.getElementById('theme-toggle');
+            if (!button) return;
+            syncThemeToggle(button);
+            button.addEventListener('click', () => {
+                const goingDark = document.documentElement.dataset.theme !== 'dark';
+                if (goingDark) document.documentElement.dataset.theme = 'dark';
+                else delete document.documentElement.dataset.theme;
+                try {
+                    localStorage.setItem(THEME_STORAGE_KEY, goingDark ? 'dark' : 'light');
+                } catch (error) {}
+                syncThemeToggle(button);
+            });
+        }
+        bindThemeToggle();
 
         // --- 狀態管理 ---
         let commandsDB = [];
@@ -1437,7 +1527,7 @@
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerHTML = `
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 <span>${htmlMsg}</span>
             `;
             container.appendChild(toast);
@@ -1465,6 +1555,6 @@
 
         initApp();
     </script>
-    <script src="../../assets/js/tool-shell.js" data-home="../../index.html#tools" data-section="CS2 指令"></script>
+    <script src="../../../assets/js/tool-shell.js" data-home="../../../index.html#tools" data-section="CS2 指令"></script>
 </body>
 </html>
