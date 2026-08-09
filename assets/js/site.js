@@ -36,6 +36,7 @@ const ICONS = {
   presentation: tablerIcon('<path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/><path d="M12 16l0 4"/><path d="M9 20l6 0"/><path d="M8 12l3 -3l2 2l3 -3"/>'),
   article: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>'),
   tool: tablerIcon('<path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5"/>'),
+  chevron: tablerIcon('<path d="M9 6l6 6l-6 6"/>'),
 };
 
 const SITE_BASE_URL = new URL("../../", import.meta.url);
@@ -58,6 +59,7 @@ async function initialise() {
   bindEvents();
   await loadSiteManifest();
   buildMaterialMenu();
+  buildFooterSitemap();
   route();
 }
 
@@ -124,6 +126,58 @@ function buildMaterialMenu() {
   materialMenu.innerHTML = names.length
     ? names.map(name => `<a href="#materials=${encodeURIComponent(name)}">${escapeHTML(name)}</a>`).join("")
     : `<span class="menu-message">教材資料尚未載入</span>`;
+}
+
+// Footer sitemap added per the bambook.svg redesign — a full-site index
+// alongside the existing brand/legal footer content. Same data sources as
+// the rest of the site (courseNames/state.articles/toolCards); each column
+// is capped at 4 items so the footer doesn't grow unbounded as content is
+// added, with a "查看全部" link to the corresponding hub page once
+// truncated, and each item label itself is clipped to 6 characters ("…"
+// appended) so a long title can't blow out the column width.
+const FOOTER_SITEMAP_ITEM_LIMIT = 4;
+const FOOTER_SITEMAP_LABEL_LIMIT = 6;
+
+function buildFooterSitemap() {
+  const sitemap = document.querySelector("[data-footer-sitemap]");
+  if (!sitemap) return;
+  const columns = [
+    {
+      title: "教材",
+      moreHref: "#materials",
+      items: courseNames().map(name => ({ label: name, href: `#materials=${encodeURIComponent(name)}` })),
+    },
+    {
+      title: "文章",
+      moreHref: "#articles",
+      items: state.articles.map(article => ({ label: article.title, href: `#article=${encodeURIComponent(article.path)}` })),
+    },
+    {
+      title: "其他",
+      moreHref: "#tools",
+      items: toolCards().map(tool => ({ label: tool.title, href: tool.href })),
+    },
+  ];
+  sitemap.innerHTML = columns.map(column => footerSitemapColumn(column)).join("");
+}
+
+function footerSitemapColumn({ title, items, moreHref }) {
+  const shown = items.slice(0, FOOTER_SITEMAP_ITEM_LIMIT);
+  const rows = shown.length
+    ? shown.map(item => `<li><a href="${safeURL(item.href)}" title="${escapeHTML(item.label)}">${escapeHTML(truncateLabel(item.label))}</a></li>`).join("")
+    : `<li class="menu-message">尚無資料</li>`;
+  const more = items.length > FOOTER_SITEMAP_ITEM_LIMIT
+    ? `<li><a class="footer-sitemap-more" href="${safeURL(moreHref)}">${ICONS.chevron}<span>查看全部</span></a></li>`
+    : "";
+  return `<div class="footer-sitemap-col"><h3>${escapeHTML(title)}</h3><ul>${rows}${more}</ul></div>`;
+}
+
+// Truncates by Unicode code point (not UTF-16 code unit) so multi-byte CJK
+// characters each count as exactly one character, matching the "至多 6 個
+// 字" requirement.
+function truncateLabel(label, limit = FOOTER_SITEMAP_LABEL_LIMIT) {
+  const characters = Array.from(String(label || ""));
+  return characters.length > limit ? `${characters.slice(0, limit).join("")}...` : characters.join("");
 }
 
 async function loadSiteManifest() {
@@ -204,18 +258,29 @@ function renderHome() {
     <div class="home-view">
       ${homeIntroShell()}
       <section class="block" id="home-materials">
-        <div class="block-head"><h2>教材</h2><a class="all-link" href="#materials">全部教材 →</a></div>
+        ${blockHead(ICONS.book, "教材", "#materials", "全部教材")}
         <div class="row-list">${materialRows}</div>
       </section>
       <section class="block" id="home-articles">
-        <div class="block-head"><h2>文章</h2><a class="all-link" href="#articles">全部文章 →</a></div>
+        ${blockHead(ICONS.article, "文章", "#articles", "全部文章")}
         <div class="row-list">${articleRows}</div>
       </section>
       <section class="block" id="home-tools">
-        <div class="block-head"><h2>其他工具</h2><a class="all-link" href="#tools">全部工具 →</a></div>
+        ${blockHead(ICONS.tool, "其他工具", "#tools", "全部工具")}
         <div class="row-list">${toolRows}</div>
       </section>
     </div>`;
+}
+
+// Block header per the bambook.svg redesign: an icon before the title (new),
+// and the "see all" link restyled from a trailing arrow-in-text to a leading
+// chevron icon — the label text itself (全部教材 etc.) is preserved as real
+// site content rather than the mockup's generic placeholder text.
+function blockHead(icon, title, href, linkLabel) {
+  return `<div class="block-head">
+    <div class="block-head-title"><span class="block-head-icon">${icon}</span><h2>${escapeHTML(title)}</h2></div>
+    <a class="all-link" href="${safeURL(href)}">${ICONS.chevron}<span>${escapeHTML(linkLabel)}</span></a>
+  </div>`;
 }
 
 // Row-count summary shown next to a course's row-desc (e.g. "3 課本 · 6
@@ -228,19 +293,24 @@ function materialMeta(course = {}) {
   return parts.join(" · ");
 }
 
-// Replaces the old card-grid on the home page. Row-meta and row-tags are
-// deliberately nested INSIDE the row's first <div> alongside row-title/
-// row-desc — .row is a 2-column CSS grid (content, arrow), so a 3rd direct
-// child here would shove row-arrow onto its own line and break the layout.
+// Plain list item per the bambook.svg redesign — a persistent leading
+// chevron (not a hover-only trailing arrow) followed by title/desc/meta/tags.
+// The chevron and title are explicit siblings sharing the SAME grid row
+// (see .row in site.css) rather than the chevron spanning the whole
+// title+desc block — that's what lets align-items: center line the icon up
+// with the title's actual line box instead of the icon just sitting at the
+// top of the combined, taller title+desc area. desc/meta/tags live in their
+// own row-body block below, spanning the full content column.
 function row({ href, title, desc = "", meta = "", tags = [] }) {
+  const hasBody = desc || meta || tags.length;
   return `<a class="row" href="${safeURL(href)}">
-    <div>
-      <div class="row-title">${escapeHTML(title)}</div>
+    <span class="row-chevron" aria-hidden="true">${ICONS.chevron}</span>
+    <div class="row-title">${escapeHTML(title)}</div>
+    ${hasBody ? `<div class="row-body">
       ${desc ? `<div class="row-desc">${escapeHTML(desc)}</div>` : ""}
       ${meta ? `<div class="row-meta">${escapeHTML(meta)}</div>` : ""}
       ${tags.length ? `<div class="row-tags">${tags.map(tag => `<span>${escapeHTML(tag)}</span>`).join("")}</div>` : ""}
-    </div>
-    <span class="row-arrow" aria-hidden="true">→</span>
+    </div>` : ""}
   </a>`;
 }
 
@@ -261,16 +331,19 @@ function homeIntroShell() {
           <span class="hero-feature-icon">${ICONS.book}</span>
           <span class="hero-feature-title">教材</span>
           <span class="hero-feature-desc">課本、講義與練習整理</span>
+          <span class="hero-feature-more">${ICONS.chevron}<span>全部教材</span></span>
         </a>
         <a class="hero-feature" href="#articles">
           <span class="hero-feature-icon">${ICONS.article}</span>
           <span class="hero-feature-title">文章</span>
           <span class="hero-feature-desc">數學筆記與說明</span>
+          <span class="hero-feature-more">${ICONS.chevron}<span>全部文章</span></span>
         </a>
         <a class="hero-feature" href="#tools">
           <span class="hero-feature-icon">${ICONS.tool}</span>
           <span class="hero-feature-title">其他工具</span>
           <span class="hero-feature-desc">獨立的小工具</span>
+          <span class="hero-feature-more">${ICONS.chevron}<span>全部工具</span></span>
         </a>
       </div>
     </section>`;

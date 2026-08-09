@@ -1,0 +1,7 @@
+{
+  "title": "Parametric EQ",
+  "description": "播放樣本、檢視波形並探索參數等化的音訊工具。",
+  "icon": "≈",
+  "tags": ["音訊", "EQ"],
+  "order": 40
+}

@@ -420,6 +420,44 @@
   ],
   "entries": [
     {
+      "id": "geomaster",
+      "type": "tool",
+      "path": "entries/tools/geomaster/",
+      "title": "GeoMaster",
+      "date": "",
+      "status": "",
+      "visibility": "public",
+      "description": "GeoGuessr 的國家、地圖與地理特徵資料視覺化。",
+      "summary": "GeoGuessr 的國家、地圖與地理特徵資料視覺化。",
+      "tags": [
+        "地理",
+        "GeoGuessr"
+      ],
+      "thumbnail": "",
+      "action": "開啟頁面 →",
+      "icon": "◎",
+      "order": 20
+    },
+    {
+      "id": "spectrumAnalysis",
+      "type": "tool",
+      "path": "entries/tools/spectrumAnalysis/",
+      "title": "Parametric EQ",
+      "date": "",
+      "status": "",
+      "visibility": "public",
+      "description": "播放樣本、檢視波形並探索參數等化的音訊工具。",
+      "summary": "播放樣本、檢視波形並探索參數等化的音訊工具。",
+      "tags": [
+        "音訊",
+        "EQ"
+      ],
+      "thumbnail": "",
+      "action": "開啟頁面 →",
+      "icon": "≈",
+      "order": 40
+    },
+    {
       "id": "grades",
       "type": "tool",
       "path": "entries/tools/grades/",
@@ -435,7 +473,8 @@
       ],
       "thumbnail": "",
       "action": "開啟頁面 →",
-      "icon": "↗"
+      "icon": "↗",
+      "order": null
     },
     {
       "id": "cs2commands",
@@ -453,7 +492,8 @@
       ],
       "thumbnail": "",
       "action": "開啟頁面 →",
-      "icon": "↗"
+      "icon": "↗",
+      "order": null
     }
   ]
 }

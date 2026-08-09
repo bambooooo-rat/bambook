@@ -205,11 +205,23 @@ def html_title(index_file: Path) -> str:
     return title or index_file.parent.name
 
 
+# Two metadata filenames are recognised inside entries/<type>/<id>/, checked
+# in this order — "meta.json" is the current convention (used by cs2commands,
+# grades, ...); "tool.json" is an older, simpler convention some existing
+# tool folders (e.g. geomaster, spectrumAnalysis) were already using before
+# meta.json existed. A folder with neither is skipped, same as before — the
+# fix here is recognising both, not requiring one specific filename.
+ENTRY_METADATA_FILENAMES = ("meta.json", "tool.json")
+
+
 def build_entries() -> list[dict[str, Any]]:
-    """Build public entry cards from entries/<type>/<id>/meta.json.
+    """Build public entry cards from entries/<type>/<id>/(meta.json|tool.json).
 
     Entries are self-contained pages such as tools, works, demos, or other
-    independent static pages. The main site only reads their metadata.
+    independent static pages. The main site only reads their metadata. Any
+    new entry folder just needs an index.html (or index.htm) plus one of the
+    metadata filenames above — rerunning this script picks it up
+    automatically, no other wiring required.
     """
     if not ENTRIES_DIR.is_dir():
         return []
@@ -217,9 +229,9 @@ def build_entries() -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for type_dir in sorted((item for item in ENTRIES_DIR.iterdir() if item.is_dir()), key=lambda item: item.name.casefold()):
         for entry_dir in sorted((item for item in type_dir.iterdir() if item.is_dir()), key=lambda item: item.name.casefold()):
-            metadata_file = entry_dir / "meta.json"
+            metadata_file = next((entry_dir / name for name in ENTRY_METADATA_FILENAMES if (entry_dir / name).is_file()), None)
             index_file = next((entry_dir / name for name in ("index.html", "index.htm") if (entry_dir / name).is_file()), None)
-            if not metadata_file.is_file() or not index_file:
+            if not metadata_file or not index_file:
                 continue
             metadata = read_json_object(metadata_file)
             visibility = str(metadata.get("visibility") or "public").strip().lower()
@@ -228,6 +240,11 @@ def build_entries() -> list[dict[str, Any]]:
             entry_type = str(metadata.get("type") or type_dir.name.rstrip("s") or "entry")
             path = f"{web_path(entry_dir)}/"
             title = str(metadata.get("title") or html_title(index_file))
+            # "order" is a tool.json-only field for hand-curated positioning
+            # (no "date" to sort by on that convention). It's kept as a plain
+            # int when present so build_entries' own sort below can use it;
+            # meta.json entries simply won't have one.
+            order = metadata.get("order")
             entries.append({
                 "id": entry_dir.name,
                 "type": entry_type,
@@ -242,8 +259,21 @@ def build_entries() -> list[dict[str, Any]]:
                 "thumbnail": str(metadata.get("thumbnail") or metadata.get("cover") or ""),
                 "action": str(metadata.get("action") or "開啟頁面 →"),
                 "icon": str(metadata.get("icon") or "↗"),
+                "order": order if isinstance(order, (int, float)) else None,
             })
-    return sorted(entries, key=lambda item: (item.get("date") or "", item["title"].casefold()), reverse=True)
+
+    # Two independent orderings, concatenated: entries with an explicit
+    # "order" (the tool.json convention) are hand-curated and sort by that
+    # number ascending; everything else keeps the original newest-first
+    # (falling back to title) behaviour. This keeps existing meta.json-based
+    # entries sorted exactly as before.
+    ordered = sorted((item for item in entries if item["order"] is not None), key=lambda item: item["order"])
+    unordered = sorted(
+        (item for item in entries if item["order"] is None),
+        key=lambda item: (item.get("date") or "", item["title"].casefold()),
+        reverse=True,
+    )
+    return ordered + unordered
 
 
 def build_manifest() -> dict[str, Any]:
