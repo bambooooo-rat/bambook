@@ -45,7 +45,6 @@ const materialMenu = document.querySelector("[data-material-menu]");
 const state = {
   courses: {},
   articles: [],
-  entries: [],
   tools: [],
   articleBodies: new Map(),
   tocScrollHandler: null,
@@ -80,10 +79,9 @@ function bindEvents() {
       return;
     }
   });
-  // "教材" now opens its course dropdown on hover/focus (pure CSS — see
-  // .nav-menu:hover/:focus-within in site.css) instead of a click-toggled
-  // .is-open class, so Escape's only job left is to blur out of it if a
-  // keyboard user tabbed in and wants the panel gone.
+  // The 教材 dropdown opens on hover/focus via pure CSS (see
+  // .nav-menu:hover/:focus-within in site.css); Escape just blurs it for
+  // keyboard users.
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && document.activeElement?.closest(".nav-menu")) {
       document.activeElement.blur();
@@ -91,10 +89,9 @@ function bindEvents() {
   });
 }
 
-// Light is the only default — there's no OS-preference auto-detection (see
-// site.css). A saved choice is applied before first paint by the inline
-// script in index.html's <head>; this just wires up the button and keeps it
-// in sync with whichever theme ends up active.
+// Light is always the default (no OS-preference auto-detection). A saved
+// choice is applied before first paint by the inline script in index.html's
+// <head>; this wires up the button and keeps it in sync.
 const THEME_STORAGE_KEY = "bambook-theme";
 
 function bindThemeToggle() {
@@ -128,13 +125,9 @@ function buildMaterialMenu() {
     : `<span class="menu-message">教材資料尚未載入</span>`;
 }
 
-// Footer sitemap added per the bambook.svg redesign — a full-site index
-// alongside the existing brand/legal footer content. Same data sources as
-// the rest of the site (courseNames/state.articles/toolCards); each column
-// is capped at 4 items so the footer doesn't grow unbounded as content is
-// added, with a "查看全部" link to the corresponding hub page once
-// truncated, and each item label itself is clipped to 6 characters ("…"
-// appended) so a long title can't blow out the column width.
+// Each footer column is capped at 4 items (with a "查看全部" link to the
+// hub page once truncated) and each label is clipped to 6 characters so a
+// long title can't blow out the column width.
 const FOOTER_SITEMAP_ITEM_LIMIT = 4;
 const FOOTER_SITEMAP_LABEL_LIMIT = 6;
 
@@ -172,9 +165,8 @@ function footerSitemapColumn({ title, items, moreHref }) {
   return `<div class="footer-sitemap-col"><h3>${escapeHTML(title)}</h3><ul>${rows}${more}</ul></div>`;
 }
 
-// Truncates by Unicode code point (not UTF-16 code unit) so multi-byte CJK
-// characters each count as exactly one character, matching the "至多 6 個
-// 字" requirement.
+// Truncates by Unicode code point so multi-byte CJK characters each count
+// as one character.
 function truncateLabel(label, limit = FOOTER_SITEMAP_LABEL_LIMIT) {
   const characters = Array.from(String(label || ""));
   return characters.length > limit ? `${characters.slice(0, limit).join("")}...` : characters.join("");
@@ -187,8 +179,7 @@ async function loadSiteManifest() {
     const manifest = await response.json();
     if (!manifest || typeof manifest !== "object") throw new Error("site-manifest.json 格式不正確");
     state.courses = manifest.materials && typeof manifest.materials === "object" ? manifest.materials : {};
-    state.entries = (Array.isArray(manifest.entries) ? manifest.entries : []).map(normaliseEntryCard);
-    state.tools = state.entries;
+    state.tools = (Array.isArray(manifest.entries) ? manifest.entries : []).map(normaliseEntryCard);
     state.articles = (Array.isArray(manifest.articles) ? manifest.articles : [])
       .filter(item => item && typeof item.path === "string")
       .map(item => ({
@@ -272,10 +263,6 @@ function renderHome() {
     </div>`;
 }
 
-// Block header per the bambook.svg redesign: an icon before the title (new),
-// and the "see all" link restyled from a trailing arrow-in-text to a leading
-// chevron icon — the label text itself (全部教材 etc.) is preserved as real
-// site content rather than the mockup's generic placeholder text.
 function blockHead(icon, title, href, linkLabel) {
   return `<div class="block-head">
     <div class="block-head-title"><span class="block-head-icon">${icon}</span><h2>${escapeHTML(title)}</h2></div>
@@ -284,8 +271,7 @@ function blockHead(icon, title, href, linkLabel) {
 }
 
 // Row-count summary shown next to a course's row-desc (e.g. "3 課本 · 6
-// 講義"). Only counts the two resource kinds every course is likely to have;
-// empty categories are omitted rather than shown as "0 ...".
+// 講義"); empty categories are omitted.
 function materialMeta(course = {}) {
   const parts = [];
   if (Array.isArray(course.textbooks) && course.textbooks.length) parts.push(`${course.textbooks.length} 課本`);
@@ -293,14 +279,9 @@ function materialMeta(course = {}) {
   return parts.join(" · ");
 }
 
-// Plain list item per the bambook.svg redesign — a persistent leading
-// chevron (not a hover-only trailing arrow) followed by title/desc/meta/tags.
-// The chevron and title are explicit siblings sharing the SAME grid row
-// (see .row in site.css) rather than the chevron spanning the whole
-// title+desc block — that's what lets align-items: center line the icon up
-// with the title's actual line box instead of the icon just sitting at the
-// top of the combined, taller title+desc area. desc/meta/tags live in their
-// own row-body block below, spanning the full content column.
+// Chevron and title are explicit siblings sharing the same grid row (see
+// .row in site.css) so align-items: center lines the icon up with the
+// title's line box; desc/meta/tags live in their own row-body block below.
 function row({ href, title, desc = "", meta = "", tags = [] }) {
   const hasBody = desc || meta || tags.length;
   return `<a class="row" href="${safeURL(href)}">
@@ -314,12 +295,9 @@ function row({ href, title, desc = "", meta = "", tags = [] }) {
   </a>`;
 }
 
-// Static, hand-written hero — deliberately NOT sourced from a Markdown file.
-// The home page's job is to hand people off to real content fast (usa.gov /
-// gov.uk / government.nl all do this: a short heading, then straight into a
-// plain grid of the site's actual sections), so there's no fetch, no
-// markdown-render pipeline, and no long explanatory paragraph here — that
-// belongs on the pages themselves, not the front door.
+// Static, hand-written hero — deliberately not sourced from a Markdown
+// file, since the home page's job is to hand people off to real content
+// fast rather than explain itself.
 function homeIntroShell() {
   return `
     <section class="hero" aria-label="網站首頁">
@@ -349,10 +327,8 @@ function homeIntroShell() {
     </section>`;
 }
 
-// Breadcrumb path shown at the top of every page below home (usa.gov / gov.uk
-// / government.nl all surface a path once you're inside a section). Items
-// without an `href` — or the last item — render as plain text; only real
-// destination pages become links. items: [{ label, href? }].
+// items: [{ label, href? }]. Items without an `href`, or the last item,
+// render as plain text; only real destination pages become links.
 function breadcrumb(items) {
   return `<nav class="breadcrumb" aria-label="麵包屑導覽">${items.map((item, index) => {
     const isLast = index === items.length - 1;
@@ -365,8 +341,7 @@ function breadcrumb(items) {
 }
 
 // "#materials" with no course name — the hub page the home page's 教材 tile
-// and breadcrumbs actually land on. Mirrors renderArticlesPage()'s overview
-// and renderTools(): breadcrumb, page-heading, one flat row-list.
+// and breadcrumbs land on.
 function renderMaterialsIndex() {
   setActiveNav("materials");
   document.title = "教材 | Bambook";
@@ -420,9 +395,7 @@ function renderCourse(name) {
 }
 
 // Articles opt into a course page by adding a tag that matches the course
-// name exactly (e.g. tag "微積分乙" on an article shows it on that course's
-// page). This keeps content/ and materials/ independent while still letting
-// one article surface under multiple courses.
+// name exactly (e.g. tag "微積分乙" shows the article on that course's page).
 function relatedArticlesSection(courseName) {
   const related = state.articles.filter(article => article.tags.includes(courseName));
   if (!related.length) return "";

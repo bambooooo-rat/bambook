@@ -7,10 +7,8 @@
   <title>Bambook</title>
   <link rel="icon" type="image/svg+xml" href="assets/icons/bambook.svg">
   <!-- Applies a saved dark-mode choice before first paint (avoids a flash of
-       light-then-dark). Runs before the stylesheet so the attribute is on
-       <html> by the time site.css's html[data-theme="dark"] rule can match.
-       No stored choice, or anything other than "dark", means light — the
-       site never infers dark mode from the OS, only from this toggle. -->
+       light-then-dark) — runs before the stylesheet loads. No stored choice
+       means light; dark mode is never inferred from the OS. -->
   <script>
     try {
       if (localStorage.getItem("bambook-theme") === "dark") document.documentElement.dataset.theme = "dark";

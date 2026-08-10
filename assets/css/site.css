@@ -12,6 +12,15 @@
   --danger: #b42318;
   --shadow: 0 16px 42px rgba(20, 20, 20, .08);
   --radius: 16px;
+
+  /* Base hue for 填空/解答 download buttons (see .resource-link--blank/--sol
+     below) — border/background/text/hover shades are derived from these via
+     color-mix() at each usage site, not stored as separate hex values, so
+     both variants auto-adapt to the active theme. --tint-blank reuses
+     --accent so color-mix() supplies the distinction from the raw accent
+     color, rather than defining a second hardcoded blue. */
+  --tint-blank: var(--accent);
+  --tint-sol: #2f9e6e;
   --markdown-landscape-image-height: 18rem;
   --markdown-portrait-image-width: 18rem;
   --markdown-square-image-width: 20rem;
@@ -20,11 +29,9 @@
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
-  /* Spacing scale — home page layout (hero + row-list blocks) is built
-     entirely from these. Modeled after Apple HIG's 8pt/4pt convention and
-     GOV.UK Design System's fixed, screen-independent scale. Distance itself
-     signals relatedness (Gestalt proximity): the bigger the jump between
-     tiers, the less related the two things next to it are. */
+  /* Spacing scale — the home page layout is built entirely from these.
+     Distance signals relatedness: the bigger the jump between tiers, the
+     less related the two things next to it are. */
   --space-1: .25rem;  /*  4px — glued together (icon + its label) */
   --space-2: .5rem;   /*  8px — tight: title ↔ its own description */
   --space-3: .75rem;  /* 12px — snug: a line and its direct annotation */
@@ -35,15 +42,9 @@
   --space-8: 4rem;    /* 64px — page-opening weight */
   --space-9: 6rem;    /* 96px — between unrelated sections (教材/文章/工具) */
 
-  /* Type scale — one base size, one ratio (1.25), every size is a discrete
-     step of base × ratio^n. Used by the home page redesign; other pages keep
-     their existing sizes for now (per-page redesign is intentionally
-     phased). */
   --font-xs: .8rem;    /* 12.8px — eyebrow, meta, tags */
   --font-sm: 1rem;     /* 16px   — body copy, row-desc */
-  --font-md: 1.25rem;  /* 20px   — row-title */
   --font-lg: 1.563rem; /* 25px   — block h2 */
-  --font-xl: clamp(1.953rem, 4.4vw, 3.052rem); /* unused — hero h1 now matches .page-heading h1's size instead */
 }
 
 /* Dark theme — a manual toggle only (see #theme-toggle in the header), not
@@ -64,6 +65,7 @@ html[data-theme="dark"] {
   --accent-soft: #1e3a4d;
   --danger: #ff8a80;
   --shadow: 0 16px 42px rgba(0, 0, 0, .5);
+  --tint-sol: #4cbf8a;
 }
 
 * { box-sizing: border-box; }
@@ -147,14 +149,9 @@ input, textarea, select, [contenteditable="true"], [contenteditable="true"] * {
 .main-nav > a:hover, .main-nav > a.is-active,
 .nav-menu > a:hover, .nav-menu > a.is-active { background: var(--accent-soft); color: var(--accent-strong); }
 .nav-menu { position: relative; }
-/* The "教材" link is a real link — clicking it navigates straight to the
-   materials hub page (#materials) — and its course dropdown is a hover/
-   focus reveal on top of that, not a click-toggled disclosure. top: 100%
-   with NO gap matters here: a gap between the link and the panel would be a
-   dead zone the pointer has to cross, dropping :hover before it reaches the
-   panel. focus-within stays ungated (keyboard/any pointer); the :hover
-   reveal itself is gated to real hover-capable pointers, same convention as
-   every other hover effect on this site. */
+/* The 教材 dropdown is a hover/focus reveal, not a click toggle. top: 100%
+   with no gap matters — a gap would be a dead zone that drops :hover before
+   the pointer reaches the panel. */
 .nav-menu:focus-within .menu-panel { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); visibility: visible; }
 .nav-menu:focus-within > a { background: var(--accent-soft); color: var(--accent-strong); }
 @media (hover: hover) and (pointer: fine) {
@@ -199,12 +196,9 @@ h1, h2, h3, p { margin-top: 0; }
 .inline-link:hover { text-decoration: underline; }
 
 /* ---------- home page: hero + row-list blocks ----------
-   Deliberately flatter and quieter than the rest of the site's card system —
-   the home page's job is to hand the user off to real content (教材/文章/
-   工具) as fast as possible, so the interface itself should recede. Every
-   margin/padding below comes from the spacing scale in :root; the jump
-   between tiers (not any single value) is what communicates what belongs
-   with what. */
+   Every margin/padding below comes from the spacing scale in :root — the
+   jump between tiers (not any single value) communicates what belongs with
+   what. */
 .home-view { max-width: 60rem; margin: 0 auto; }
 
 .hero { padding: var(--space-7) 0 var(--space-8); border-bottom: 1px solid var(--border); }
@@ -216,11 +210,6 @@ h1, h2, h3, p { margin-top: 0; }
 .hero h1 { margin: 0 0; font-size: clamp(2rem, 5vw, 3.3rem); line-height: 1.08; letter-spacing: -.055em; font-weight: 700; max-width: 18ch; }
 .hero > p { margin: 0; max-width: 62ch; font-size: var(--font-sm); line-height: 1.75; color: var(--muted); }
 
-/* Cards per the bambook.svg redesign mockup: 10px radius (matches the
-   mockup's rect rx="10"), a 1px accent-blue border, icon beside the title,
-   description directly below in near-black (not muted-gray — the mockup
-   reserves gray for the trailing "read more" line only), and a persistent
-   leading-chevron "read more" line pinned to the card's bottom. */
 .hero-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: var(--space-6); margin-top: var(--space-8); }
 .hero-feature {
   display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto auto;
@@ -251,26 +240,17 @@ h1, h2, h3, p { margin-top: 0; }
 }
 .hero-feature:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 
-/* Breadcrumb path — shown at the top of every page below home, same idea as
-   usa.gov / gov.uk / government.nl: once you're inside a section, the path
-   back stays visible. Plain text, no box. */
 .breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); margin-bottom: var(--space-6); color: var(--muted); font-size: var(--font-xs); }
 .breadcrumb a { color: var(--muted); text-decoration: none; }
 .breadcrumb a:hover { color: var(--accent-strong); text-decoration: underline; }
 .breadcrumb span[aria-current] { color: var(--text); font-weight: 700; }
 .breadcrumb-sep { color: var(--border); }
 
-/* --space-9 (96px) between blocks is deliberately the single biggest jump on
-   the home page — bigger than anything inside a block — so 教材/文章/其他
-   工具 read as unrelated topics before anyone reads a word. No divider line
-   here: each block already carries its own blue underline on the header
-   row (.block-head below), so a second gray line at the section edge would
-   be a redundant, unwanted rule. */
+/* --space-9 (96px) between blocks is the biggest spacing jump on the home
+   page, so 教材/文章/其他工具 read as unrelated sections. No divider line
+   here — the blue underline on .block-head below already separates each
+   section's header from its content. */
 section.block { padding: var(--space-9) 0; scroll-margin-top: var(--space-9); }
-/* Header row gets its own blue divider (distinct from the thin gray divider
-   between whole block sections above) — per the mockup, the accent line
-   sits directly under 教材/文章/其他's heading row, not at the section's
-   outer edge. */
 .block-head {
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
   padding-bottom: var(--space-4); margin-bottom: var(--space-6); border-bottom: 2px solid var(--accent);
@@ -286,17 +266,12 @@ section.block { padding: var(--space-9) 0; scroll-margin-top: var(--space-9); }
   .block-head .all-link:hover svg { transform: translateX(2px); }
 }
 
-/* Plain list per the mockup — no card border/background, a persistent
-   leading black chevron (not the old hover-only trailing arrow), a larger
-   black title, and gray description below. Generous vertical spacing (not a
-   grid of side-by-side cards) does the separating work instead. */
+/* Plain list — no card border/background; generous vertical spacing between
+   rows does the separating work instead. */
 .row-list { display: flex; flex-direction: column; gap: var(--space-6); }
-/* Chevron and title are explicit grid siblings in the SAME row (row 1) —
-   align-items: center there centers the icon against the title's actual
-   line box, however tall its line-height happens to be, instead of pinning
-   the icon to the top of a cell that also has to fit the description
-   underneath. row-body (desc/meta/tags) gets its own row below, spanning
-   just the content column. */
+/* Chevron and title are explicit grid siblings sharing row 1 — align-items:
+   center lines the icon up with the title's line box. row-body
+   (desc/meta/tags) gets its own row below. */
 .row {
   display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto;
   column-gap: var(--space-3); row-gap: var(--space-1);
@@ -333,12 +308,9 @@ section.block { padding: var(--space-9) 0; scroll-margin-top: var(--space-9); }
 .course-sidebar a { display: block; padding: var(--space-2) var(--space-3); border-radius: 8px; color: var(--muted); font-size: var(--font-sm); text-decoration: none; }
 .course-sidebar a:hover, .course-sidebar a.is-active { background: var(--accent-soft); color: var(--accent-strong); font-weight: 700; }
 
-/* Flat resource sections — a heading with its own divider and generous
-   margin to the next one, no bordered/background "card" panel. Same
-   treatment as the home page's .block-head: a thick accent divider under
-   the heading row instead of a thin gray one, and the same font-weight —
-   the icon is sized off the heading's own font-size (var(--font-lg)) so
-   the two always match, whatever that size happens to be. */
+/* Flat resource sections — no bordered/background card panel, same accent
+   divider treatment as .block-head. Icon is sized off the heading's own
+   font-size (var(--font-lg)) so the two always match. */
 .resource-section { margin-bottom: var(--space-8); }
 .resource-section:last-child { margin-bottom: 0; }
 .resource-section h2 { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-5); padding-bottom: var(--space-3); border-bottom: 2px solid var(--accent); font-size: var(--font-lg); font-weight: 500; letter-spacing: -.01em; }
@@ -393,8 +365,6 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   max-height: none;
 }
 
-/* === Article index: Bamboo-style month dropdown === */
-
 .article-list {
   min-height: 0;
   height: 100%;
@@ -405,20 +375,6 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
-}
-
-.article-list::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.article-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.article-list::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 4px;
 }
 
 .article-list h2 {
@@ -706,9 +662,8 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .site-footer > * { width: min(1240px, calc(100% - 2.5rem)); margin-right: auto; margin-left: auto; }
 .site-footer a { color: var(--muted); }
 .site-footer a:hover { color: var(--accent-strong); }
-/* Left: existing brand/copyright + legal disclaimer, unchanged. Right: the
-   new full-site navigation added per the bambook.svg redesign — three
-   columns (教材/文章/其他), top-aligned with the brand row on the left. */
+/* Left: brand/copyright + legal disclaimer. Right: sitemap, three columns
+   (教材/文章/其他), top-aligned with the brand row. */
 .footer-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-8); align-items: start; }
 .footer-main { min-width: 0; }
 .footer-contact { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .85rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); color: var(--muted); }
@@ -730,18 +685,28 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .resource-link.resource-link--icon .ui-icon { width: 2rem; height: 2rem; }
 .resource-link--handout { width: 5rem; height: 2.4rem; justify-content: center; gap: .1rem; padding: 0; }
 .resource-link.resource-link--handout .ui-icon { width: 1.15rem; height: 1.15rem; opacity: 1; }
-.resource-link--blank { border-color: #dfcfaf; background: #fcf8ef; color: #84693d; }
-.resource-link--blank:hover { border-color: #c9ae78; background: #f8f0df; }
-.resource-link--sol { border-color: #bfd7ca; background: #f1f8f4; color: #39715d; }
-.resource-link--sol:hover { border-color: #91bba7; background: #e4f1e9; }
-/* Dark theme: these two are hardcoded light tints (amber/green) rather than
-   theme tokens, so they need their own explicit dark pairing — dark
-   background, light text/border, same hue so 填空/解答 stay visually
-   distinct from each other. */
-html[data-theme="dark"] .resource-link--blank { border-color: #5c4a28; background: #332a18; color: #e0c68a; }
-html[data-theme="dark"] .resource-link--blank:hover { border-color: #7a6238; background: #3d331f; }
-html[data-theme="dark"] .resource-link--sol { border-color: #2f5c47; background: #16332b; color: #a3d9c0; }
-html[data-theme="dark"] .resource-link--sol:hover { border-color: #3f7a5e; background: #1c3f34; }
+/* --blank and --sol share the exact same color-mix() recipe — only the base
+   hue token differs — so 填空/解答 always carry identical contrast weight.
+   Mixing toward --surface/--text (not flat white/black) means the formula
+   self-adapts per theme, with no separate dark-mode overrides needed. */
+.resource-link--blank {
+  border-color: color-mix(in srgb, var(--tint-blank) 38%, var(--surface) 62%);
+  background: color-mix(in srgb, var(--tint-blank) 10%, var(--surface) 90%);
+  color: color-mix(in srgb, var(--tint-blank) 68%, var(--text) 32%);
+}
+.resource-link--blank:hover {
+  border-color: color-mix(in srgb, var(--tint-blank) 60%, var(--surface) 40%);
+  background: color-mix(in srgb, var(--tint-blank) 18%, var(--surface) 82%);
+}
+.resource-link--sol {
+  border-color: color-mix(in srgb, var(--tint-sol) 38%, var(--surface) 62%);
+  background: color-mix(in srgb, var(--tint-sol) 10%, var(--surface) 90%);
+  color: color-mix(in srgb, var(--tint-sol) 68%, var(--text) 32%);
+}
+.resource-link--sol:hover {
+  border-color: color-mix(in srgb, var(--tint-sol) 60%, var(--surface) 40%);
+  background: color-mix(in srgb, var(--tint-sol) 18%, var(--surface) 82%);
+}
 .article-overview { max-width: 58rem; }
 .article-overview-month { margin-bottom: var(--space-8); }
 .article-overview-month:last-child { margin-bottom: 0; }
@@ -761,7 +726,6 @@ html[data-theme="dark"] .resource-link--sol:hover { border-color: #3f7a5e; backg
 @media (max-width: 760px) {
   .header-inner { flex-wrap: wrap; gap: .3rem .65rem; width: min(100% - 1.5rem, 1240px); padding: 1.6rem 0; }
   .brand { margin-right: auto; }
-  .icon-button { margin-left: 0; }
   .main-nav { order: 3; width: 100%; overflow-x: auto; padding-bottom: .15rem; }
   .main-nav > a, .nav-menu > a { padding-inline: .6rem; font-size: .9rem; }
   .menu-panel { position: fixed; left: 1rem; right: 1rem; top: 7.75rem; width: auto; }
