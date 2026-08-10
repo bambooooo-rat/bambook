@@ -42,6 +42,7 @@ const ICONS = {
 const SITE_BASE_URL = new URL("../../", import.meta.url);
 const app = document.querySelector("#app");
 const materialMenu = document.querySelector("[data-material-menu]");
+const pageTransition = document.querySelector("#page-transition");
 const state = {
   courses: {},
   articles: [],
@@ -49,6 +50,7 @@ const state = {
   articleBodies: new Map(),
   tocScrollHandler: null,
   tocScrollRoot: null,
+  pageTransitionTimer: null,
   manifestError: "",
 };
 
@@ -63,7 +65,7 @@ async function initialise() {
 }
 
 function bindEvents() {
-  window.addEventListener("hashchange", route);
+  window.addEventListener("hashchange", navigate);
   bindThemeToggle();
 
   document.addEventListener("click", event => {
@@ -196,9 +198,33 @@ async function loadSiteManifest() {
   }
 }
 
+// .page-transition's keyframes cover the screen by 45% of .48s (216ms);
+// this fires just after, once the curtain is certainly fully closed.
+const PAGE_TRANSITION_COVER_DELAY = 230;
+
+function navigate() {
+  if (!pageTransition || prefersReducedMotion()) {
+    route();
+    return;
+  }
+  if (state.pageTransitionTimer) clearTimeout(state.pageTransitionTimer);
+  pageTransition.classList.remove("is-active");
+  void pageTransition.offsetWidth; // force reflow so the animation restarts
+  pageTransition.classList.add("is-active");
+  state.pageTransitionTimer = setTimeout(() => {
+    state.pageTransitionTimer = null;
+    route();
+  }, PAGE_TRANSITION_COVER_DELAY);
+}
+
+// Route changes triggered by hashchange play the page-transition curtain
+// (navigate() above) and defer this call until the curtain fully covers the
+// screen, so neither the DOM swap nor the scroll reset below is ever
+// visible. The initial page load calls route() directly, unanimated.
 function route() {
   clearArticleTocScroll();
   document.body.classList.remove("article-mode");
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   const hash = decodedHash();
   const [name, value = ""] = hash.split(/=(.*)/s);
 
@@ -850,10 +876,14 @@ function assetURL(path) {
   return new URL(String(path || "").replace(/^\/+/, ""), SITE_BASE_URL).href;
 }
 
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+}
+
 // Respect the OS-level reduced-motion setting for JS-driven scrolling. CSS
 // smooth scrolling is handled separately in site.css.
 function scrollBehavior() {
-  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  return prefersReducedMotion() ? "auto" : "smooth";
 }
 
 function slugifyHeading(text, index) {

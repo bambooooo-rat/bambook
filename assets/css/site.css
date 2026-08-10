@@ -117,12 +117,26 @@ input, textarea, select, [contenteditable="true"], [contenteditable="true"] * {
   user-select: text;
 }
 
-.skip-link {
-  position: fixed; left: 1rem; top: -4rem; z-index: 100;
-  padding: .6rem .9rem; border-radius: 8px; background: var(--accent); color: white;
-  transition: top .2s var(--ease-out);
+/* Page-transition curtain (assets/js/site.js runs this on every route
+   change): a full-viewport --accent block sweeps down to cover the screen,
+   the new page swaps in underneath while fully covered, then the block
+   sweeps on downward to reveal it. transform-origin flips from top to
+   bottom exactly at scaleY(1) (full coverage in both cases), so the flip
+   itself is invisible — only the direction of the next sweep changes. */
+.page-transition {
+  position: fixed; inset: 0; z-index: 500;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  pointer-events: none;
 }
-.skip-link:focus { top: 1rem; }
+.page-transition.is-active { animation: page-transition-sweep .48s var(--ease-in-out) both; }
+@keyframes page-transition-sweep {
+  0%   { transform: scaleY(0); transform-origin: top; animation-timing-function: var(--ease-out); }
+  45%  { transform: scaleY(1); transform-origin: top; }
+  55%  { transform: scaleY(1); transform-origin: bottom; animation-timing-function: var(--ease-out); }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
 
 .site-header {
   position: sticky; top: 0; z-index: 30;
