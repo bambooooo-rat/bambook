@@ -145,9 +145,9 @@ const eqPresets = [
 ];
 
 const fallbackSamples = [
-    { "name": "SQAM - Female Speech (EN).flac", "path": "sample/SQAM - Female Speech (EN).flac" },
-    { "name": "Michael Jackson - Billie Jean.flac", "path": "sample/Michael Jackson - Billie Jean.flac" },
-    { "name": "Chromatic Scale (piano).mp3", "path": "sample/Chromatic Scale (piano).mp3" }
+    { "name": "SQAM - Female Speech (EN).flac", "path": "../../../media/spectrum-samples/SQAM - Female Speech (EN).flac" },
+    { "name": "Michael Jackson - Billie Jean.flac", "path": "../../../media/spectrum-samples/Michael Jackson - Billie Jean.flac" },
+    { "name": "Chromatic Scale (piano).mp3", "path": "../../../media/spectrum-samples/Chromatic Scale (piano).mp3" }
 ];
 
 function initAudio() {

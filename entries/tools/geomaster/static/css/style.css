@@ -1,34 +1,35 @@
+/* Palette baseline comes from tokens.css (shared with the main Bambook
+   site and the other standalone tools); the values below adapt those
+   shared tokens to this page's own component names. A few structural
+   shadows and map-specific accent colors stay local — they're this page's
+   own, not part of the shared design system. */
 :root {
-    /* --- 色彩系統 (Color System) --- */
-    /* 背景色 */
-    --bg-body: #f0f0f0;            /* 頁面大背景 */
-    --bg-sidebar: #f8f9fa;         /* 側邊欄背景 */
-    --bg-white: #ffffff;           /* 卡片/區塊白底 */
-    --bg-hover: #f1f1f1;           /* 通用 Hover 淺灰 */
-    --bg-active: #e3f2fd;          /* 選項選中背景 */
-    --bg-header-dark: #333333;     /* 深色 Header 背景 */
+    --bg-body: var(--surface-soft);
+    --bg-sidebar: var(--surface-soft);
+    --bg-white: var(--surface);
+    --bg-hover: color-mix(in srgb, var(--surface) 92%, var(--text) 8%);
+    --bg-active: var(--accent-soft);
+    --bg-header-dark: var(--text);
 
-    /* 文字色 */
-    --text-primary: #333333;       /* 主要文字 */
-    --text-secondary: #444444;     /* 次要文字 */
-    --text-light: #ffffff;         /* 反白文字 (Header用) */
-    --text-muted: #888888;         /* 標籤/弱化文字 */
-    --text-placeholder: #bbbbbb;   /* 佔位符或極淡文字 */
+    --text-primary: var(--text);
+    --text-secondary: color-mix(in srgb, var(--text) 60%, var(--muted) 40%);
+    --text-light: #ffffff;
+    --text-muted: var(--muted);
+    --text-placeholder: color-mix(in srgb, var(--muted) 50%, var(--surface) 50%);
 
-    /* 邊框與線條 */
-    --border-color: #dddddd;       /* 通用邊框 */
-    --border-light: #f5f5f5;       /* 淺色分隔線 */
+    --border-color: var(--border);
+    --border-light: color-mix(in srgb, var(--border) 50%, var(--surface) 50%);
 
-    /* 互動與強調色 */
-    --color-accent: #2196f3;       /* 主強調色 (藍) */
-    --color-accent-dark: #0056b3;  /* 深藍 (Hover用，雖原檔未明確定義，預留) */
-    --color-map-highlight: #ff5722;/* 地圖高亮色 */
-    --color-map-hover: #e64a19;    /* 地圖 Hover 色 */
-    --color-close-hover: #d32f2f;  /* 關閉按鈕警示色 */
-    
-    /* 陰影 (保持原樣，設為變數方便微調) */
+    --color-accent: var(--accent);
+    --color-accent-dark: var(--accent-strong);
+    --color-map-highlight: #ff5722;
+    --color-map-hover: #e64a19;
+    --color-close-hover: var(--danger);
+
     --shadow-sidebar: 4px 0 15px rgba(0,0,0,0.15);
     --shadow-card: 0 10px 25px rgba(0,0,0,0.3);
+
+    --font-main: var(--font-sans);
 }
 
 /* =========================================

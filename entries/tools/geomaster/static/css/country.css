@@ -1,26 +1,29 @@
+/* Palette baseline comes from tokens.css (shared with the main Bambook
+   site and style.css); a couple of structural shadows stay local. */
 :root {
-    /* --- 色彩系統 (Country Profile 專用擴充) --- */
-    --bg-body-profile: #f0f2f5;    /* Profile 頁面專用背景 */
-    --bg-white: #ffffff;
-    --bg-light-gray: #f7f9fa;      /* 徽章背景 */
-    --bg-hover-btn: #d8dadf;
-    --bg-btn: #e4e6eb;
+    --bg-body-profile: var(--surface-soft);
+    --bg-white: var(--surface);
+    --bg-light-gray: var(--surface-soft);
+    --bg-hover-btn: color-mix(in srgb, var(--surface-soft) 80%, var(--text) 20%);
+    --bg-btn: var(--surface-soft);
 
-    --text-primary: #333333;
-    --text-title: #1a1a1a;
-    --text-secondary: #555555;
-    --text-muted: #888888;
-    --text-code: #57606a;
+    --text-primary: var(--text);
+    --text-title: var(--text);
+    --text-secondary: color-mix(in srgb, var(--text) 60%, var(--muted) 40%);
+    --text-muted: var(--muted);
+    --text-code: var(--muted);
 
-    --border-color: #e1e4e8;
-    --border-light: #eeeeee;
+    --border-color: var(--border);
+    --border-light: color-mix(in srgb, var(--border) 50%, var(--surface) 50%);
 
-    --color-accent-blue: #0969da;  /* 連結/邊框 Hover */
-    --color-accent-red: #d9534f;   /* 特殊字符強調色 */
-    --color-header-blue: #2c3e50;  /* 標題深藍 */
+    --color-accent-blue: var(--accent);
+    --color-accent-red: var(--danger);
+    --color-header-blue: var(--accent-strong);
 
     --shadow-card: 0 4px 12px rgba(0,0,0,0.08);
     --shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
+
+    --font-main: var(--font-sans);
 }
 
 /* 基礎設定 */

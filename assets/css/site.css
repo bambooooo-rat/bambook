@@ -1,17 +1,8 @@
+/* Color/spacing/font tokens live in tokens.css (shared with the standalone
+   tools under entries/tools/); this file only adds the tokens that are
+   specific to the main site itself. */
 :root {
   color-scheme: light;
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --surface-soft: #f2f4f6;
-  --text: #1a1a1a;
-  --muted: #666666;
-  --border: #d9d9d9;
-  --accent: #3fa9f5;
-  --accent-strong: #1c86d9;
-  --accent-soft: #e8f4fe;
-  --danger: #b42318;
-  --shadow: 0 16px 42px rgba(20, 20, 20, .08);
-  --radius: 16px;
 
   /* Base hue for 填空/解答 download buttons (see .resource-link--blank/--sol
      below) — border/background/text/hover shades are derived from these via
@@ -24,27 +15,6 @@
   --markdown-landscape-image-height: 18rem;
   --markdown-portrait-image-width: 18rem;
   --markdown-square-image-width: 20rem;
-  --font-sans: "Noto Sans TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "Noto Sans Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-
-  /* Spacing scale — the home page layout is built entirely from these.
-     Distance signals relatedness: the bigger the jump between tiers, the
-     less related the two things next to it are. */
-  --space-1: .25rem;  /*  4px — glued together (icon + its label) */
-  --space-2: .5rem;   /*  8px — tight: title ↔ its own description */
-  --space-3: .75rem;  /* 12px — snug: a line and its direct annotation */
-  --space-4: 1rem;    /* 16px — related lines within one text cluster */
-  --space-5: 1.5rem;  /* 24px — one list row's internal breathing room */
-  --space-6: 2rem;    /* 32px — a list's header to its own list */
-  --space-7: 3rem;    /* 48px — hero's internal top-level groups */
-  --space-8: 4rem;    /* 64px — page-opening weight */
-  --space-9: 6rem;    /* 96px — between unrelated sections (教材/文章/工具) */
-
-  --font-xs: .8rem;    /* 12.8px — eyebrow, meta, tags */
-  --font-sm: 1rem;     /* 16px   — body copy, row-desc */
-  --font-lg: 1.563rem; /* 25px   — block h2 */
 }
 
 /* Dark theme — a manual toggle only (see #theme-toggle in the header), not

@@ -1,22 +1,24 @@
+/* Palette/font baseline comes from tokens.css (shared with the main
+   Bambook site and the other standalone tools); two structural shadows
+   stay local. */
 :root {
-    --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-main: var(--font-sans);
 
-    /* --- 色彩系統 --- */
-    --bg-body: #f0f2f5;
-    --bg-white: #ffffff;
-    --bg-light-gray: #f7f9fa;
-    --bg-hover: #f1f1f1;
-    
-    --text-primary: #333333;
-    --text-title: #1a1a1a;
-    --text-secondary: #555555;
-    --text-muted: #888888;
-    
-    --border-color: #e1e4e8;
-    
-    --color-accent: #2196f3;
-    --color-header-blue: #2c3e50;
-    --color-accent-red: #d9534f;
+    --bg-body: var(--surface-soft);
+    --bg-white: var(--surface);
+    --bg-light-gray: var(--surface-soft);
+    --bg-hover: color-mix(in srgb, var(--surface) 92%, var(--text) 8%);
+
+    --text-primary: var(--text);
+    --text-title: var(--text);
+    --text-secondary: color-mix(in srgb, var(--text) 60%, var(--muted) 40%);
+    --text-muted: var(--muted);
+
+    --border-color: var(--border);
+
+    --color-accent: var(--accent);
+    --color-header-blue: var(--accent-strong);
+    --color-accent-red: var(--danger);
 
     --shadow-card: 0 4px 12px rgba(0,0,0,0.08);
     --shadow-hover: 0 6px 16px rgba(0,0,0,0.12);

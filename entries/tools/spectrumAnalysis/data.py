@@ -13,7 +13,7 @@ except ImportError:
 # 忽略 librosa 讀取 mp3 時的潛在警告
 warnings.filterwarnings("ignore", category=UserWarning)
 
-SAMPLE_DIR = "sample"
+SAMPLE_DIR = "../../../media/spectrum-samples"
 OUTPUT_JSON = "samples.json"
 AUDIO_EXTS = {".mp3", ".wav", ".ogg", ".flac", ".aac", ".m4a"}
 
