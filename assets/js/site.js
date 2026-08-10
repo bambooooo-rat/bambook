@@ -51,6 +51,8 @@ const state = {
   tocScrollHandler: null,
   tocScrollRoot: null,
   pageTransitionTimer: null,
+  forwardClickPending: false,
+  forwardClickResetTimer: null,
   manifestError: "",
 };
 
@@ -65,12 +67,18 @@ async function initialise() {
 }
 
 function bindEvents() {
-  window.addEventListener("hashchange", navigate);
+  window.addEventListener("hashchange", handleHashChange);
   bindThemeToggle();
 
   document.addEventListener("click", event => {
     const target = event.target instanceof Element ? event.target : event.target?.parentElement;
     if (!target) return;
+
+    // Marks the hashchange this click is about to cause (if any) as
+    // link-driven forward navigation, so handleHashChange() knows to play
+    // the curtain for it — see markForwardClick() below for why hashchange
+    // alone can't tell a link click apart from back/forward navigation.
+    if (target.closest("a[href^='#']")) markForwardClick();
 
     if (target.closest("[data-toggle-all-months]")) {
       const groups = Array.from(document.querySelectorAll(".sidebar-month-group"));
@@ -78,6 +86,14 @@ function bindEvents() {
       groups.forEach(group => {
         group.open = shouldOpen;
       });
+      return;
+    }
+
+    const summary = target.closest("summary");
+    const details = summary?.closest(".resource-details");
+    if (summary && details && !prefersReducedMotion()) {
+      event.preventDefault();
+      toggleAnimatedDetails(details);
       return;
     }
   });
@@ -89,6 +105,52 @@ function bindEvents() {
       document.activeElement.blur();
     }
   });
+}
+
+// Drives .resource-details' (投影片/練習與資源 on course pages) open/close
+// via WAAPI instead of the browser's instant native <details> toggle —
+// ::details-content would do this in pure CSS, but its browser support is
+// still too thin to rely on alone. Measures the collapsed height from the
+// <summary> and the expanded height from the details element itself, then
+// animates block-size between them; native <details> semantics (the "open"
+// attribute, keyboard toggling) still drive the actual state.
+const detailsAnimations = new WeakMap();
+// While closing, details.open only flips to false once the animation
+// finishes (so the content stays visible while it collapses) — this tracks
+// the in-flight target state separately, so a rapid second click during a
+// close reads the pending direction instead of the still-stale attribute.
+const detailsTargetState = new WeakMap();
+const DETAILS_ANIMATION_MS = 180;
+
+function toggleAnimatedDetails(details) {
+  const currentlyOpen = detailsTargetState.has(details) ? detailsTargetState.get(details) : details.open;
+  const opening = !currentlyOpen;
+  detailsTargetState.set(details, opening);
+  detailsAnimations.get(details)?.cancel();
+
+  const summary = details.querySelector(":scope > summary");
+  const closedSize = summary ? summary.getBoundingClientRect().height : 0;
+  if (opening) details.open = true;
+  const openSize = details.getBoundingClientRect().height;
+  const keyframes = opening
+    ? [{ blockSize: `${closedSize}px` }, { blockSize: `${openSize}px` }]
+    : [{ blockSize: `${openSize}px` }, { blockSize: `${closedSize}px` }];
+
+  details.style.overflow = "hidden";
+  const animation = details.animate(keyframes, { duration: DETAILS_ANIMATION_MS, easing: easeOutValue() });
+  detailsAnimations.set(details, animation);
+  animation.finished
+    .then(() => { details.open = opening; })
+    .catch(() => {})
+    .finally(() => {
+      details.style.overflow = "";
+      detailsAnimations.delete(details);
+      detailsTargetState.delete(details);
+    });
+}
+
+function easeOutValue() {
+  return getComputedStyle(document.documentElement).getPropertyValue("--ease-out").trim() || "ease-out";
 }
 
 // Light is always the default (no OS-preference auto-detection). A saved
@@ -201,6 +263,34 @@ async function loadSiteManifest() {
 // .page-transition's keyframes cover the screen by 45% of .48s (216ms);
 // this fires just after, once the curtain is certainly fully closed.
 const PAGE_TRANSITION_COVER_DELAY = 230;
+
+// Browsers fire "popstate" for every fragment navigation — a plain forward
+// link click included, not just back/forward — so it can't tell the two
+// apart. Only clicking one of our own href="#..." links can, so bindEvents()
+// marks that directly; this fires just before the hashchange it causes (if
+// any — a click that doesn't actually change the hash never gets one, which
+// is what the reset timer cleans up). Anything else that changes the hash
+// (the browser's back/forward button, iOS Safari's edge-swipe-back gesture)
+// arrives with no click to mark, so it skips the curtain — those already
+// play their own transition, and stacking ours on top reads as double
+// motion.
+function markForwardClick() {
+  state.forwardClickPending = true;
+  clearTimeout(state.forwardClickResetTimer);
+  state.forwardClickResetTimer = setTimeout(() => {
+    state.forwardClickPending = false;
+  }, 50);
+}
+
+function handleHashChange() {
+  if (!state.forwardClickPending) {
+    route();
+    return;
+  }
+  state.forwardClickPending = false;
+  clearTimeout(state.forwardClickResetTimer);
+  navigate();
+}
 
 function navigate() {
   if (!pageTransition || prefersReducedMotion()) {
@@ -735,6 +825,17 @@ function articleOverviewByMonth() {
     </section>`).join("")}</div>`;
 }
 
+// scrollRoot (#content-scroll) has no positioned ancestor of its own, so a
+// heading's .offsetTop resolves against <body> instead — silently including
+// the sticky header's height — and overshoots the scroll, landing the
+// heading behind the header. Comparing current getBoundingClientRect()
+// positions is immune to that: it reflects each element's real on-screen
+// position under whatever scroll state already applies.
+function scrollTargetIntoContainer(scrollRoot, target, padding = 24) {
+  const delta = target.getBoundingClientRect().top - scrollRoot.getBoundingClientRect().top;
+  scrollRoot.scrollTo({ top: Math.max(scrollRoot.scrollTop + delta - padding, 0), behavior: scrollBehavior() });
+}
+
 function buildArticleTocForPage(view) {
   const toc = document.querySelector("[data-article-toc]");
   const body = view?.querySelector(".article-body");
@@ -776,16 +877,10 @@ function buildArticleTocForPage(view) {
   };
   const updateActive = () => {
     let current = headings[0];
-    if (scrollRoot === window) {
-      headings.forEach(heading => {
-        if (heading.getBoundingClientRect().top <= 110) current = heading;
-      });
-    } else {
-      const anchorLine = scrollRoot.scrollTop + 36;
-      headings.forEach(heading => {
-        if (heading.offsetTop <= anchorLine) current = heading;
-      });
-    }
+    const anchorLine = scrollRoot === window ? 110 : scrollRoot.getBoundingClientRect().top + 36;
+    headings.forEach(heading => {
+      if (heading.getBoundingClientRect().top <= anchorLine) current = heading;
+    });
     setActive(current.id);
   };
 
@@ -794,7 +889,7 @@ function buildArticleTocForPage(view) {
       const target = document.getElementById(link.dataset.tocTarget);
       if (!target) return;
       if (scrollRoot === window) target.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
-      else scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: scrollBehavior() });
+      else scrollTargetIntoContainer(scrollRoot, target);
       setActive(target.id);
     });
   });
@@ -1015,7 +1110,7 @@ function bindMarkdownFootnotes(root) {
     event.preventDefault();
     const scrollRoot = document.querySelector("#content-scroll");
     if (scrollRoot) {
-      scrollRoot.scrollTo({ top: Math.max(target.offsetTop - 24, 0), behavior: scrollBehavior() });
+      scrollTargetIntoContainer(scrollRoot, target);
     } else {
       target.scrollIntoView({ behavior: scrollBehavior(), block: "center" });
     }
