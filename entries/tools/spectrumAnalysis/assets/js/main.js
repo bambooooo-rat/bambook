@@ -47,6 +47,25 @@ const sampleListContainer = document.getElementById('sampleListContainer');
 const iconPlay = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
 const iconPause = `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
+// 頻譜／波形繪製改用 bambook 共用色票（單色系，layer 靠深淺/透明度區分，不再靠
+// 每個頻段各自的彩色識別——頻段改用文字標籤與畫面位置區分）。一次讀取即可，
+// 本頁只有單一淺色主題，不需要監聽切換。
+const rootStyle = getComputedStyle(document.documentElement);
+const T = {
+    accent: rootStyle.getPropertyValue('--accent').trim(),
+    accentStrong: rootStyle.getPropertyValue('--accent-strong').trim(),
+    border: rootStyle.getPropertyValue('--border').trim(),
+    muted: rootStyle.getPropertyValue('--muted').trim(),
+    text: rootStyle.getPropertyValue('--text').trim(),
+    surface: rootStyle.getPropertyValue('--surface').trim(),
+};
+
+// 產生「顏色以指定百分比混合透明」的 CSS 字串，供 canvas fillStyle/strokeStyle
+// 使用（Canvas 2D 的 fillStyle 接受任何合法 CSS <color>，包含 color-mix()）。
+function color_mix(color, percent) {
+    return `color-mix(in srgb, ${color} ${percent}%, transparent)`;
+}
+
 let audioCtx;
 let sourceNode;
 let analyser;
@@ -186,14 +205,26 @@ function initAudio() {
     resizeCanvas();
 }
 
+// HiDPI：backing store 依 devicePixelRatio 放大，畫面座標透過 context transform
+// 換算回 CSS px，drawSpectrum() 與滑鼠命中測試因此都維持在 canvas.clientWidth/
+// clientHeight 的座標空間下運算，不受背後實際像素數影響。
 function resizeCanvas() {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
     const rect = canvas.getBoundingClientRect();
     if (rect.width > 0 && rect.height > 0) {
-        canvas.width = rect.width;
-        canvas.height = rect.height;
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        canvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 }
-window.addEventListener('resize', resizeCanvas);
+
+// 視窗尺寸變動時，除了重設頻譜畫布，若波形已經算好資料也一併重繪，避免載入
+// 音軌後再縮放視窗／旋轉手機導致波形被拉伸變形（先前版本未連動重繪）。
+function handleWindowResize() {
+    resizeCanvas();
+    if (lastPeaksData) renderPeaksToWaveform(lastPeaksData);
+}
+window.addEventListener('resize', handleWindowResize);
 
 audioDropdownBtn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -209,7 +240,7 @@ document.addEventListener('click', (e) => {
 function renderSampleList(samples) {
     sampleListContainer.innerHTML = '';
     if (samples.length === 0) {
-        sampleListContainer.innerHTML = '<div class="audio-dropdown-item" style="color:var(--text-muted); font-size: 0.8rem; pointer-events:none;">無內建音頻</div>';
+        sampleListContainer.innerHTML = '<div class="audio-dropdown-item" style="color:var(--text-muted); font-size: var(--font-xs); pointer-events:none;">無內建音頻</div>';
         return;
     }
     samples.sort((a, b) => a.name.localeCompare(b.name));
@@ -244,7 +275,7 @@ function formatTime(seconds) {
 // ★ 新增 sampleData 參數以接收後端預先算好的資料
 function loadAudio(source, name, isFile = true, sampleData = null) {
     trackNameEl.innerText = name;
-    trackNameEl.style.color = 'var(--text-title)';
+    trackNameEl.style.color = 'var(--text-primary)';
     playPauseBtn.disabled = false;
     playPauseBtn.innerHTML = iconPlay;
 
@@ -316,16 +347,13 @@ function clearPresetActive() {
     presetDesc.innerText = '拖曳畫布控制點，或調整 EQ 旋鈕';
 }
 
-function applyPreset(presetIndex) {
-    document.querySelectorAll('.custom-dropdown-item').forEach((el, idx) => el.classList.toggle('active', idx === presetIndex));
-    presetDropdownSelected.innerText = eqPresets[presetIndex].name;
-    presetDropdownSelected.style.color = 'var(--text-title)';
-    presetDesc.innerText = eqPresets[presetIndex].desc;
-    
-    const presetData = eqPresets[presetIndex].bands;
+// 共用：把一組頻段資料（preset 或預設值）套用到 band 狀態、BiquadFilter、旋鈕 UI
+// 與 Bell/HPF-LPF 切換鈕上。applyPreset()／resetBtn 的點擊處理原本各自重複同一段
+// 套用邏輯，這裡合併成單一函式，行為不變。
+function applyBandsData(bandsData) {
     eqBands.forEach((band, index) => {
-        const pd = presetData[index];
-        band.type = pd.type; band.freq = pd.freq; band.q = pd.q; band.gain = pd.gain;
+        const bd = bandsData[index];
+        band.type = bd.type; band.freq = bd.freq; band.q = bd.q; band.gain = bd.gain;
         if (filters[index]) {
             filters[index].type = band.type;
             filters[index].frequency.value = band.freq;
@@ -348,82 +376,88 @@ function applyPreset(presetIndex) {
             else { gainKnobWrapper.style.opacity = '0.3'; gainKnobWrapper.style.pointerEvents = 'none'; }
         }
     });
-    updateStaticAutoGain(); 
+    updateStaticAutoGain();
 }
 
-// ★ 新增：直接從 JSON 資料渲染波形與計算 Gain (極速，免 decode)
-function applyPrecalculatedData(sampleData) {
-    // 1. 設定 Base Gain (使用預先計算好的 RMS)
-    const trackRMS = sampleData.rms;
+function applyPreset(presetIndex) {
+    document.querySelectorAll('.custom-dropdown-item').forEach((el, idx) => el.classList.toggle('active', idx === presetIndex));
+    presetDropdownSelected.innerText = eqPresets[presetIndex].name;
+    presetDropdownSelected.style.color = 'var(--text-primary)';
+    presetDesc.innerText = eqPresets[presetIndex].desc;
+    applyBandsData(eqPresets[presetIndex].bands);
+}
+
+function applyAutoGain(trackRMS) {
     const targetRMS = 0.05;
-    
-    if (trackRMS > 0.0001) trackBaseGain = Math.max(0.1, Math.min(targetRMS / trackRMS, 5.0)); 
+    if (trackRMS > 0.0001) trackBaseGain = Math.max(0.1, Math.min(targetRMS / trackRMS, 5.0));
     else trackBaseGain = 1.0;
     updateStaticAutoGain();
+}
 
-    // 2. 準備繪製波形
-    const w = waveformWrapper.clientWidth * 2; 
-    const h = waveformWrapper.clientHeight * 2;
+// 快取最後一次算好的波形峰值（[min,max] 陣列），resize 時可直接重繪，不必
+// 重新 decode／重新 fetch。
+let lastPeaksData = null;
+
+// 共用的波形繪製函式：接受峰值陣列，把它映射到目前的 waveform 寬度上畫出來。
+// 原本使用者上傳檔案（renderWaveformBuffer）與內建 sample（applyPrecalculatedData）
+// 各自有一份幾乎相同的繪製迴圈，這裡合併成一份，行為不變；同時改用
+// devicePixelRatio 取代原本寫死的 2 倍，並把結果快取起來供 resize 時重繪。
+function renderPeaksToWaveform(peaks) {
+    lastPeaksData = peaks;
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const w = Math.round(waveformWrapper.clientWidth * dpr);
+    const h = Math.round(waveformWrapper.clientHeight * dpr);
+    if (w === 0 || h === 0) return;
+
     waveformBufferCanvas.width = w; waveformBufferCanvas.height = h;
     waveformCanvas.width = w; waveformCanvas.height = h;
-    
+
     waveformBufferCtx.clearRect(0, 0, w, h);
-    waveformBufferCtx.fillStyle = '#cbd5e1'; 
-    
-    const peaks = sampleData.peaks;
+    waveformBufferCtx.fillStyle = T.border;
+
     const numPeaks = peaks.length;
     const amp = h / 2;
-
-    // 將 1000 個點的資料映射到 Canvas 寬度上
     for (let i = 0; i < w; i++) {
         const peakIndex = Math.floor((i / w) * numPeaks);
         const [min, max] = peaks[peakIndex] || [0.0, 0.0];
-        
-        const y = (1 + min) * amp; 
-        const height = Math.max(1, (max - min) * amp); 
+        const y = (1 + min) * amp;
+        const height = Math.max(1, (max - min) * amp);
         waveformBufferCtx.fillRect(i, y, 1, height);
     }
-    
-    // 3. UI 狀態更新
+
     isWaveformReady = true;
     waveformWrapper.classList.add('loaded');
     waveformLoading.classList.remove('active');
-    drawWaveformProgress(); 
+    drawWaveformProgress();
 }
 
-// (原有的客戶端 decode 計算邏輯，保留給使用者上傳檔案時使用)
+// 內建 sample：直接套用後端預先算好的 rms／peaks，免 decode，極速。
+function applyPrecalculatedData(sampleData) {
+    applyAutoGain(sampleData.rms);
+    renderPeaksToWaveform(sampleData.peaks);
+}
+
+// 使用者上傳檔案：客戶端 decode 後，取 1000 個取樣點的峰值，與內建 sample
+// 的資料格式一致，共用同一份繪製函式。
 function renderWaveformBuffer(audioBuffer) {
-    const rawData = audioBuffer.getChannelData(0); 
+    const rawData = audioBuffer.getChannelData(0);
     let sumSquares = 0;
     for (let i = 0; i < rawData.length; i++) sumSquares += rawData[i] * rawData[i];
-    const trackRMS = Math.sqrt(sumSquares / rawData.length);
-    const targetRMS = 0.05; 
-    
-    if (trackRMS > 0.0001) trackBaseGain = Math.max(0.1, Math.min(targetRMS / trackRMS, 5.0)); 
-    else trackBaseGain = 1.0;
-    updateStaticAutoGain();
+    applyAutoGain(Math.sqrt(sumSquares / rawData.length));
 
-    const w = waveformWrapper.clientWidth * 2; 
-    const h = waveformWrapper.clientHeight * 2;
-    waveformBufferCanvas.width = w; waveformBufferCanvas.height = h;
-    waveformCanvas.width = w; waveformCanvas.height = h;
-    const step = Math.ceil(rawData.length / w);
-    const amp = h / 2;
-    waveformBufferCtx.clearRect(0, 0, w, h);
-    waveformBufferCtx.fillStyle = '#cbd5e1'; 
-    for (let i = 0; i < w; i++) {
+    const numPoints = 1000;
+    const step = Math.ceil(rawData.length / numPoints);
+    const peaks = new Array(numPoints);
+    for (let i = 0; i < numPoints; i++) {
         let min = 1.0; let max = -1.0;
         for (let j = 0; j < step; j++) {
             const datum = rawData[(i * step) + j];
+            if (datum === undefined) continue;
             if (datum < min) min = datum; if (datum > max) max = datum;
         }
-        const y = (1 + min) * amp; const height = Math.max(1, (max - min) * amp); 
-        waveformBufferCtx.fillRect(i, y, 1, height);
+        peaks[i] = (max >= min) ? [min, max] : [0, 0];
     }
-    isWaveformReady = true;
-    waveformWrapper.classList.add('loaded');
-    waveformLoading.classList.remove('active');
-    drawWaveformProgress(); 
+    renderPeaksToWaveform(peaks);
 }
 
 function drawWaveformProgress() {
@@ -436,9 +470,9 @@ function drawWaveformProgress() {
     if (audioPlayer.duration) {
         const progress = audioPlayer.currentTime / audioPlayer.duration;
         ctx.globalCompositeOperation = 'source-atop';
-        ctx.fillStyle = '#2196f3'; ctx.fillRect(0, 0, w * progress, h);
+        ctx.fillStyle = T.accent; ctx.fillRect(0, 0, w * progress, h);
         ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = '#0d47a1'; ctx.fillRect(w * progress, 0, 2, h);
+        ctx.fillStyle = T.accentStrong; ctx.fillRect(w * progress, 0, 2, h);
     }
 }
 
@@ -493,20 +527,9 @@ previewBtn.addEventListener('click', () => {
 
 resetBtn.addEventListener('click', () => {
     clearPresetActive(); presetDesc.innerText = '已重設EQ參數';
-    eqBands.forEach((band, index) => {
-        const def = defaultEqBands[index];
-        band.type = def.type; band.freq = def.freq; band.q = def.q; band.gain = def.gain;
-        if (filters[index]) { filters[index].type = band.type; filters[index].frequency.value = band.freq; filters[index].Q.value = band.q; filters[index].gain.value = band.gain; }
-        knobControllers[index].freq.updateUI(band.freq); knobControllers[index].gain.updateUI(band.gain); knobControllers[index].q.updateUI(band.q);
-        if (band.toggleType) {
-            const switchOptPeaking = document.querySelector(`#type-switch-${index} .filter-switch-opt[data-type="peaking"]`);
-            const switchOptPass = document.querySelector(`#type-switch-${index} .filter-switch-opt[data-type="${band.toggleType}"]`);
-            if (switchOptPeaking && switchOptPass) { switchOptPeaking.classList.add('active'); switchOptPass.classList.remove('active'); }
-            const gainKnobWrapper = document.getElementById(`knob-gain-${index}`);
-            gainKnobWrapper.style.opacity = '1'; gainKnobWrapper.style.pointerEvents = 'auto';
-        }
-    });
-    updateStaticAutoGain();
+    // defaultEqBands 的可切換頻段（band1/band5）預設值本來就是 'peaking'，
+    // 套用邏輯與 applyBandsData 完全一致，行為不變。
+    applyBandsData(defaultEqBands);
 });
 
 scaleBtn.addEventListener('click', () => {
@@ -576,9 +599,9 @@ function createPEQUI() {
     eqContainer.innerHTML = '';
     eqBands.forEach((band, index) => {
         const card = document.createElement('div');
-        card.className = 'band-card'; card.style.setProperty('--band-color', band.color);
+        card.className = 'band-card';
         const isPeaking = band.type === 'peaking'; const passLabel = band.toggleType === 'highpass' ? 'HPF' : 'LPF';
-        const typeToggleHTML = band.toggleType 
+        const typeToggleHTML = band.toggleType
             ? `<div class="filter-switch" id="type-switch-${index}">
                     <div class="filter-switch-opt ${isPeaking ? 'active' : ''}" data-type="peaking">Bell</div>
                     <div class="filter-switch-opt ${!isPeaking ? 'active' : ''}" data-type="${band.toggleType}">${passLabel}</div>
@@ -588,7 +611,7 @@ function createPEQUI() {
             <div class="band-header"> <span class="band-title">${band.label}</span> ${typeToggleHTML} </div>
             <div class="knobs-container">
                 <div class="knob-wrapper" id="knob-freq-${index}"> <div class="knob-label">Freq</div> <div class="knob-base"> <div class="knob-dial"> <div class="knob-indicator"></div> </div> </div> <div class="knob-val"></div> </div>
-                <div class="knob-wrapper" id="knob-gain-${index}" style="${!isPeaking ? 'opacity: 0.3; pointer-events: none;' : ''}"> <div class="knob-label">Gain</div> <div class="knob-base"> <div class="knob-dial"> <div class="knob-indicator"></div> </div> </div> <div class="knob-val" style="color: ${band.color};"></div> </div>
+                <div class="knob-wrapper" id="knob-gain-${index}" style="${!isPeaking ? 'opacity: 0.3; pointer-events: none;' : ''}"> <div class="knob-label">Gain</div> <div class="knob-base"> <div class="knob-dial"> <div class="knob-indicator"></div> </div> </div> <div class="knob-val"></div> </div>
                 <div class="knob-wrapper" id="knob-q-${index}"> <div class="knob-label">Q</div> <div class="knob-base"> <div class="knob-dial"> <div class="knob-indicator"></div> </div> </div> <div class="knob-val"></div> </div>
             </div>
         `;
@@ -629,53 +652,56 @@ function getEventPos(canvas, evt) {
     return { x: clientX - rect.left, y: clientY - rect.top }; 
 }
 
+// 共用：找出離某個畫面座標最近（在 hitRadius 內）的頻段控制點索引，找不到回傳 -1。
+// onCanvasPointerDown／onCanvasPointerMove 原本各自有一份幾乎一樣的命中測試迴圈，
+// 這裡合併成一份。座標一律採用 canvas.clientWidth/clientHeight（CSS px 座標空間），
+// 與 resizeCanvas() 的 devicePixelRatio transform 搭配一致。
+function findBandAtPos(pos, hitRadius) {
+    for (let i = 0; i < eqBands.length; i++) {
+        const px = freqToX(eqBands[i].freq, canvas.clientWidth);
+        const py = gainToY(eqBands[i].gain, canvas.clientHeight);
+        if (Math.hypot(pos.x - px, pos.y - py) <= hitRadius) return i;
+    }
+    return -1;
+}
+
 function onCanvasPointerDown(e) {
     const isTouch = e.type.startsWith('touch');
     const hitRadius = isTouch ? 40 : 15; // 手指觸控範圍加大至 40px
-    const pos = getEventPos(canvas, e); 
-    
-    for (let i = 0; i < eqBands.length; i++) { 
-        const px = freqToX(eqBands[i].freq, canvas.width); 
-        const py = gainToY(eqBands[i].gain, canvas.height); 
-        if (Math.hypot(pos.x - px, pos.y - py) <= hitRadius) { 
-            draggingBandIndex = i; 
-            if(e.cancelable) e.preventDefault(); // 確實抓到點時，才鎖住網頁防止滾動
-            break; 
-        } 
-    } 
+    const pos = getEventPos(canvas, e);
+
+    const hit = findBandAtPos(pos, hitRadius);
+    if (hit !== -1) {
+        draggingBandIndex = hit;
+        if (e.cancelable) e.preventDefault(); // 確實抓到點時，才鎖住網頁防止滾動
+    }
 }
 
 function onCanvasPointerMove(e) {
-    if (activeKnob) return; 
+    if (activeKnob) return;
     if (draggingBandIndex !== -1 && e.cancelable) e.preventDefault(); // 拖曳點的過程中持續鎖定滾動
 
-    const pos = getEventPos(canvas, e); 
+    const pos = getEventPos(canvas, e);
     currentMousePos = pos;
-    
+
     const isTouch = e.type.startsWith('touch');
     const hitRadius = isTouch ? 40 : 15;
-    hoverBandIndex = -1; 
-    
-    for (let i = 0; i < eqBands.length; i++) { 
-        const px = freqToX(eqBands[i].freq, canvas.width); 
-        const py = gainToY(eqBands[i].gain, canvas.height); 
-        if (Math.hypot(pos.x - px, pos.y - py) <= hitRadius) { hoverBandIndex = i; break; } 
-    }
-    
-    hoverRegionIndex = -1; 
+    hoverBandIndex = findBandAtPos(pos, hitRadius);
+
+    hoverRegionIndex = -1;
     // 行動裝置不顯示區域 Hover 提示以保持乾淨
-    if (pos.y <= 24 && draggingBandIndex === -1 && !isTouch) { 
-        const freqAtMouse = xToFreq(pos.x, canvas.width); 
-        hoverRegionIndex = freqRegions.findIndex(r => freqAtMouse >= r.min && freqAtMouse <= r.max); 
+    if (pos.y <= 24 && draggingBandIndex === -1 && !isTouch) {
+        const freqAtMouse = xToFreq(pos.x, canvas.clientWidth);
+        hoverRegionIndex = freqRegions.findIndex(r => freqAtMouse >= r.min && freqAtMouse <= r.max);
     }
-    
-    if (hoverRegionIndex !== -1) canvas.style.cursor = 'help'; 
-    else if (hoverBandIndex !== -1 || draggingBandIndex !== -1) canvas.style.cursor = (draggingBandIndex !== -1) ? 'grabbing' : 'grab'; 
+
+    if (hoverRegionIndex !== -1) canvas.style.cursor = 'help';
+    else if (hoverBandIndex !== -1 || draggingBandIndex !== -1) canvas.style.cursor = (draggingBandIndex !== -1) ? 'grabbing' : 'grab';
     else canvas.style.cursor = 'crosshair';
-    
+
     if (draggingBandIndex !== -1) {
-        clearPresetActive(); 
-        let newFreq = xToFreq(pos.x, canvas.width); let newGain = yToGain(pos.y, canvas.height);
+        clearPresetActive();
+        let newFreq = xToFreq(pos.x, canvas.clientWidth); let newGain = yToGain(pos.y, canvas.clientHeight);
         const isPassFilter = eqBands[draggingBandIndex].type === 'highpass' || eqBands[draggingBandIndex].type === 'lowpass';
         
         newFreq = Math.max(MIN_FREQ, Math.min(MAX_FREQ, newFreq)); newGain = Math.max(-15, Math.min(15, newGain));
@@ -724,15 +750,23 @@ function drawSpectrum() {
     requestAnimationFrame(drawSpectrum);
     if (isWaveformReady && !audioPlayer.paused) drawWaveformProgress();
 
-    const width = canvas.width; const height = canvas.height; if (width === 0 || height === 0) return; 
+    // 座標一律採用 CSS px 空間（canvas.clientWidth/clientHeight）；HiDPI 的實際
+    // backing store放大由 resizeCanvas() 的 context transform 負責換算。
+    const width = canvas.clientWidth; const height = canvas.clientHeight; if (width === 0 || height === 0) return;
 
-    canvasCtx.fillStyle = '#1e293b'; canvasCtx.fillRect(0, 0, width, height);
-    canvasCtx.strokeStyle = 'rgba(255,255,255,0.08)'; canvasCtx.lineWidth = 1;
-    
+    canvasCtx.fillStyle = T.surface; canvasCtx.fillRect(0, 0, width, height);
+    canvasCtx.strokeStyle = color_mix(T.border, 70); canvasCtx.lineWidth = 1;
+
+    // 頻率區域提示的高度需要提前算好，避免最上面一條 +12dB 格線標籤跟區域
+    // 名稱標籤在較矮的畫布（如手機版）重疊。
+    const regionHeight = 22;
+
     const gainLines = [-12, -6, 0, 6, 12];
     gainLines.forEach(g => {
         const y = gainToY(g, height); canvasCtx.beginPath(); canvasCtx.moveTo(0, y); canvasCtx.lineTo(width, y); canvasCtx.stroke();
-        canvasCtx.fillStyle = g === 0 ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.3)';
+        // 標籤太靠近頂部區域提示條時跳過文字（線本身仍畫），避免疊字看不清楚
+        if (y - 8 < regionHeight + 6) return;
+        canvasCtx.fillStyle = g === 0 ? T.text : T.muted;
         canvasCtx.textAlign = 'left'; canvasCtx.textBaseline = 'middle'; canvasCtx.font = '10px monospace';
         canvasCtx.fillText((g > 0 ? '+' : '') + g + 'dB', 5, y - 8);
     });
@@ -740,17 +774,21 @@ function drawSpectrum() {
     const freqLines = isLogScale ? [50, 100, 200, 500, 1000, 2000, 5000, 10000] : [1000, 5000, 10000, 15000, 20000];
     freqLines.forEach(f => {
         const x = freqToX(f, width); canvasCtx.beginPath(); canvasCtx.moveTo(x, 0); canvasCtx.lineTo(x, height); canvasCtx.stroke();
-        canvasCtx.fillStyle = 'rgba(255,255,255,0.3)'; canvasCtx.textAlign = 'center'; canvasCtx.textBaseline = 'bottom';
+        canvasCtx.fillStyle = T.muted; canvasCtx.textAlign = 'center'; canvasCtx.textBaseline = 'bottom';
         let label = f >= 1000 ? (f/1000) + 'k' : f; canvasCtx.fillText(label, x, height - 5);
     });
 
-    const regionHeight = 22;
+    // 頻率區域提示：不再用五種顏色區分，改用單色系——平時只留一條底線＋灰階
+    // 文字標籤，滑到哪一段時該段才用 accent 提亮，靠位置與文字辨識而非顏色。
     freqRegions.forEach((region, index) => {
         const xStart = freqToX(region.min, width); const xEnd = freqToX(region.max, width); const regW = xEnd - xStart;
         const isHovered = (hoverRegionIndex === index);
-        canvasCtx.fillStyle = isHovered ? `rgba(${region.color}, 0.3)` : `rgba(${region.color}, 0.1)`; canvasCtx.fillRect(xStart, 0, regW, regionHeight);
-        canvasCtx.fillStyle = isHovered ? `rgb(${region.color})` : `rgba(${region.color}, 0.4)`; canvasCtx.fillRect(xStart, regionHeight - 2, regW, 2);
-        canvasCtx.fillStyle = isHovered ? '#ffffff' : 'rgba(255,255,255,0.6)'; canvasCtx.textAlign = 'center'; canvasCtx.textBaseline = 'middle'; canvasCtx.font = isHovered ? 'bold 10px sans-serif' : '10px sans-serif';
+        canvasCtx.fillStyle = isHovered ? color_mix(T.accent, 14) : 'transparent';
+        if (isHovered) canvasCtx.fillRect(xStart, 0, regW, regionHeight);
+        canvasCtx.fillStyle = isHovered ? T.accent : color_mix(T.border, 80);
+        canvasCtx.fillRect(xStart, regionHeight - 2, regW, 2);
+        canvasCtx.fillStyle = isHovered ? T.accentStrong : T.muted;
+        canvasCtx.textAlign = 'center'; canvasCtx.textBaseline = 'middle'; canvasCtx.font = isHovered ? 'bold 10px sans-serif' : '10px sans-serif';
         if (regW > 40 || isHovered) canvasCtx.fillText(region.name, xStart + regW / 2, regionHeight / 2 - 1);
     });
 
@@ -759,7 +797,7 @@ function drawSpectrum() {
         const dataArray = new Uint8Array(bufferLength);
         analyser.getByteFrequencyData(dataArray);
         const nyquist = audioCtx.sampleRate / 2; const binSize = nyquist / bufferLength;
-        const gradient = canvasCtx.createLinearGradient(0, height, 0, height * 0.2); gradient.addColorStop(0, 'rgba(33, 150, 243, 0.0)'); gradient.addColorStop(1, 'rgba(33, 150, 243, 0.3)');
+        const gradient = canvasCtx.createLinearGradient(0, height, 0, height * 0.2); gradient.addColorStop(0, color_mix(T.accent, 0)); gradient.addColorStop(1, color_mix(T.accent, 28));
         canvasCtx.beginPath(); canvasCtx.fillStyle = gradient; canvasCtx.moveTo(0, height);
         const pointsY = new Float32Array(width);
         for (let x = 0; x < width; x++) {
@@ -777,11 +815,13 @@ function drawSpectrum() {
             const y = height - (val / 255) * height * 0.75; pointsY[x] = y; canvasCtx.lineTo(x, y);
         }
         canvasCtx.lineTo(width, height); canvasCtx.closePath(); canvasCtx.fill();
-        canvasCtx.beginPath(); canvasCtx.strokeStyle = 'rgba(100, 181, 246, 0.5)'; canvasCtx.lineWidth = 1.5;
+        canvasCtx.beginPath(); canvasCtx.strokeStyle = color_mix(T.accent, 60); canvasCtx.lineWidth = 1.5;
         for (let x = 0; x < width; x++) { if (x === 0) canvasCtx.moveTo(x, pointsY[x]); else canvasCtx.lineTo(x, pointsY[x]); }
         canvasCtx.stroke();
     }
 
+    // EQ 回應曲線：用實色 accent-strong 粗線，與底下半透明的即時頻譜山峰
+    // 拉開視覺層次（同一色系、深淺不同），取代原本純靠亮度對比深色底的白線。
     canvasCtx.globalAlpha = isEqBypassed ? 0.3 : 1.0;
     if (isInitialized && filters.length > 0) {
         const curveResolution = width; const freqsArray = new Float32Array(curveResolution);
@@ -792,32 +832,37 @@ function drawSpectrum() {
             filter.getFrequencyResponse(freqsArray, magResponse, phaseResponse);
             for(let i = 0; i < curveResolution; i++) totalMag[i] *= magResponse[i];
         });
-        canvasCtx.beginPath(); canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; canvasCtx.lineWidth = 3;
+        canvasCtx.beginPath(); canvasCtx.strokeStyle = T.accentStrong; canvasCtx.lineWidth = 3;
         for(let x = 0; x < curveResolution; x++) { let dB = 20 * Math.log10(totalMag[x]); let y = gainToY(dB, height); if (x === 0) canvasCtx.moveTo(x, y); else canvasCtx.lineTo(x, y); }
         canvasCtx.stroke();
     }
 
+    // 頻段控制點：不再用各自的識別色，統一用 accent-strong，靠畫面位置與旋鈕
+    // 面板上的「Band N」標籤辨識是哪一段。
     eqBands.forEach((band, index) => {
-        const x = freqToX(band.freq, width); const y = gainToY(band.gain, height); const isHoveredOrDragged = (hoverBandIndex === index || draggingBandIndex === index); const radius = isHoveredOrDragged ? 10 : 7; 
-        if (isHoveredOrDragged) { canvasCtx.beginPath(); canvasCtx.arc(x, y, radius + 4, 0, 2 * Math.PI); canvasCtx.fillStyle = band.color + '40'; canvasCtx.fill(); }
-        canvasCtx.beginPath(); canvasCtx.arc(x, y, radius, 0, 2 * Math.PI); canvasCtx.fillStyle = band.color; canvasCtx.fill();
-        canvasCtx.lineWidth = 2; canvasCtx.strokeStyle = '#ffffff'; canvasCtx.stroke();
+        const x = freqToX(band.freq, width); const y = gainToY(band.gain, height); const isHoveredOrDragged = (hoverBandIndex === index || draggingBandIndex === index); const radius = isHoveredOrDragged ? 10 : 7;
+        if (isHoveredOrDragged) { canvasCtx.beginPath(); canvasCtx.arc(x, y, radius + 4, 0, 2 * Math.PI); canvasCtx.fillStyle = color_mix(T.accent, 25); canvasCtx.fill(); }
+        canvasCtx.beginPath(); canvasCtx.arc(x, y, radius, 0, 2 * Math.PI); canvasCtx.fillStyle = T.accentStrong; canvasCtx.fill();
+        canvasCtx.lineWidth = 2; canvasCtx.strokeStyle = T.surface; canvasCtx.stroke();
     });
 
     canvasCtx.globalAlpha = 1.0;
     if (hoverRegionIndex !== -1) {
+        // 浮動提示晴：沿用其他 bambook 工具共通的「固定深色 chip」慣例（與頁面
+        // 淺色主題無關，維持在任何底色上都清楚可讀），取代原本疊在深色頻譜圖
+        // 上才成立的半透明黑底。
         const region = freqRegions[hoverRegionIndex]; canvasCtx.font = '12px sans-serif';
         const textWidth1 = canvasCtx.measureText(region.desc1).width; const textWidth2 = canvasCtx.measureText(region.desc2).width;
         const textWidth = Math.max(textWidth1, textWidth2); const tooltipW = textWidth + 30; const tooltipH = 46;
         let tipX = currentMousePos.x; if (tipX + tooltipW/2 > width - 5) tipX = width - tooltipW/2 - 5; if (tipX - tooltipW/2 < 5) tipX = tooltipW/2 + 5;
-        const tipY = regionHeight + 12; 
-        canvasCtx.fillStyle = 'rgba(15, 23, 42, 0.9)'; canvasCtx.shadowColor = 'rgba(0,0,0,0.5)';
+        const tipY = regionHeight + 12;
+        canvasCtx.fillStyle = '#1f2421'; canvasCtx.shadowColor = 'rgba(0,0,0,0.35)';
         canvasCtx.shadowBlur = 8; canvasCtx.shadowOffsetY = 4;
         canvasCtx.beginPath(); if (canvasCtx.roundRect) canvasCtx.roundRect(tipX - tooltipW/2, tipY, tooltipW, tooltipH, 6); else canvasCtx.rect(tipX - tooltipW/2, tipY, tooltipW, tooltipH);
         canvasCtx.fill(); canvasCtx.shadowColor = 'transparent'; canvasCtx.shadowBlur = 0;
-        canvasCtx.strokeStyle = `rgba(${region.color}, 0.8)`; canvasCtx.lineWidth = 1.5; canvasCtx.stroke();
+        canvasCtx.strokeStyle = T.accent; canvasCtx.lineWidth = 1.5; canvasCtx.stroke();
         canvasCtx.textAlign = 'center'; canvasCtx.textBaseline = 'middle';
-        canvasCtx.fillStyle = '#ffffff'; canvasCtx.fillText(region.desc1, tipX, tipY + 16); canvasCtx.fillStyle = '#94a3b8'; canvasCtx.fillText(region.desc2, tipX, tipY + 32);
+        canvasCtx.fillStyle = '#fdfdfb'; canvasCtx.fillText(region.desc1, tipX, tipY + 16); canvasCtx.fillStyle = 'rgba(253,253,251,0.65)'; canvasCtx.fillText(region.desc2, tipX, tipY + 32);
     }
 }
 

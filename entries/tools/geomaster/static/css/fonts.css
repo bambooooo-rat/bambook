@@ -1,9 +1,9 @@
 /* 策略說明：
-   我們將所有語系都定義為同一個 font-family 名稱 'GeoGlobal-Sans'。
+   我們將所有語系都定義為同一個 font-family 名稱 'Bambook-Sans'。
    瀏覽器會依照 unicode-range 自動決定該用哪個檔案來渲染文字。
 */
 @font-face {
-    font-family: 'GeoGlobal-Sans';
+    font-family: 'Bambook-Sans';
     src: url('../fonts/NotoColorEmoji-Regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
@@ -28,7 +28,7 @@
 
 /* 1. 基礎歐語系 (Latin, Cyrillic, Greek) */
 @font-face {
-    font-family: 'GeoGlobal-Sans';
+    font-family: 'Bambook-Sans';
     /* 包含 Latin, Latin-1 Supplement, Latin Extended, Greek, Cyrillic */
     src: url('../fonts/NotoSans-VariableFont_wdth,wght.ttf') format('truetype');
     font-weight: 100 900; /* 支援 Variable Font 的粗細範圍 */
@@ -54,7 +54,7 @@
 
 /* 2. Devanagari (印度天城體) */
 @font-face {
-    font-family: 'GeoGlobal-Sans';
+    font-family: 'Bambook-Sans';
     src: url('../fonts/NotoSansDevanagari-VariableFont_wdth,wght.ttf') format('truetype');
     font-weight: 100 900;
     font-style: normal;
@@ -65,7 +65,7 @@
 
 /* 3. CJK (中日韓 - 以繁體中文 Noto Sans TC 為主) */
 @font-face {
-    font-family: 'GeoGlobal-Sans';
+    font-family: 'Bambook-Sans';
     src: url('../fonts/NotoSansTC-VariableFont_wght.ttf') format('truetype');
     /* CJK Variable Font 通常只支援 100-900 weight，不支援 width */
     font-weight: 100 900;
@@ -78,7 +78,7 @@
 
 /* 4. 等寬字型 (Monospace) */
 @font-face {
-    font-family: 'GeoGlobal-Mono';
+    font-family: 'Bambook-Mono';
     src: url('../fonts/NotoSansMono-VariableFont_wdth,wght.ttf') format('truetype');
     font-weight: 100 900;
     font-style: normal;
@@ -90,13 +90,13 @@
    ====================================================== */
 :root {
     /* font-main: 
-       第一順位: 'GeoGlobal-Sans' (我們自定義的組合字型)
+       第一順位: 'Bambook-Sans' (我們自定義的組合字型)
        第二順位: 系統預設 sans-serif (安全網)
     */
-    --font-main: 'GeoGlobal-Sans', "Microsoft JhengHei", "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-main: 'Bambook-Sans', "Microsoft JhengHei", "Segoe UI", Helvetica, Arial, sans-serif;
     
     /* font-mono:
-       第一順位: 'GeoGlobal-Mono'
+       第一順位: 'Bambook-Mono'
     */
-    --font-mono: 'GeoGlobal-Mono', "SF Mono", "Menlo", "Monaco", "Consolas", "Courier New", monospace;
+    --font-mono: 'Bambook-Mono', "SF Mono", "Menlo", "Monaco", "Consolas", "Courier New", monospace;
 }
