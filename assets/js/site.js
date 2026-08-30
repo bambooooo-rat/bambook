@@ -37,6 +37,13 @@ const ICONS = {
   article: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>'),
   tool: tablerIcon('<path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5"/>'),
   chevron: tablerIcon('<path d="M9 6l6 6l-6 6"/>'),
+  // Added for the course-page schedule section (research/study-group session times).
+  calendar: tablerIcon('<path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1"/><path d="M12 15v3"/>'),
+  // 講義連結專用：填空版是「空白待寫」的版本，用單純的文件外框（沒有內文）；
+  // 解答版是「已經寫好內容」的版本，用外框＋內文橫線，兩者互為對照，光看
+  // 圖示就能分辨，不用在文字裡重複寫「講義」。
+  fileOutline: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11"/>'),
+  fileText: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>'),
 };
 
 const SITE_BASE_URL = new URL("../../", import.meta.url);
@@ -90,6 +97,17 @@ function bindEvents() {
     }
 
     const summary = target.closest("summary");
+    // 研討時間這個 details/summary 不像其他 .resource-details 可以在
+    // prefers-reduced-motion 時整個放手交給瀏覽器原生開合：過去場次的軌道是
+    // 外層 .schedule-timeline 的另一個子元素、不受 <details> 原生開合影響
+    // （見 toggleSchedulePanel() 的說明），一定要交給它自己同步狀態，動畫與
+    // 否則由它內部依 prefersReducedMotion() 判斷。
+    const scheduleDetails = summary?.closest(".schedule-panel");
+    if (summary && scheduleDetails) {
+      event.preventDefault();
+      toggleSchedulePanel(scheduleDetails);
+      return;
+    }
     const details = summary?.closest(".resource-details");
     if (summary && details && !prefersReducedMotion()) {
       event.preventDefault();
@@ -147,6 +165,74 @@ function toggleAnimatedDetails(details) {
       detailsAnimations.delete(details);
       detailsTargetState.delete(details);
     });
+}
+
+// 研討時間時間軸（.schedule-panel）的開合走的是自己的動畫，跟上面的
+// toggleAnimatedDetails() 不一樣：那個是「summary 本身高度不變、下方長出
+// 一段新內容」的單向 accordion；這裡「下一次研討」那一站固定在中間，過去
+// 場次的軌道（.schedule-track--past）要往上展開、未來場次（--future）要往
+// 下展開，等於同時有兩段各自獨立的 0↔auto 高度動畫，因此不能只對整個
+// <details> 的 blockSize 做單一動畫（那樣會把中間固定不動的那一站也一起
+// 拉伸/裁切掉）。這裡分別對兩段軌道各自的 blockSize 做動畫，讓「收合」讀起
+// 來像是把原本就存在的線段重新蓋上遮罩、「展開」則是把遮罩往外移除。
+const scheduleTrackAnimations = new WeakMap();
+const scheduleTargetState = new WeakMap();
+
+function toggleSchedulePanel(details) {
+  // 過去場次的軌道刻意放在 <details> 外面（見 scheduleContent()／site.css
+  // 的說明），所以兩段軌道要從共同的外層 wrapper（.schedule-timeline）找，
+  // 不能只在 details 底下找。
+  const wrapper = details.closest(".schedule-timeline") || details;
+  const currentlyOpen = scheduleTargetState.has(details) ? scheduleTargetState.get(details) : details.open;
+  const opening = !currentlyOpen;
+  scheduleTargetState.set(details, opening);
+  scheduleTrackAnimations.get(details)?.forEach(animation => animation.cancel());
+
+  // 過去場次軌道能不能展開完全是靠 .schedule-timeline 的 is-open class（見
+  // site.css），這個 class 只有這個函式會動它——不像其他 .resource-details
+  // 那樣，reduced-motion 時可以整個放手交給瀏覽器原生的 <details> 開合，這裡
+  // 就算不做動畫，也一定要親自把 is-open 跟 details.open 同步設好，不然過去
+  // 場次的軌道會永遠展不開。
+  if (prefersReducedMotion()) {
+    details.open = opening;
+    wrapper.classList.toggle("is-open", opening);
+    scheduleTrackAnimations.delete(details);
+    scheduleTargetState.delete(details);
+    return;
+  }
+
+  // is-open 跟 details.open 一起在「開始展開」的當下就打開：兩段軌道展開
+  // 後的 block-size: auto 都是靠 .schedule-timeline.is-open 這個 class 生效
+  // （見 site.css），要先打開才能量到過去場次軌道展開後的真實高度
+  // （scrollHeight），也才能在動畫結束、WAAPI 交還控制權的瞬間讓 CSS 已經
+  // 是正確的最終值，不會又彈回 0 高度。
+  if (opening) {
+    details.open = true;
+    wrapper.classList.add("is-open");
+  }
+
+  const tracks = Array.from(wrapper.querySelectorAll(".schedule-track--past, .schedule-track--future"));
+  const animations = tracks.map(track => {
+    const openSize = track.scrollHeight;
+    const keyframes = opening
+      ? [{ blockSize: "0px" }, { blockSize: `${openSize}px` }]
+      : [{ blockSize: `${openSize}px` }, { blockSize: "0px" }];
+    return track.animate(keyframes, { duration: DETAILS_ANIMATION_MS, easing: easeOutValue() });
+  });
+  scheduleTrackAnimations.set(details, animations);
+
+  Promise.allSettled(animations.map(animation => animation.finished)).then(() => {
+    // 如果動畫進行到一半又被下一次點擊打斷，取消（cancel）會讓這裡的
+    // Promise 稍後才 settle；這時 scheduleTrackAnimations 已經被新的一次
+    // toggleSchedulePanel() 呼叫覆寫成新的動畫陣列，用參照比對確認自己還是
+    // 最新的一次，不是的話就不要動 details.open/is-open，讓新的那次自己
+    // 收尾。
+    if (scheduleTrackAnimations.get(details) !== animations) return;
+    details.open = opening;
+    if (!opening) wrapper.classList.remove("is-open");
+    scheduleTrackAnimations.delete(details);
+    scheduleTargetState.delete(details);
+  });
 }
 
 function easeOutValue() {
@@ -497,9 +583,9 @@ function renderCourse(name) {
           <h1>${escapeHTML(name)}</h1>
           <p>課本、講義、投影片及歷屆練習均由此頁統一整理；點選檔案即可在新分頁開啟。</p>
         </header>
+        <div id="schedule-slot"></div>
         <div id="syllabus-slot"></div>
         ${resourceSection("課本", textbookItems(course.textbooks), ICONS.book)}
-        ${resourceSection("講義", handoutItems(course.handouts), ICONS.pdf)}
         ${slidesSection(course.slides)}
         ${practiceSection(course.practice)}
         ${relatedArticlesSection(name)}
@@ -507,6 +593,7 @@ function renderCourse(name) {
       <aside class="course-sidebar"><h2>教材</h2>${courseLinks}</aside>
     </div>`;
 
+  renderSchedule(course.schedule, course.handouts);
   renderSyllabus(course.syllabus);
 }
 
@@ -542,20 +629,158 @@ function renderSyllabus(path) {
     });
 }
 
+// 課業輔導社群的研討時間表：materials/<course>/schedule.json，格式與
+// syllabus.json 相同（manifest 只存路徑，實際內容在此以 fetch 惰性載入）。
+// 預設只顯示「下一次最近的研討」卡片本身即為 <summary>，點選它會沿用既有的
+// details/summary 收合元件展開成地鐵路線圖式的完整期程（一直線搭配圓點），
+// 過去／下一次／未來的研討以不同顏色的圓點與文字區分；若所有場次都已結束，
+// 改以「最近一次已結束的場次」作為預設顯示的卡片。時間軸每一站若在
+// schedule.json 標註了對應的 handout（與講義檔名去掉填空版／解答版後的
+// 標題相同，例如 "handout1"），會直接顯示該講義的下載連結。
+function renderSchedule(path, handouts = []) {
+  const slot = document.querySelector("#schedule-slot");
+  if (!slot || !path) return;
+  slot.innerHTML = resourceSection("研討時間", `<p class="notice">正在載入研討時間…</p>`, ICONS.calendar);
+  fetch(assetURL(path), { cache: "no-store" })
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    })
+    .then(items => {
+      if (!Array.isArray(items)) throw new Error("資料格式不正確");
+      slot.innerHTML = resourceSection("研討時間", scheduleContent(items, handouts), ICONS.calendar);
+    })
+    .catch(() => {
+      slot.innerHTML = resourceSection("研討時間", `<p class="notice">研討時間檔暫時無法讀取。</p>`, ICONS.calendar);
+    });
+}
+
+// schedule.json 每筆的 date 欄位為統一格式 "YYYY-MM-DD HH:MM"（用於排序與
+// 判斷是否已結束），time 欄位則是給人看的顯示用時段（例如 "19:00–21:00"）。
+function parseScheduleDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})$/.exec(String(value ?? "").trim());
+  if (!match) return null;
+  const [, year, month, day, hour, minute] = match;
+  const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
+  return Number.isNaN(date.valueOf()) ? null : date;
+}
+
+function formatScheduleDate(date) {
+  return date.toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "short" });
+}
+
+function scheduleContent(rawItems, handouts = []) {
+  const now = new Date();
+  const parsed = rawItems
+    .map(item => {
+      const date = parseScheduleDate(item?.date);
+      return date ? { ...item, parsedDate: date, displayDate: formatScheduleDate(date), isPast: date < now } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.parsedDate - b.parsedDate);
+
+  if (!parsed.length) return emptyState("尚無研討時間資料。");
+
+  const hasUpcoming = parsed.some(item => !item.isPast);
+  const upcomingIndex = parsed.findIndex(item => !item.isPast);
+  const featuredIndex = upcomingIndex === -1 ? parsed.length - 1 : upcomingIndex;
+  const featured = parsed[featuredIndex];
+  // 過去場次留在上面（往上展開）、未來場次留在下面（往下展開），兩段都不
+  // 含 featured 自己，才不會跟固定顯示的那一站重複出現。兩段本來就已經是
+  // 由舊到新排序，直接切片就是各自要的上下順序，不用再反轉。
+  const pastItems = parsed.slice(0, featuredIndex);
+  const futureItems = parsed.slice(featuredIndex + 1);
+
+  // 只有一場研討時，沒有其餘期程可展開，直接顯示這一站即可，不需要
+  // details/summary 的收合外殼、也不需要展開圖示。
+  if (parsed.length < 2) {
+    return `<ol class="schedule-track schedule-track--solo">${scheduleStop(featured, handouts, { featured: true, hasUpcoming })}</ol>`;
+  }
+
+  const pastTrack = pastItems.length
+    ? `<ol class="schedule-track schedule-track--past">${pastItems.map(item => scheduleStop(item, handouts)).join("")}</ol>`
+    : "";
+  const futureTrack = futureItems.length
+    ? `<ol class="schedule-track schedule-track--future">${futureItems.map(item => scheduleStop(item, handouts)).join("")}</ol>`
+    : "";
+
+  // 展開圖示不再是貼右側的單一箭頭（那樣會讓 summary 多一段右側留白，跟其他
+  // 站的 .schedule-stop-body 對不齊，講義連結也就跟著沒對齊）：改成貼在線上、
+  // 圓點正上方／正下方各一個小箭頭，收合時分別指向上／下（呼應「往上/往下
+  // 展開」的方向），展開後轉個方向指向圓點（呼應「收回這一點」）。哪一段有
+  // 內容才畫哪個箭頭，全部都是過去或全部都是未來場次時不會出現多餘的方向。
+  const upArrow = pastItems.length ? `<span class="schedule-expand-arrow schedule-expand-arrow--up" aria-hidden="true">${ICONS.chevron}</span>` : "";
+  const downArrow = futureItems.length ? `<span class="schedule-expand-arrow schedule-expand-arrow--down" aria-hidden="true">${ICONS.chevron}</span>` : "";
+
+  // 過去場次刻意放在 <details> 之外（見 site.css 的說明：<details> 內建的
+  // ::details-content 匿名容器會讓 summary 以外的子元素全部併成同一個 flex
+  // item，CSS order 排不到 summary 上面），交給 .schedule-timeline 這個
+  // wrapper 統一排出「過去在上、summary 固定在中間、未來在下」的視覺順序。
+  return `
+    <div class="schedule-timeline">
+      ${pastTrack}
+      <details class="schedule-panel">
+        <summary class="schedule-summary ${scheduleStopClasses(featured, { featured: true, hasUpcoming }).join(" ")}">
+          ${scheduleStopInner(featured, handouts, { featured: true })}
+          ${upArrow}${downArrow}
+        </summary>
+        ${futureTrack}
+      </details>
+    </div>`;
+}
+
+// schedule.json 的 handout 欄位對照 course.handouts 裡的 title（講義檔名
+// 去掉「_填空版」「_解答版」後的字串，例如 "handout1"），找到就直接輸出
+// 講義的下載連結（沿用 handoutLink()，跟課本／投影片／練習與資源同一套安靜
+// 的檔名＋圖示樣式）。
+function scheduleHandoutLinks(handouts, handoutTitle) {
+  if (!handoutTitle) return "";
+  const match = (Array.isArray(handouts) ? handouts : []).find(item => item && String(item.title || "").trim() === String(handoutTitle).trim());
+  if (!match) return "";
+  const links = `${handoutLink(match.blank, "填空", ICONS.fileOutline)}${handoutLink(match.sol, "解答", ICONS.fileText)}`;
+  return links ? `<div class="schedule-stop-handouts">${links}</div>` : "";
+}
+
+// 每一站（過去／下一次／未來）共用同一套結構與樣式，差別只在 state 決定的
+// 顏色與 featured 決定的放大強調——收合時只露出 featured 那一站，看起來就
+// 只是同一條時間軸的一小段，而不是另一種獨立的卡片元件。
+function scheduleStopClasses(item, { featured = false, hasUpcoming = true } = {}) {
+  const state = featured ? (hasUpcoming ? "is-next" : "is-past") : (item.isPast ? "is-past" : "is-future");
+  const classes = ["schedule-stop", state];
+  if (featured) classes.push("schedule-stop--featured");
+  return classes;
+}
+
+// 圓點＋內文（標題／日期地點／說明＋講義連結）；featured 時額外加上
+// 「下一次研討」／「最近一次研討（已結束）」的小標籤。
+function scheduleStopInner(item, handouts, { featured = false } = {}) {
+  const metaParts = [item.displayDate, item.time, item.location].filter(Boolean);
+  const description = item.description ? `<p class="schedule-stop-description">${escapeHTML(item.description)}</p>` : "";
+  const label = featured
+    ? `<p class="schedule-stop-label">${escapeHTML(item.isPast ? "最近一次研討（已結束）" : "下一次研討")}</p>`
+    : "";
+  return `
+    <span class="schedule-dot" aria-hidden="true"></span>
+    <div class="schedule-stop-body">
+      <div class="schedule-stop-text">
+        ${label}
+        <p class="schedule-stop-topic">${escapeHTML(item.topic || "未命名研討")}</p>
+        <p class="schedule-stop-meta">${escapeHTML(metaParts.join(" · "))}</p>
+        ${description}
+      </div>
+      ${scheduleHandoutLinks(handouts, item.handout)}
+    </div>`;
+}
+
+function scheduleStop(item, handouts, options = {}) {
+  return `<li class="${scheduleStopClasses(item, options).join(" ")}">${scheduleStopInner(item, handouts, options)}</li>`;
+}
+
 function textbookItems(items = []) {
   if (!items.length) return emptyState("尚無課本資料。");
   return `<div class="resource-grid">${items.map(item => `
     <article class="resource-item">
       <div><div class="resource-name">${documentResourceLink(item.path, item.title || "未命名課本")}</div><div class="resource-meta">${escapeHTML([item.author, item.version].filter(Boolean).join(" · "))}</div></div>
-    </article>`).join("")}</div>`;
-}
-
-function handoutItems(items = []) {
-  if (!items.length) return emptyState("尚無講義資料。");
-  return `<div class="resource-grid">${items.map(item => `
-    <article class="resource-item">
-      <div class="resource-name">${escapeHTML(item.title || "未命名講義")}</div>
-      <div class="resource-actions">${handoutLink(item.blank, "填空", "blank")}${handoutLink(item.sol, "解答", "sol")}</div>
     </article>`).join("")}</div>`;
 }
 
@@ -610,9 +835,18 @@ function externalResourceLink(url, label) {
   return `<a class="resource-document-link" href="${safeURL(url)}" target="_blank" rel="noopener" aria-label="開啟連結：${escapeHTML(label)}" title="開啟連結">${escapeHTML(label)}${ICONS.link}</a>`;
 }
 
-function handoutLink(path, label, variant) {
+// 沿用課本／投影片／練習與資源同一套安靜的「檔名＋圖示」樣式
+// （.resource-document-link），跟其他文件連結的資訊分級一致，不再用突兀的
+// 填色按鈕；圖示改用 icon 參數傳入的填空／解答專用圖示（見 ICONS.fileOutline／
+// ICONS.fileText），讓「這是講義」這件事光看圖示就認得出來，不用在文字裡
+// 重複寫一次「講義」。onclick="event.stopPropagation()"：研討時間「下一次
+// 研討」那一站本身是可點展開的 <summary>，若不擋住冒泡，點講義連結會被
+// document 上收合 details 的委派事件攔截、變成只是展開/收合而不會真的開啟
+// PDF。時間軸裡的講義連結不在 summary 內、不受影響，但一併加上這個保險不
+// 影響行為。
+function handoutLink(path, label, icon) {
   if (!path) return "";
-  return `<a class="resource-link resource-link--handout resource-link--${variant}" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="${escapeHTML(label)}講義" title="${escapeHTML(label)}講義"><span>${escapeHTML(label)}</span>${ICONS.pdf}</a>`;
+  return `<a class="resource-document-link" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="開啟 PDF：${escapeHTML(label)}講義" title="開啟 PDF" onclick="event.stopPropagation()">${escapeHTML(label)}${icon}</a>`;
 }
 
 function normaliseArticleReaderShell() {

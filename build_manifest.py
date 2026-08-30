@@ -130,8 +130,10 @@ def build_materials() -> dict[str, Any]:
 
     for course_dir in sorted((item for item in MATERIALS_DIR.iterdir() if item.is_dir()), key=lambda item: item.name.casefold()):
         syllabus = find_named_file(course_dir, "syllabus.json")
+        schedule = find_named_file(course_dir, "schedule.json")
         materials[course_dir.name] = {
             "syllabus": web_path(syllabus) if syllabus else None,
+            "schedule": web_path(schedule) if schedule else None,
             "textbooks": [parse_textbook(file_path) for file_path in pdf_files(course_dir / "textbook")],
             "handouts": parse_handouts(course_dir / "handout"),
             "slides": parse_slides(course_dir / "slide"),

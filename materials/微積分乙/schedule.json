@@ -1,0 +1,66 @@
+[
+  {
+    "date": "2025-09-10 18:00",
+    "time": "18:00–20:30",
+    "location": "教室待定",
+    "topic": "預備微積分",
+    "description": "函數、函數圖形、極限之ε−δ定義",
+    "handout": "handout0"
+  },
+  {
+    "date": "2026-09-10 18:00",
+    "time": "18:00–20:30",
+    "location": "教室待定",
+    "topic": "預備微積分",
+    "description": "函數、函數圖形、極限之ε−δ定義",
+    "handout": "handout0"
+  },
+  {
+    "date": "2026-09-17 18:00",
+    "time": "18:00–20:30",
+    "location": "教室待定",
+    "topic": "極限與連續",
+    "description": "極限運算、夾擠定理、漸進線、連續函數、中間值定理",
+    "handout": "handout1"
+  },
+  {
+    "date": "2026-09-24 18:00",
+    "time": "18:00–20:30",
+    "location": "教室待定",
+    "topic": "微分與微分運算",
+    "description": "導數的定義、微分運算定理、隱函數微分、反函數微分",
+    "handout": "handout2"
+  },
+  {
+    "date": "2026-10-01 18:00",
+    "time": "18:00–20:30",
+    "location": "教室待定",
+    "topic": "微分應用",
+    "description": "切線與法線、單調性與極值、凹凸性與反曲點、均值定理",
+    "handout": "handout3"
+  },
+  {
+    "date": "2026-11-05 18:00",
+    "time": "18:00–20:30",
+    "location": "教室待定",
+    "topic": "定積分",
+    "description": "黎曼和、定積分的定義、定積分的性質、牛頓-萊布尼茲公式",
+    "handout": "handout4"
+  },
+  {
+    "date": "2026-11-12 18:00",
+    "time": "18:00–20:30",
+    "location": "教室待定",
+    "topic": "積分技巧",
+    "description": "部分分式、變數變換、三角代換、部分積分、瑕積分",
+    "handout": "handout5"
+  },
+  {
+    "date": "2026-11-19 18:00",
+    "time": "18:00–20:30",
+    "location": "教室待定",
+    "topic": "積分應用",
+    "description": "算面積、算旋轉體體積、算弧長、算旋轉體表面積、算平均值",
+    "handout": "handout6"
+  }
+]

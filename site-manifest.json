@@ -4,6 +4,7 @@
   "materials": {
     "工程數學": {
       "syllabus": null,
+      "schedule": null,
       "textbooks": [
         {
           "title": "Advanced Engineering Mathematics",
@@ -147,6 +148,7 @@
     },
     "微積分乙": {
       "syllabus": null,
+      "schedule": "materials/微積分乙/schedule.json",
       "textbooks": [
         {
           "title": "NTNU calculus (B) Note",

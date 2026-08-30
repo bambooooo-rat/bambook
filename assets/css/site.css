@@ -4,14 +4,6 @@
 :root {
   color-scheme: light;
 
-  /* Base hue for 填空/解答 download buttons (see .resource-link--blank/--sol
-     below) — border/background/text/hover shades are derived from these via
-     color-mix() at each usage site, not stored as separate hex values, so
-     both variants auto-adapt to the active theme. --tint-blank reuses
-     --accent so color-mix() supplies the distinction from the raw accent
-     color, rather than defining a second hardcoded blue. */
-  --tint-blank: var(--accent);
-  --tint-sol: #2f9e6e;
   --markdown-landscape-image-height: 18rem;
   --markdown-portrait-image-width: 18rem;
   --markdown-square-image-width: 20rem;
@@ -35,7 +27,6 @@ html[data-theme="dark"] {
   --accent-soft: #1e3a4d;
   --danger: #ff8a80;
   --shadow: 0 16px 42px rgba(0, 0, 0, .5);
-  --tint-sol: #4cbf8a;
 }
 
 * { box-sizing: border-box; }
@@ -321,6 +312,120 @@ details.resource-details[open] .resource-grid {
 }
 details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .syllabus-list { margin: 0; padding-left: 1.15rem; color: var(--muted); }
+
+/* 研討時間 schedule 區塊（course page 最上方）：不是獨立卡片，而是同一條
+   地鐵路線圖式時間軸（一直線搭配圓點）目前只露出的一小段——預設只顯示
+   「下一次研討」這一站本身（.schedule-summary，同時也是放大版的
+   .schedule-stop），過去場次收在它上方、未來場次收在它下方，先被裁成 0
+   高度（.schedule-track--past/--future）藏起來。點下去不是「卡片長出新
+   內容」，而是把上下兩段軌道從 0 展開回原本的高度，感覺像是本來就存在、
+   只是被遮住的線段被顯示出來；貫穿全場的那條線（.schedule-timeline::before）
+   收合、展開共用同一條，收合時自然只剩下一小截跟這一站等高的線頭。
+
+   過去場次（.schedule-track--past）刻意放在 <details> 之外、當它的前一個
+   手足元素，而不是塞進 <details> 裡用 CSS order 排到 <summary> 上面——
+   Chromium／Firefox 對 <details> 有內建的 ::details-content 匿名容器，
+   summary 以外的子元素其實都會被塞進同一個容器裡，容器本身才是唯一的
+   flex item，設在容器「裡面」的 order 對 summary／容器的相對順序完全沒有
+   作用。放在 <details> 外面、交給 .schedule-timeline 這個外層 wrapper 統一
+   排版，就不會踩到這個限制；展開/收合的動畫也統一交給 site.js 的
+   toggleSchedulePanel()（同步切換 .schedule-timeline 的 is-open class 與
+   <details> 的 open 屬性，各自的軌道再各自用 WAAPI 對 block-size 做動畫）。
+   若某場研討對應到講義，講義連結沿用課本／投影片／練習與資源那套安靜的
+   .resource-document-link 樣式（見 handoutLink()），排在標題／日期／說明
+   那一欄的右側、同一列並排，而不是疊在下方。 */
+/* 線的 left 刻意寫成 5px、不是 6px：.schedule-dot／.schedule-expand-arrow
+   都是「left: 6px 再 translate(-50%, ...)」置中，置中後的視覺中心是 6px 那
+   個點本身；但這條線沒有用 translate 置中，它的視覺中心是 left + width/2。
+   線寬 2px，若也寫 left: 6px，線的中心會落在 6+1=7px，比圓點的中心整整偏右
+   1px——圓點看起來就會像「稍微偏左」。改成 left: 5px，線的中心變成
+   5+1=6px，才會跟圓點／箭頭的置中點完全對齊。 */
+.schedule-timeline { position: relative; }
+.schedule-timeline::before { content: ""; position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+
+.schedule-track { position: relative; margin: 0; padding: 0; list-style: none; }
+.schedule-track::before { content: ""; position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+/* 過去／未來兩段軌道各自的線交給 .schedule-timeline::before 那一條貫穿全場
+   的線負責，避免收合狀態與展開後的銜接處出現斷線或雙線疊在一起。0/auto 是
+   動畫沒接手時（例如 prefers-reduced-motion）的預設值；動畫本身見上方
+   說明。 */
+.schedule-track--past, .schedule-track--future { overflow: hidden; block-size: 0; }
+.schedule-track--past::before, .schedule-track--future::before { display: none; }
+.schedule-timeline.is-open .schedule-track--past,
+.schedule-timeline.is-open .schedule-track--future { block-size: auto; }
+
+.schedule-stop { position: relative; padding: var(--space-4) 0 var(--space-4) var(--space-6); }
+.schedule-track > .schedule-stop:first-child { padding-top: 0; }
+.schedule-track > .schedule-stop:last-child { padding-bottom: 0; }
+/* z-index: 1 讓圓點蓋在 ::before 那條線上面（線本身沒有設 z-index），視覺上
+   像是線被圓點「打斷」，而不是線疊在圓點上面。 */
+.schedule-dot { position: absolute; z-index: 1; left: 6px; top: 50%; box-sizing: border-box; width: 12px; height: 12px; border: 2px solid var(--bg); border-radius: 50%; background: var(--muted); transform: translate(-50%, -50%); }
+.schedule-stop.is-past .schedule-dot { background: var(--border); }
+.schedule-stop.is-future .schedule-dot { background: var(--accent); }
+.schedule-stop.is-next .schedule-dot { background: var(--accent-strong); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); }
+/* 「下一次研討」這一站是整條時間軸目前的焦點：圓點放大、加光暈、標題加粗
+   來強調，但圓點置中用 transform: translate(-50%, -50%) 固定在同一個
+   x 座標，所以放大不會跟其他站的圓點對不齊。 */
+.schedule-stop--featured .schedule-dot { width: 16px; height: 16px; }
+.schedule-stop--featured.is-next .schedule-dot { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent); }
+.schedule-stop--featured.is-past .schedule-dot { box-shadow: 0 0 0 5px color-mix(in srgb, var(--muted) 22%, transparent); }
+.schedule-stop--featured .schedule-stop-topic { font-size: var(--font-lg); font-weight: 700; }
+.schedule-stop-label { margin: 0 0 var(--space-1); color: var(--accent-strong); font-size: var(--font-xs); font-weight: 700; letter-spacing: .02em; }
+.schedule-stop.is-past .schedule-stop-label { color: var(--muted); }
+/* 每一站的文字（標題／日期地點／說明）與講義連結左右並排：文字佔滿剩餘
+   空間，連結固定寬度貼右側，版面太窄時（手機）自動換到下一行而不是硬擠。
+   標題／日期地點／說明彼此的間距刻意壓得很緊（同一個資訊群組），拉開的是
+   .schedule-stop 本身上下的 padding（見上方，一站與一站之間），研討場次一多
+   的時候才能一眼看出「這是一組」、「那是另一組」，而不是整段文字糊在一起。 */
+.schedule-stop-body { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
+.schedule-stop-text { flex: 1; min-width: 0; }
+.schedule-stop-topic { margin: 0; font-size: var(--font-md); font-weight: 650; }
+.schedule-stop-meta { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--font-xs); }
+.schedule-stop-description { margin: var(--space-1) 0 0; color: var(--text); font-size: var(--font-xs); line-height: 1.6; }
+.schedule-stop.is-past .schedule-stop-topic, .schedule-stop.is-past .schedule-stop-meta, .schedule-stop.is-past .schedule-stop-description { color: var(--muted); }
+.schedule-stop.is-past .schedule-stop-topic { font-weight: 500; }
+.schedule-stop.is-next .schedule-stop-topic { color: var(--accent-strong); }
+/* font-weight: 650 跟 .resource-name／.resource-document-link 在其他區塊
+   （課本／投影片／練習與資源）用的字重一致——那邊的連結是靠外層 .resource-name
+   的 font-weight 繼承來的，這裡沒有那層外殼，直接寫在連結本身上。 */
+.schedule-stop-handouts { display: flex; flex: 0 0 auto; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
+.schedule-stop-handouts a { font-weight: 650; }
+
+/* summary 本身沿用 .schedule-stop 的 padding/圓點定位；hover/focus 時的淡底
+   提示是唯一允許出現的「有邊界的底色」，只在互動當下短暫出現，不是常駐的
+   卡片外觀。 */
+.schedule-summary { position: relative; border-radius: 8px; list-style: none; cursor: pointer; transition: background-color .16s ease; }
+.schedule-summary::-webkit-details-marker { display: none; }
+.schedule-summary:hover, .schedule-summary:focus-visible { background: var(--accent-soft); outline: none; }
+/* 展開圖示改成貼在線上、圓點正上方／正下方的兩個小箭頭，不再貼在 summary
+   右側——原本貼右側的做法會讓 summary 多一段留白，跟其他站的
+   .schedule-stop-body 沒對齊，講義連結也就跟著沒對齊。left: 6px 跟
+   .schedule-dot 用的是同一個 x 座標，兩者的 transform 都用 translate(-50%)
+   置中，理論上完全對齊；但原本圖示只有 .85rem、顏色又是很淺的 --muted，
+   小到不容易一眼確認它真的跟線對齊，所以放大到 1.2rem、加粗
+   stroke-width，預設顏色也直接用 --accent（不用等 hover／展開才變色），讓
+   它一眼就看得出來是貼在線上的可互動元素。收合時分別指向上／下（呼應
+   「過去往上展開、未來往下展開」的方向），展開後轉個方向指向圓點（呼應
+   「收回這一點」），顏色也加深到 --accent-strong；哪一段有內容才畫哪一個
+   箭頭。基準圖示（.ui-icon）是往右的 ">"，rotate(-90deg) 轉成往上、
+   rotate(90deg) 轉成往下——from/to 兩邊的 transform 函式清單結構相同（都是
+   translate 再 rotate），瀏覽器會逐一函式插值而不是整個矩陣分解，180 度的
+   角度差才會乾脆地轉過去，不會卡住或跳一下。 */
+.schedule-expand-arrow { position: absolute; left: 6px; display: flex; align-items: center; justify-content: center; width: 1.2rem; height: 1.2rem; color: var(--accent); transition: transform .18s var(--ease-out), color .16s ease; }
+.schedule-expand-arrow .ui-icon { width: 1.2rem; height: 1.2rem; stroke-width: 2.75; }
+.schedule-expand-arrow--up { top: 0; transform: translate(-50%, -50%) rotate(-90deg); }
+.schedule-expand-arrow--down { bottom: 0; transform: translate(-50%, 50%) rotate(90deg); }
+.schedule-panel[open] .schedule-expand-arrow--up { transform: translate(-50%, -50%) rotate(90deg); }
+.schedule-panel[open] .schedule-expand-arrow--down { transform: translate(-50%, 50%) rotate(-90deg); }
+.schedule-panel[open] .schedule-expand-arrow { color: var(--accent-strong); }
+.schedule-summary:hover .schedule-expand-arrow, .schedule-summary:focus-visible .schedule-expand-arrow { color: var(--accent-strong); }
+
+/* .resource-section:last-child 原本是要去掉整個頁面最後一個 resource-section
+   多餘的留白；但這個 section 是透過 renderSchedule() 動態塞進這個包裝用的
+   #schedule-slot div，變成該 div「唯一的子元素」而誤觸 :last-child，導致跟
+   下方課本區塊的間距被吃掉、跟其他 resource-section 之間的間距不一致。這裡
+   用 ID 選擇器的優先權把正常間距蓋回來。 */
+#schedule-slot > .resource-section { margin-bottom: var(--space-8); }
 
 .article-mode {
   height: 100vh;
@@ -663,33 +768,8 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .footer-sitemap-more { display: inline-flex !important; align-items: center; gap: .25rem; color: var(--muted) !important; }
 .footer-sitemap-more svg { width: .8rem; height: .8rem; }
 
-.resource-actions { display: flex; flex: 0 0 auto; gap: .6rem; align-items: center; }
 .resource-link--icon { width: 3.1rem; height: 3.1rem; justify-content: center; padding: 0; }
 .resource-link.resource-link--icon .ui-icon { width: 2rem; height: 2rem; }
-.resource-link--handout { width: 5rem; height: 2.4rem; justify-content: center; gap: .1rem; padding: 0; }
-.resource-link.resource-link--handout .ui-icon { width: 1.15rem; height: 1.15rem; opacity: 1; }
-/* --blank and --sol share the exact same color-mix() recipe — only the base
-   hue token differs — so 填空/解答 always carry identical contrast weight.
-   Mixing toward --surface/--text (not flat white/black) means the formula
-   self-adapts per theme, with no separate dark-mode overrides needed. */
-.resource-link--blank {
-  border-color: color-mix(in srgb, var(--tint-blank) 38%, var(--surface) 62%);
-  background: color-mix(in srgb, var(--tint-blank) 10%, var(--surface) 90%);
-  color: color-mix(in srgb, var(--tint-blank) 68%, var(--text) 32%);
-}
-.resource-link--blank:hover {
-  border-color: color-mix(in srgb, var(--tint-blank) 60%, var(--surface) 40%);
-  background: color-mix(in srgb, var(--tint-blank) 18%, var(--surface) 82%);
-}
-.resource-link--sol {
-  border-color: color-mix(in srgb, var(--tint-sol) 38%, var(--surface) 62%);
-  background: color-mix(in srgb, var(--tint-sol) 10%, var(--surface) 90%);
-  color: color-mix(in srgb, var(--tint-sol) 68%, var(--text) 32%);
-}
-.resource-link--sol:hover {
-  border-color: color-mix(in srgb, var(--tint-sol) 60%, var(--surface) 40%);
-  background: color-mix(in srgb, var(--tint-sol) 18%, var(--surface) 82%);
-}
 .article-overview { max-width: 58rem; }
 .article-overview-month { margin-bottom: var(--space-8); }
 .article-overview-month:last-child { margin-bottom: 0; }
