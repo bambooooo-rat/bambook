@@ -97,7 +97,7 @@ function bindEvents() {
     }
 
     const summary = target.closest("summary");
-    // 研討時間這個 details/summary 不像其他 .resource-details 可以在
+    // 研討期程這個 details/summary 不像其他 .resource-details 可以在
     // prefers-reduced-motion 時整個放手交給瀏覽器原生開合：過去場次的軌道是
     // 外層 .schedule-timeline 的另一個子元素、不受 <details> 原生開合影響
     // （見 toggleSchedulePanel() 的說明），一定要交給它自己同步狀態，動畫與
@@ -167,7 +167,7 @@ function toggleAnimatedDetails(details) {
     });
 }
 
-// 研討時間時間軸（.schedule-panel）的開合走的是自己的動畫，跟上面的
+// 研討期程時間軸（.schedule-panel）的開合走的是自己的動畫，跟上面的
 // toggleAnimatedDetails() 不一樣：那個是「summary 本身高度不變、下方長出
 // 一段新內容」的單向 accordion；這裡「下一次研討」那一站固定在中間，過去
 // 場次的軌道（.schedule-track--past）要往上展開、未來場次（--future）要往
@@ -629,7 +629,7 @@ function renderSyllabus(path) {
     });
 }
 
-// 課業輔導社群的研討時間表：materials/<course>/schedule.json，格式與
+// 課業輔導社群的研討期程表：materials/<course>/schedule.json，格式與
 // syllabus.json 相同（manifest 只存路徑，實際內容在此以 fetch 惰性載入）。
 // 預設只顯示「下一次最近的研討」卡片本身即為 <summary>，點選它會沿用既有的
 // details/summary 收合元件展開成地鐵路線圖式的完整期程（一直線搭配圓點），
@@ -640,7 +640,7 @@ function renderSyllabus(path) {
 function renderSchedule(path, handouts = []) {
   const slot = document.querySelector("#schedule-slot");
   if (!slot || !path) return;
-  slot.innerHTML = resourceSection("研討時間", `<p class="notice">正在載入研討時間…</p>`, ICONS.calendar);
+  slot.innerHTML = resourceSection("研討期程", `<p class="notice">正在載入研討期程…</p>`, ICONS.calendar);
   fetch(assetURL(path), { cache: "no-store" })
     .then(response => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -648,10 +648,10 @@ function renderSchedule(path, handouts = []) {
     })
     .then(items => {
       if (!Array.isArray(items)) throw new Error("資料格式不正確");
-      slot.innerHTML = resourceSection("研討時間", scheduleContent(items, handouts), ICONS.calendar);
+      slot.innerHTML = resourceSection("研討期程", scheduleContent(items, handouts), ICONS.calendar);
     })
     .catch(() => {
-      slot.innerHTML = resourceSection("研討時間", `<p class="notice">研討時間檔暫時無法讀取。</p>`, ICONS.calendar);
+      slot.innerHTML = resourceSection("研討期程", `<p class="notice">研討期程檔暫時無法讀取。</p>`, ICONS.calendar);
     });
 }
 
@@ -679,7 +679,7 @@ function scheduleContent(rawItems, handouts = []) {
     .filter(Boolean)
     .sort((a, b) => a.parsedDate - b.parsedDate);
 
-  if (!parsed.length) return emptyState("尚無研討時間資料。");
+  if (!parsed.length) return emptyState("尚無研討期程資料。");
 
   const hasUpcoming = parsed.some(item => !item.isPast);
   const upcomingIndex = parsed.findIndex(item => !item.isPast);
@@ -738,7 +738,13 @@ function scheduleHandoutLinks(handouts, handoutTitle) {
   const match = (Array.isArray(handouts) ? handouts : []).find(item => item && String(item.title || "").trim() === String(handoutTitle).trim());
   if (!match) return "";
   const links = `${handoutLink(match.blank, "填空", ICONS.fileOutline)}${handoutLink(match.sol, "解答", ICONS.fileText)}`;
-  return links ? `<div class="schedule-stop-handouts">${links}</div>` : "";
+  if (!links) return "";
+  return `
+    <span class="schedule-stop-leader" aria-hidden="true"></span>
+    <div class="schedule-stop-handouts">
+      <p class="schedule-stop-handouts-label">Handout</p>
+      <div class="schedule-stop-handouts-links">${links}</div>
+    </div>`;
 }
 
 // 每一站（過去／下一次／未來）共用同一套結構與樣式，差別只在 state 決定的
@@ -760,15 +766,16 @@ function scheduleStopInner(item, handouts, { featured = false } = {}) {
     ? `<p class="schedule-stop-label">${escapeHTML(item.isPast ? "最近一次研討（已結束）" : "下一次研討")}</p>`
     : "";
   return `
-    <span class="schedule-dot" aria-hidden="true"></span>
     <div class="schedule-stop-body">
       <div class="schedule-stop-text">
         ${label}
-        <p class="schedule-stop-topic">${escapeHTML(item.topic || "未命名研討")}</p>
+        <div class="schedule-stop-topic-row">
+          <p class="schedule-stop-topic"><span class="schedule-dot" aria-hidden="true"></span>${escapeHTML(item.topic || "未命名研討")}</p>
+          ${scheduleHandoutLinks(handouts, item.handout)}
+        </div>
         <p class="schedule-stop-meta">${escapeHTML(metaParts.join(" · "))}</p>
-        ${description}
       </div>
-      ${scheduleHandoutLinks(handouts, item.handout)}
+      ${description}
     </div>`;
 }
 
@@ -839,7 +846,7 @@ function externalResourceLink(url, label) {
 // （.resource-document-link），跟其他文件連結的資訊分級一致，不再用突兀的
 // 填色按鈕；圖示改用 icon 參數傳入的填空／解答專用圖示（見 ICONS.fileOutline／
 // ICONS.fileText），讓「這是講義」這件事光看圖示就認得出來，不用在文字裡
-// 重複寫一次「講義」。onclick="event.stopPropagation()"：研討時間「下一次
+// 重複寫一次「講義」。onclick="event.stopPropagation()"：研討期程「下一次
 // 研討」那一站本身是可點展開的 <summary>，若不擋住冒泡，點講義連結會被
 // document 上收合 details 的委派事件攔截、變成只是展開/收合而不會真的開啟
 // PDF。時間軸裡的講義連結不在 summary 內、不受影響，但一併加上這個保險不

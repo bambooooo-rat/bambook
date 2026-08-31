@@ -354,12 +354,19 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .schedule-timeline.is-open .schedule-track--past,
 .schedule-timeline.is-open .schedule-track--future { block-size: auto; }
 
-.schedule-stop { position: relative; padding: var(--space-4) 0 var(--space-4) var(--space-6); }
+.schedule-stop { position: relative; padding: var(--space-5) 0 var(--space-5) var(--space-6); }
 .schedule-track > .schedule-stop:first-child { padding-top: 0; }
 .schedule-track > .schedule-stop:last-child { padding-bottom: 0; }
-/* z-index: 1 讓圓點蓋在 ::before 那條線上面（線本身沒有設 z-index），視覺上
-   像是線被圓點「打斷」，而不是線疊在圓點上面。 */
-.schedule-dot { position: absolute; z-index: 1; left: 6px; top: 50%; box-sizing: border-box; width: 12px; height: 12px; border: 2px solid var(--bg); border-radius: 50%; background: var(--muted); transform: translate(-50%, -50%); }
+/* 圓點不再用 top: 50% 對齊整個 .schedule-stop（那樣場次一有說明文字、
+   高度變高，圓點就會偏離標題、飄到整段內容的正中間），改成以
+   .schedule-stop-topic（標題本身）當作定位基準，圓點是標題這個 <p> 底下
+   的子元素、position 相對它計算，top: 50% 對到的就只是標題那一行的高度，
+   跟下面有沒有說明文字、上面有沒有「下一次研討」標籤都無關。標題原本從
+   .schedule-stop 左側 padding（var(--space-6)）算起，圓點要維持在時間軸
+   線那個 x 座標（原本的 left: 6px），所以 left 改成 6px 再扣掉這段
+   padding；z-index: 1 讓圓點蓋在 ::before 那條線上面（線本身沒有設
+   z-index），視覺上像是線被圓點「打斷」，而不是線疊在圓點上面。 */
+.schedule-dot { position: absolute; z-index: 1; left: calc(6px - var(--space-6)); top: 50%; box-sizing: border-box; width: 12px; height: 12px; border: 2px solid var(--bg); border-radius: 50%; background: var(--muted); transform: translate(-50%, -50%); }
 .schedule-stop.is-past .schedule-dot { background: var(--border); }
 .schedule-stop.is-future .schedule-dot { background: var(--accent); }
 .schedule-stop.is-next .schedule-dot { background: var(--accent-strong); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); }
@@ -372,24 +379,53 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .schedule-stop--featured .schedule-stop-topic { font-size: var(--font-lg); font-weight: 700; }
 .schedule-stop-label { margin: 0 0 var(--space-1); color: var(--accent-strong); font-size: var(--font-xs); font-weight: 700; letter-spacing: .02em; }
 .schedule-stop.is-past .schedule-stop-label { color: var(--muted); }
-/* 每一站的文字（標題／日期地點／說明）與講義連結左右並排：文字佔滿剩餘
-   空間，連結固定寬度貼右側，版面太窄時（手機）自動換到下一行而不是硬擠。
-   標題／日期地點／說明彼此的間距刻意壓得很緊（同一個資訊群組），拉開的是
-   .schedule-stop 本身上下的 padding（見上方，一站與一站之間），研討場次一多
-   的時候才能一眼看出「這是一組」、「那是另一組」，而不是整段文字糊在一起。 */
-.schedule-stop-body { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
-.schedule-stop-text { flex: 1; min-width: 0; }
-.schedule-stop-topic { margin: 0; font-size: var(--font-md); font-weight: 650; }
+/* .schedule-stop-body 分成上下兩區：上區（.schedule-stop-text）是標題／
+   時空資訊，下區是說明文字，刻意獨立成 .schedule-stop-body 的直接子元素、
+   不再塞在文字欄位裡——這樣說明才能撐滿整個 .schedule-stop-body 的寬度，
+   文字一多也是照整站寬度換行。標題／時空資訊彼此的間距刻意壓得很緊
+   （同一個資訊群組），拉開的是 .schedule-stop 本身上下的 padding（見上方，
+   一站與一站之間），研討場次一多的時候才能一眼看出「這是一組」、
+   「那是另一組」，而不是整段文字糊在一起。 */
+.schedule-stop-body { display: flex; flex-direction: column; gap: var(--space-2); }
+.schedule-stop-text { flex: 1; min-width: 0; container-type: inline-size; }
+.schedule-stop-topic { position: relative; margin: 0; font-size: var(--font-md); font-weight: 650; }
 .schedule-stop-meta { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--font-xs); }
-.schedule-stop-description { margin: var(--space-1) 0 0; color: var(--text); font-size: var(--font-xs); line-height: 1.6; }
+.schedule-stop-description { margin: 0; color: var(--text); font-size: var(--font-xs); line-height: 1.6; }
 .schedule-stop.is-past .schedule-stop-topic, .schedule-stop.is-past .schedule-stop-meta, .schedule-stop.is-past .schedule-stop-description { color: var(--muted); }
 .schedule-stop.is-past .schedule-stop-topic { font-weight: 500; }
 .schedule-stop.is-next .schedule-stop-topic { color: var(--accent-strong); }
+/* 講義不再放右側獨立欄位，改成直接接在研討主題後面、中間用一條虛線
+   （.schedule-stop-leader）連起來，讓「這份講義屬於這個主題」的關係一眼
+   就看得出來，而不是隔著一大段空白各自獨立。連接線用 flex:1 撐滿主題跟
+   講義之間的剩餘空間，用實線（不是虛線）＋淡色，稍微加粗到 2px 讓它在
+   撐滿整行時還是看得清楚，但顏色維持淺淡不搶主題的風頭。
+   .schedule-stop-topic-row 設 container-type: inline-size（在上層
+   .schedule-stop-text）是為了在版面窄到放不下時（見下方 @container），
+   讓講義自動換到主題下一行、連接線跟著一起消失，而不是硬擠成一行或
+   孤伶伶地留在原地。「Handout」標籤維持跟 .course-sidebar h2 一樣安靜的
+   灰階小標籤（不用 .eyebrow 那種搶眼的 --accent-strong），但字重加粗、
+   顏色再淡一階（color-mix 把 --muted 往透明調淡，沿用 .toc-empty 同樣的
+   調淡手法），在小字級、緊湊的版面裡才不會糊成一片，同時仍然明顯比研討
+   主題安靜，主題才是這裡最主要的資訊。 */
+.schedule-stop-topic-row { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-2); row-gap: var(--space-1); }
+.schedule-stop-topic-row .schedule-stop-topic { flex: 0 1 auto; }
+.schedule-stop-leader { flex: 1 1 auto; min-width: var(--space-4); border-bottom: 2px solid color-mix(in srgb, var(--border) 80%, transparent); }
+.schedule-stop-handouts { display: flex; flex: 0 0 auto; align-items: center; gap: var(--space-2); white-space: nowrap; }
+.schedule-stop-handouts-label { margin: 0; color: color-mix(in srgb, var(--muted) 70%, transparent); font-size: var(--font-2xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 /* font-weight: 650 跟 .resource-name／.resource-document-link 在其他區塊
    （課本／投影片／練習與資源）用的字重一致——那邊的連結是靠外層 .resource-name
    的 font-weight 繼承來的，這裡沒有那層外殼，直接寫在連結本身上。 */
-.schedule-stop-handouts { display: flex; flex: 0 0 auto; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
-.schedule-stop-handouts a { font-weight: 650; }
+.schedule-stop-handouts-links { display: flex; gap: var(--space-1) var(--space-3); }
+.schedule-stop-handouts-links a { font-weight: 650; }
+/* 版面窄到主題＋虛線＋講義擠不下一行時（例如手機），虛線直接藏起來、講義
+   整個掉到主題下一行單獨一行，而不是留下斷斷續續的虛線或把講義擠得很窄。
+   用 container query（容器是 .schedule-stop-text）而不是 viewport media
+   query，是因為決定放不放得下的是這一站文字欄位的實際寬度，不是整個
+   視窗寬度（例如有沒有側欄會影響欄位寬度，但不影響視窗寬度）。 */
+@container (max-width: 420px) {
+  .schedule-stop-leader { display: none; }
+  .schedule-stop-handouts { flex-basis: 100%; }
+}
 
 /* summary 本身沿用 .schedule-stop 的 padding/圓點定位；hover/focus 時的淡底
    提示是唯一允許出現的「有邊界的底色」，只在互動當下短暫出現，不是常駐的
