@@ -355,8 +355,21 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .schedule-timeline.is-open .schedule-track--future { block-size: auto; }
 
 .schedule-stop { position: relative; padding: var(--space-5) 0 var(--space-5) var(--space-6); }
-.schedule-track > .schedule-stop:first-child { padding-top: 0; }
-.schedule-track > .schedule-stop:last-child { padding-bottom: 0; }
+/* 只有真正在整條時間軸最上面／最下面的那一項，外側 padding 才歸零：過去
+   段落的第一項是真正的頂端、未來段落的最後一項是真正的底端，這兩個保留
+   歸零。原本用同一條規則（.schedule-track > .schedule-stop）連過去段落
+   的「最後一項」、未來段落的「第一項」也一起歸零了，但它們後面／前面
+   接的其實是「下一次研討」（summary，在 <details> 裡，不是同一個
+   .schedule-track 的小孩，不是時間軸的真正邊界）——這讓「下一次研討」跟
+   前後場次的間距只剩一般場次間距的一半，看起來特別擠、跟其他場次之間的
+   間距不一致。改成分別只認過去段落的第一項、未來段落的最後一項。summary
+   本身也比照：只有在沒有未來場次時它才是真正的底端，才歸零對應側的
+   padding（平常前後都接著場次，保留完整 padding，跟一般場次之間的間距
+   一致）。summary 的 padding-top 另外交給下面 .schedule-stop--featured
+   那條規則統一處理，不在這裡重複寫。 */
+.schedule-track--past > .schedule-stop:first-child { padding-top: 0; }
+.schedule-track--future > .schedule-stop:last-child { padding-bottom: 0; }
+.schedule-panel > .schedule-summary:last-child { padding-bottom: 0; }
 /* 圓點不再用 top: 50% 對齊整個 .schedule-stop（那樣場次一有說明文字、
    高度變高，圓點就會偏離標題、飄到整段內容的正中間），改成以
    .schedule-stop-topic（標題本身）當作定位基準，圓點是標題這個 <p> 底下
@@ -372,7 +385,16 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .schedule-stop.is-next .schedule-dot { background: var(--accent-strong); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); }
 /* 「下一次研討」這一站是整條時間軸目前的焦點：圓點放大、加光暈、標題加粗
    來強調，但圓點置中用 transform: translate(-50%, -50%) 固定在同一個
-   x 座標，所以放大不會跟其他站的圓點對不齊。 */
+   x 座標，所以放大不會跟其他站的圓點對不齊。
+   featured 項目上方多一行「下一次研討」／「最近一次研討（已結束）」的
+   標籤（.schedule-stop-label），這行字本身的高度（含它自己的
+   margin-bottom）已經足夠撐出視覺間距，如果再疊加一般場次用的
+   padding-top（var(--space-5)），上方看起來就會比下方、也比一般場次之間
+   多出一截，跟其他場次的間距不一致。乾脆把 featured 項目的 padding-top
+   歸零，讓標籤自己的高度取代 padding-top 的角色（這同時也涵蓋了「沒有
+   過去場次、featured 是時間軸真正頂端」那種情況，不用再另外寫一條
+   規則）。 */
+.schedule-stop--featured { padding-top: 0; }
 .schedule-stop--featured .schedule-dot { width: 16px; height: 16px; }
 .schedule-stop--featured.is-next .schedule-dot { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent); }
 .schedule-stop--featured.is-past .schedule-dot { box-shadow: 0 0 0 5px color-mix(in srgb, var(--muted) 22%, transparent); }
@@ -394,11 +416,14 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .schedule-stop.is-past .schedule-stop-topic, .schedule-stop.is-past .schedule-stop-meta, .schedule-stop.is-past .schedule-stop-description { color: var(--muted); }
 .schedule-stop.is-past .schedule-stop-topic { font-weight: 500; }
 .schedule-stop.is-next .schedule-stop-topic { color: var(--accent-strong); }
-/* 講義不再放右側獨立欄位，改成直接接在研討主題後面、中間用一條虛線
+/* 講義不再放右側獨立欄位，改成直接接在研討主題後面、中間用一條連接線
    （.schedule-stop-leader）連起來，讓「這份講義屬於這個主題」的關係一眼
-   就看得出來，而不是隔著一大段空白各自獨立。連接線用 flex:1 撐滿主題跟
-   講義之間的剩餘空間，用實線（不是虛線）＋淡色，稍微加粗到 2px 讓它在
-   撐滿整行時還是看得清楚，但顏色維持淺淡不搶主題的風頭。
+   就看得出來，而不是隔著一大段空白各自獨立。這條線不管這一站有沒有講義
+   都會畫出來（見 site.js 的 scheduleStopInner()）：有講義時線會停在講義
+   容器前面，沒有講義、或講義有指定但找不到對應檔案時，線改成靠 flex:1
+   一路撐到這一列最右側，而不是主題後面就什麼都沒有、憑空斷掉。線用
+   實線＋淡色，稍微加粗到 2px 讓它在撐滿整行時還是看得清楚，但顏色維持
+   淺淡不搶主題的風頭。
    .schedule-stop-topic-row 設 container-type: inline-size（在上層
    .schedule-stop-text）是為了在版面窄到放不下時（見下方 @container），
    讓講義自動換到主題下一行、連接線跟著一起消失，而不是硬擠成一行或
