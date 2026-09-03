@@ -8,12 +8,22 @@
 //     那筆文件即可）。
 //
 // 每則留言有一個「👍」讚數，同學看到已經有人寫過一樣的想法時可以直接按讚，
-// 不用再打一次。同一支瀏覽器對同一則留言只能按一次讚（存在 localStorage
-// 裡當作提醒用，不是強制的帳號機制）。
+// 不用再打一次；按下去之後在離開這一頁之前都還可以再按一次取消，每一次
+// 按下／取消都會即時寫回 Firestore（不是只在自己瀏覽器裡假裝改變，其他
+// 人也會馬上看到數字變化）。同一支瀏覽器記得自己按過哪些讚（存在
+// localStorage 裡當作提醒用，不是強制的帳號機制），重新整理頁面後這個
+// 記憶還在，但那之後就只能再按一次「取消」，沒辦法無限次切換。
+//
+// 長按（手機長按）或按滑鼠右鍵（電腦，比長按更符合桌機使用者習慣）任何
+// 一則留言，會出現「編輯」「刪除」，因為完全匿名沒有帳號系統，所以任何
+// 人都可以編輯或刪除任何一則留言——這是刻意的設計，不是漏洞。刪除前一定
+// 會先跳出確認提示；編輯會把新的文字跟「已編輯」標記一起即時寫回
+// Firestore，其他人也會馬上看到。
 //
 // 畫面分成「骨架」（題目、文字框，每次切換場次才重建一次）和「內容更新」
 // （留言列表、讚數，隨 Firestore 即時資料更新）兩層，這樣其他同學送出
-// 留言或按讚時，不會把正在輸入中的文字框內容洗掉。
+// 留言或按讚時，不會把正在輸入中的文字框內容洗掉；正在編輯中的留言也會
+// 在重繪後把游標位置還原回去，不會打字打到一半游標就跳走。
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {
@@ -22,6 +32,7 @@ import {
   addDoc,
   doc,
   updateDoc,
+  deleteDoc,
   increment,
   onSnapshot,
   query,
@@ -52,6 +63,14 @@ let currentSession = null;
 let latestGrouped = {};
 let unsubResponses = null;
 let likedIds = loadLikedIds();
+
+// 長按留言後的小選單狀態。同一時間只會有一則留言處於「展開選單／編輯中／
+// 刪除確認中」，用留言 id 記錄，畫面重繪時照這個狀態決定要畫哪一種樣子。
+let activeNoteId = null;
+let editingNoteId = null;
+let confirmDeleteId = null;
+const editDrafts = new Map(); // noteId -> 編輯中尚未送出的草稿文字
+const pendingNoteActions = new Set(); // 正在送出中的編輯／刪除（noteId）
 
 function loadLikedIds() {
   try {
@@ -112,58 +131,342 @@ function showToast(message) {
   }, 2200);
 }
 
-async function likeNote(noteId) {
-  if (likedIds.has(noteId)) return;
-  likedIds.add(noteId);
+// 正在送出中的讚／取消讚（noteId 的集合），送出期間鎖住那顆按鈕，避免
+// 連續點擊在請求還沒回來前就把本機狀態跟資料庫寫壞。
+const pendingLikes = new Set();
+
+async function toggleLike(noteId) {
+  if (pendingLikes.has(noteId)) return;
+  const wasLiked = likedIds.has(noteId);
+  pendingLikes.add(noteId);
+
+  if (wasLiked) likedIds.delete(noteId);
+  else likedIds.add(noteId);
   saveLikedIds();
   renderStancePanels();
+
   try {
-    await updateDoc(doc(db, "responses", noteId), { likes: increment(1) });
+    await updateDoc(doc(db, "responses", noteId), { likes: increment(wasLiked ? -1 : 1) });
   } catch (error) {
     console.error(error);
-    likedIds.delete(noteId);
+    // 失敗就把本機狀態退回去，畫面跟資料庫才不會兜不起來。
+    if (wasLiked) likedIds.add(noteId);
+    else likedIds.delete(noteId);
     saveLikedIds();
+    showToast(wasLiked ? "取消讚失敗，請稍後再試。" : "按讚失敗，請稍後再試。");
+  } finally {
+    pendingLikes.delete(noteId);
     renderStancePanels();
-    showToast("按讚失敗，請稍後再試。");
   }
+}
+
+// 開啟「編輯／刪除」選單的手勢：手機／觸控用長按（按住超過 LONG_PRESS_MS
+// 沒有明顯移動），電腦用滑鼠右鍵（更符合桌機使用者的習慣，右鍵選單本來
+// 就是「針對這個東西的動作」）。兩種手勢共用同一個 onTrigger callback。
+const LONG_PRESS_MS = 500;
+const LONG_PRESS_MOVE_TOLERANCE = 10;
+
+function attachLongPress(el, onTrigger) {
+  let timer = null;
+  let startX = 0;
+  let startY = 0;
+
+  const clear = () => {
+    clearTimeout(timer);
+    timer = null;
+  };
+
+  el.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    startX = event.clientX;
+    startY = event.clientY;
+    clear();
+    timer = setTimeout(onTrigger, LONG_PRESS_MS);
+  });
+
+  el.addEventListener("pointermove", (event) => {
+    if (!timer) return;
+    if (
+      Math.abs(event.clientX - startX) > LONG_PRESS_MOVE_TOLERANCE ||
+      Math.abs(event.clientY - startY) > LONG_PRESS_MOVE_TOLERANCE
+    ) {
+      clear();
+    }
+  });
+
+  ["pointerup", "pointercancel", "pointerleave"].forEach((type) => el.addEventListener(type, clear));
+
+  // 右鍵／觸控長按有時候跳出的瀏覽器原生選單一律擋掉，改成觸發我們自己
+  // 畫的「編輯／刪除」選單（部分觸控瀏覽器長按放開時也會補發一次
+  // contextmenu，這裡也一併處理，重複觸發 onTrigger 沒有副作用）。
+  el.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    onTrigger();
+  });
+}
+
+function closeAllNoteMenus() {
+  activeNoteId = null;
+  editingNoteId = null;
+  confirmDeleteId = null;
+}
+
+function buildNoteActionBar(item) {
+  const bar = document.createElement("div");
+  bar.className = "stance-note-actions";
+
+  const editBtn = document.createElement("button");
+  editBtn.type = "button";
+  editBtn.className = "stance-note-action-btn";
+  editBtn.textContent = "編輯";
+  editBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    editingNoteId = item.id;
+    if (!editDrafts.has(item.id)) editDrafts.set(item.id, item.text);
+    renderStancePanels();
+  });
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "stance-note-action-btn danger";
+  deleteBtn.textContent = "刪除";
+  deleteBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    confirmDeleteId = item.id;
+    renderStancePanels();
+  });
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "stance-note-action-btn";
+  closeBtn.textContent = "關閉";
+  closeBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    closeAllNoteMenus();
+    renderStancePanels();
+  });
+
+  bar.appendChild(editBtn);
+  bar.appendChild(deleteBtn);
+  bar.appendChild(closeBtn);
+  return bar;
+}
+
+function buildNoteDeleteConfirm(item) {
+  const bar = document.createElement("div");
+  bar.className = "stance-note-confirm";
+  const pending = pendingNoteActions.has(item.id);
+
+  const msg = document.createElement("span");
+  msg.className = "stance-note-confirm-text";
+  msg.textContent = "確定要刪除這則留言嗎？刪除後無法復原，任何人的留言都可以互相刪除。";
+  bar.appendChild(msg);
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.type = "button";
+  confirmBtn.className = "stance-note-action-btn danger";
+  confirmBtn.textContent = "確定刪除";
+  confirmBtn.disabled = pending;
+  confirmBtn.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    if (pendingNoteActions.has(item.id)) return;
+    pendingNoteActions.add(item.id);
+    renderStancePanels();
+    try {
+      await deleteDoc(doc(db, "responses", item.id));
+      closeAllNoteMenus();
+      showToast("留言已刪除。");
+    } catch (error) {
+      console.error(error);
+      showToast("刪除失敗，請稍後再試。");
+    } finally {
+      pendingNoteActions.delete(item.id);
+      renderStancePanels();
+    }
+  });
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "stance-note-action-btn";
+  cancelBtn.textContent = "取消";
+  cancelBtn.disabled = pending;
+  cancelBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    confirmDeleteId = null;
+    renderStancePanels();
+  });
+
+  bar.appendChild(confirmBtn);
+  bar.appendChild(cancelBtn);
+  return bar;
+}
+
+function buildNoteEditForm(item) {
+  const form = document.createElement("form");
+  form.className = "stance-note-edit";
+  const pending = pendingNoteActions.has(item.id);
+
+  const textarea = document.createElement("textarea");
+  textarea.maxLength = 300;
+  textarea.rows = 1;
+  textarea.dataset.noteId = item.id;
+  textarea.value = editDrafts.has(item.id) ? editDrafts.get(item.id) : item.text;
+  textarea.disabled = pending;
+  // 點擊／按住輸入框本身不該被當成又一次「長按這則留言」。
+  textarea.addEventListener("pointerdown", (event) => event.stopPropagation());
+  textarea.addEventListener("click", (event) => event.stopPropagation());
+
+  const row = document.createElement("div");
+  row.className = "stance-note-edit-row";
+
+  const charCount = document.createElement("span");
+  charCount.className = "stance-char-count";
+  charCount.textContent = `${textarea.value.length}/300`;
+
+  textarea.addEventListener("input", () => {
+    charCount.textContent = `${textarea.value.length}/300`;
+    editDrafts.set(item.id, textarea.value);
+  });
+
+  const actions = document.createElement("div");
+  actions.className = "stance-note-actions";
+
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "submit";
+  saveBtn.className = "stance-note-action-btn";
+  saveBtn.textContent = "儲存";
+  saveBtn.disabled = pending;
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "stance-note-action-btn";
+  cancelBtn.textContent = "取消";
+  cancelBtn.disabled = pending;
+  cancelBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    closeAllNoteMenus();
+    editDrafts.delete(item.id);
+    renderStancePanels();
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (pendingNoteActions.has(item.id)) return;
+    const newText = textarea.value.trim();
+    if (!newText) return;
+    if (newText === item.text) {
+      closeAllNoteMenus();
+      editDrafts.delete(item.id);
+      renderStancePanels();
+      return;
+    }
+    pendingNoteActions.add(item.id);
+    renderStancePanels();
+    try {
+      await updateDoc(doc(db, "responses", item.id), {
+        text: newText,
+        editedAt: serverTimestamp(),
+      });
+      closeAllNoteMenus();
+      editDrafts.delete(item.id);
+      showToast("留言已更新。");
+    } catch (error) {
+      console.error(error);
+      showToast("更新失敗，請稍後再試。");
+    } finally {
+      pendingNoteActions.delete(item.id);
+      renderStancePanels();
+    }
+  });
+
+  actions.appendChild(saveBtn);
+  actions.appendChild(cancelBtn);
+  row.appendChild(charCount);
+  row.appendChild(actions);
+  form.appendChild(textarea);
+  form.appendChild(row);
+  return form;
 }
 
 function buildNoteRow(item) {
   const row = document.createElement("div");
   row.className = "stance-note";
+  row.title = "長按（或按右鍵）可編輯或刪除這則留言";
 
-  const text = document.createElement("span");
-  text.className = "stance-note-text";
-  text.textContent = item.text;
+  const isEditing = editingNoteId === item.id;
 
-  const likeBtn = document.createElement("button");
-  likeBtn.type = "button";
-  likeBtn.className = "stance-like-btn";
-  const already = likedIds.has(item.id);
-  likeBtn.disabled = already;
-  likeBtn.textContent = `👍 ${item.likes || 0}`;
-  if (already) likeBtn.classList.add("is-liked");
-  likeBtn.addEventListener("click", () => likeNote(item.id));
+  // 編輯中就不重複顯示原本那行靜態文字了（下面的輸入框本身已經預填同樣
+  // 內容），避免同一句話在畫面上出現兩次。
+  if (!isEditing) {
+    const main = document.createElement("div");
+    main.className = "stance-note-main";
 
-  row.appendChild(text);
-  row.appendChild(likeBtn);
+    const text = document.createElement("span");
+    text.className = "stance-note-text";
+    text.textContent = item.text;
+
+    const meta = document.createElement("span");
+    meta.className = "stance-note-meta";
+
+    if (item.edited) {
+      const editedTag = document.createElement("span");
+      editedTag.className = "stance-note-edited";
+      editedTag.textContent = "已編輯";
+      meta.appendChild(editedTag);
+    }
+
+    const likeBtn = document.createElement("button");
+    likeBtn.type = "button";
+    likeBtn.className = "stance-like-btn";
+    const liked = likedIds.has(item.id);
+    likeBtn.disabled = pendingLikes.has(item.id);
+    likeBtn.setAttribute("aria-pressed", String(liked));
+    likeBtn.title = liked ? "再按一次取消讚" : "覺得這則想法也是你要說的，按讚就好，不用重打一次";
+    likeBtn.textContent = `👍 ${item.likes || 0}`;
+    if (liked) likeBtn.classList.add("is-liked");
+    likeBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      toggleLike(item.id);
+    });
+    meta.appendChild(likeBtn);
+
+    main.appendChild(text);
+    main.appendChild(meta);
+    row.appendChild(main);
+  }
+
+  if (isEditing) {
+    row.appendChild(buildNoteEditForm(item));
+  } else if (confirmDeleteId === item.id) {
+    row.appendChild(buildNoteDeleteConfirm(item));
+  } else if (activeNoteId === item.id) {
+    row.appendChild(buildNoteActionBar(item));
+  }
+
+  attachLongPress(row, () => {
+    if (pendingNoteActions.has(item.id) || editingNoteId === item.id || confirmDeleteId === item.id) return;
+    activeNoteId = item.id;
+    renderStancePanels();
+  });
+
   return row;
 }
 
-function buildStancePanel(question, stance, label) {
+function buildStancePanel(question, stance) {
   const panel = document.createElement("div");
   panel.className = `stance-panel ${stance}`;
 
-  const labelRow = document.createElement("div");
-  labelRow.className = "stance-label";
-  const labelSpan = document.createElement("span");
-  labelSpan.textContent = stance === "agree" ? "對" : "錯";
-  const countSpan = document.createElement("span");
+  const heading = document.createElement("p");
+  heading.className = "stance-heading";
+  heading.textContent =
+    stance === "agree" ? "我認為該敘述是對的，因為……" : "我認為該敘述是錯的，因為……";
+  panel.appendChild(heading);
+
+  const countSpan = document.createElement("p");
   countSpan.className = "stance-count";
   countSpan.id = `count-${question.id}-${stance}`;
-  labelRow.appendChild(labelSpan);
-  labelRow.appendChild(countSpan);
-  panel.appendChild(labelRow);
+  panel.appendChild(countSpan);
 
   const notes = document.createElement("div");
   notes.className = "stance-notes";
@@ -175,8 +478,8 @@ function buildStancePanel(question, stance, label) {
 
   const textarea = document.createElement("textarea");
   textarea.maxLength = 300;
-  textarea.placeholder =
-    stance === "agree" ? "為什麼你覺得這是對的？" : "為什麼你覺得這是錯的？可以舉個反例。";
+  textarea.rows = 1;
+  textarea.placeholder = stance === "agree" ? "請說明你的理由……" : "請說明你的理由，或舉個反例……";
 
   const row = document.createElement("div");
   row.className = "stance-form-row";
@@ -250,8 +553,8 @@ function renderSkeleton(session) {
 
     const columns = document.createElement("div");
     columns.className = "question-columns";
-    columns.appendChild(buildStancePanel(q, "agree", "對"));
-    columns.appendChild(buildStancePanel(q, "disagree", "錯"));
+    columns.appendChild(buildStancePanel(q, "agree"));
+    columns.appendChild(buildStancePanel(q, "disagree"));
     row.appendChild(columns);
 
     listEl.appendChild(row);
@@ -263,11 +566,21 @@ function renderSkeleton(session) {
 function renderStancePanels() {
   if (!currentSession) return;
 
+  // 如果使用者正在編輯某則留言、游標目前就在那個輸入框裡，先記住游標
+  // 位置——即時資料更新（別人送出新留言、按讚等）觸發的重繪才不會把
+  // 正在打的字或游標弄丟。
+  const activeEl = document.activeElement;
+  const hadEditFocus =
+    editingNoteId &&
+    activeEl instanceof HTMLTextAreaElement &&
+    activeEl.dataset.noteId === editingNoteId;
+  const editCaret = hadEditFocus ? { start: activeEl.selectionStart, end: activeEl.selectionEnd } : null;
+
   currentSession.questions.forEach((q) => {
     ["agree", "disagree"].forEach((stance) => {
       const items = (latestGrouped[q.id] && latestGrouped[q.id][stance]) || [];
       const countEl = document.getElementById(`count-${q.id}-${stance}`);
-      if (countEl) countEl.textContent = items.length ? `${items.length} 則` : "";
+      if (countEl) countEl.textContent = items.length ? `目前有 ${items.length} 則想法` : "";
 
       const notesEl = document.getElementById(`notes-${q.id}-${stance}`);
       if (!notesEl) return;
@@ -285,6 +598,18 @@ function renderStancePanels() {
   });
 
   renderMath(listEl);
+
+  if (hadEditFocus) {
+    const restored = listEl.querySelector(`textarea[data-note-id="${CSS.escape(editingNoteId)}"]`);
+    if (restored) {
+      restored.focus();
+      try {
+        restored.setSelectionRange(editCaret.start, editCaret.end);
+      } catch (error) {
+        // 部分瀏覽器在特定狀態下可能丟例外，忽略即可，不影響其他功能。
+      }
+    }
+  }
 }
 
 function switchSession(sessionId) {
@@ -313,6 +638,7 @@ function switchSession(sessionId) {
           id: docSnap.id,
           text: d.text,
           likes: typeof d.likes === "number" ? d.likes : 0,
+          edited: !!d.editedAt,
           millis,
         });
       });

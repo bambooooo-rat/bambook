@@ -6,11 +6,18 @@
 //   - 任何人可以讀取全部留言。
 //   - 任何人可以「新增」一則新留言，會檢查欄位型別與長度，擋掉明顯不合法
 //     的寫入，新留言的 likes 一定要是 0。
-//   - 已存在的留言只允許一種修改：把 likes 剛好加 1（對應網頁上的「👍」
-//     按讚按鈕），除此之外不能修改或刪除任何留言、也不能一次加超過 1。
-//   - 如果有不合適的留言，老師直接到 Firebase Console 的 Firestore
-//     Database 頁面手動刪除該筆文件即可，這份規則不區分「老師」跟
-//     「學生」的身分。
+//   - 已存在的留言允許兩種、互斥的修改方式：
+//       1. 按讚／取消讚：把 likes 剛好加 1 或減 1，likes 不能變成負的，
+//          其他欄位不能一起變。
+//       2. 編輯留言文字（畫面上長按留言、選「編輯」）：只能改 text，並且
+//          要一併寫入 editedAt 為目前時間（畫面會顯示「已編輯」），長度
+//          限制跟新增時一樣；likes、所屬場次/題目/立場等欄位不能跟著變。
+//   - 任何人都可以刪除任何一則留言（畫面上長按留言、選「刪除」，送出前
+//     一定會先跳出確認提示，避免手滑誤刪）。
+//   - 這份工具完全匿名、沒有帳號系統，所以「任何人都可以編輯／刪除任何
+//     一則留言」是刻意的設計，不是漏洞——技術上沒辦法區分「是不是本人在
+//     改自己的留言」。如果有明顯不合適的內容，老師也可以直接到 Firebase
+//     Console 的 Firestore Database 頁面手動刪除該筆文件。
 
 rules_version = '2';
 service cloud.firestore {
@@ -34,13 +41,30 @@ service cloud.firestore {
         request.resource.data.likes == 0 &&
         request.resource.data.createdAt == request.time;
 
-      // 只允許「把 likes 剛好加 1」這一種更新，其他欄位一律不能變。
       allow update: if
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']) &&
-        request.resource.data.likes is int &&
-        request.resource.data.likes == resource.data.likes + 1;
+        (
+          // 按讚／取消讚：只能把 likes 剛好加 1 或減 1，不能變負的，其他
+          // 欄位不能一起變。
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']) &&
+          request.resource.data.likes is int &&
+          request.resource.data.likes >= 0 &&
+          (
+            request.resource.data.likes == resource.data.likes + 1 ||
+            request.resource.data.likes == resource.data.likes - 1
+          )
+        ) || (
+          // 編輯留言文字：只能改 text（跟一併記錄的 editedAt），長度限制
+          // 跟新增時一樣，likes 跟其他欄位不能一起變。
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text', 'editedAt']) &&
+          request.resource.data.text is string &&
+          request.resource.data.text.size() > 0 &&
+          request.resource.data.text.size() <= 300 &&
+          request.resource.data.editedAt == request.time
+        );
 
-      allow delete: if false;
+      // 任何人都可以刪除任何一則留言（網頁上長按留言、按「刪除」，送出前
+      // 會先跳出確認提示）。
+      allow delete: if true;
     }
   }
 }

@@ -11,6 +11,16 @@
   --agree-border: #bfe6d3;
   --disagree: #b42318;
   --disagree-border: #f3c6c2;
+
+  /* Soft top-to-bottom colour wash for each stance panel — a tinted zone,
+     not an outlined card (no border, no shadow), so the 對/錯 "duel" reads
+     at a glance without slipping into generic bordered-card territory. */
+  --agree-wash: linear-gradient(180deg, color-mix(in srgb, var(--agree) 12%, var(--bg)) 0%, var(--bg) 70%);
+  --disagree-wash: linear-gradient(180deg, color-mix(in srgb, var(--disagree) 12%, var(--bg)) 0%, var(--bg) 70%);
+
+  /* 題目跟題目之間的分隔線——比共用的 --border 深，才能在畫面上真的
+     切出一段落，而不是被讀成裝飾用的細線。 */
+  --question-divider: color-mix(in srgb, var(--text) 55%, var(--border));
 }
 
 * {
@@ -23,6 +33,15 @@ body {
   color: var(--text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 除了同學寫的留言內容以外，其餘文字（題目、標題、按鈕……）一律不可選取，
+   避免上課投影時不小心整段被選到；留言本身還是要能選取，方便複製、引用。 */
+.stance-note-text {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .sr-only {
@@ -111,12 +130,20 @@ body {
 .question-list {
   display: flex;
   flex-direction: column;
-  border-bottom: 2px solid var(--border);
+  border-bottom: 3px solid var(--question-divider);
 }
 
 .question-row {
-  padding: var(--space-6) 0;
-  border-top: 2px solid var(--border);
+  /* 分隔線刻意偏向「收尾上一題」：線的上方（跟上一題內容的距離）留白
+     較少，線的下方（跟這一題標題的距離）留白較多，讓每條線讀起來像是
+     結束了前一題，而不是浮在兩題中間看不出屬於哪一邊。 */
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-3);
+  border-top: 3px solid var(--question-divider);
+}
+
+.question-row:first-child {
+  padding-top: var(--space-6);
 }
 
 .question-index {
@@ -149,19 +176,26 @@ body {
   }
 }
 
-.stance-label {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-  font-size: var(--font-sm);
-  font-weight: 700;
+.stance-panel {
+  padding: var(--space-4);
+  border-radius: var(--radius);
 }
 
-.stance-panel.agree .stance-label { color: var(--agree); }
-.stance-panel.disagree .stance-label { color: var(--disagree); }
+.stance-panel.agree { background: var(--agree-wash); }
+.stance-panel.disagree { background: var(--disagree-wash); }
+
+.stance-heading {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-sm);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.stance-panel.agree .stance-heading { color: var(--agree); }
+.stance-panel.disagree .stance-heading { color: var(--disagree); }
 
 .stance-count {
+  margin: 0 0 var(--space-3);
   font-weight: 400;
   font-size: var(--font-2xs);
   color: var(--muted);
@@ -170,21 +204,27 @@ body {
 .stance-notes {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
   margin-bottom: var(--space-3);
 }
 
 .stance-note {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  -webkit-touch-callout: none; /* 長按時不要跳出手機原生的選取/選單 */
+}
+
+.stance-note + .stance-note {
+  border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.stance-note-main {
+  display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
-  padding-left: var(--space-3);
-  border-left: 2px solid var(--border);
 }
-
-.stance-panel.agree .stance-note { border-left-color: var(--agree-border); }
-.stance-panel.disagree .stance-note { border-left-color: var(--disagree-border); }
 
 .stance-note-text {
   flex: 1;
@@ -193,6 +233,96 @@ body {
   line-height: 1.65;
   color: var(--text);
   overflow-wrap: anywhere;
+}
+
+.stance-note-meta {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.stance-note-edited {
+  font-size: var(--font-2xs);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ---------- 長按留言：編輯／刪除選單 ---------- */
+
+.stance-note-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.stance-note-action-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: var(--font-2xs);
+  font-weight: 700;
+  color: var(--accent-strong);
+  cursor: pointer;
+}
+
+.stance-note-action-btn.danger {
+  color: var(--disagree);
+}
+
+.stance-note-action-btn:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.stance-note-confirm {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--disagree-wash);
+}
+
+.stance-note-confirm-text {
+  flex: 1 1 220px;
+  font-size: var(--font-2xs);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.stance-note-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stance-note-edit textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  min-height: 2.3rem;
+  border: 0;
+  border-bottom: 1px solid var(--accent);
+  padding: 0 0 var(--space-1);
+  font-family: inherit;
+  font-size: var(--font-sm);
+  line-height: 1.4;
+  background: transparent;
+  color: var(--text);
+}
+
+.stance-note-edit textarea:focus {
+  outline: none;
+}
+
+.stance-note-edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .stance-like-btn {
@@ -218,10 +348,10 @@ body {
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-weight: 700;
-  cursor: default;
 }
 
 .stance-like-btn:disabled {
+  opacity: .6;
   cursor: default;
 }
 
@@ -239,14 +369,16 @@ body {
 }
 
 .stance-form textarea {
+  display: block;
   width: 100%;
   resize: vertical;
-  min-height: 52px;
+  min-height: 2.3rem;
   border: 0;
   border-bottom: 1px solid var(--border);
-  padding: var(--space-2) 0;
+  padding: 0 0 var(--space-1);
   font-family: inherit;
   font-size: var(--font-sm);
+  line-height: 1.4;
   background: transparent;
   color: var(--text);
   transition: border-color .15s var(--ease-out);
