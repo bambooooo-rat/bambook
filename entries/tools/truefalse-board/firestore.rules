@@ -1,0 +1,46 @@
+// Firestore 安全規則。到 Firebase Console →「資料庫和儲存空間」→
+// 「Firestore Database」（不是「Realtime Database」，這是兩個不同產品）
+// →「規則」分頁，把整段貼上取代原本內容，按「發布」。
+//
+// 這份規則做的事：
+//   - 任何人可以讀取全部留言。
+//   - 任何人可以「新增」一則新留言，會檢查欄位型別與長度，擋掉明顯不合法
+//     的寫入，新留言的 likes 一定要是 0。
+//   - 已存在的留言只允許一種修改：把 likes 剛好加 1（對應網頁上的「👍」
+//     按讚按鈕），除此之外不能修改或刪除任何留言、也不能一次加超過 1。
+//   - 如果有不合適的留言，老師直接到 Firebase Console 的 Firestore
+//     Database 頁面手動刪除該筆文件即可，這份規則不區分「老師」跟
+//     「學生」的身分。
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /responses/{responseId} {
+      allow read: if true;
+
+      allow create: if
+        request.resource.data.keys().hasOnly(['sessionId', 'questionId', 'stance', 'text', 'likes', 'createdAt']) &&
+        request.resource.data.sessionId is string &&
+        request.resource.data.sessionId.size() > 0 &&
+        request.resource.data.sessionId.size() < 60 &&
+        request.resource.data.questionId is string &&
+        request.resource.data.questionId.size() > 0 &&
+        request.resource.data.questionId.size() < 60 &&
+        request.resource.data.stance in ['agree', 'disagree'] &&
+        request.resource.data.text is string &&
+        request.resource.data.text.size() > 0 &&
+        request.resource.data.text.size() <= 300 &&
+        request.resource.data.likes == 0 &&
+        request.resource.data.createdAt == request.time;
+
+      // 只允許「把 likes 剛好加 1」這一種更新，其他欄位一律不能變。
+      allow update: if
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']) &&
+        request.resource.data.likes is int &&
+        request.resource.data.likes == resource.data.likes + 1;
+
+      allow delete: if false;
+    }
+  }
+}

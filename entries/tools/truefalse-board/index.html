@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>是非題研討板</title>
+  <meta name="description" content="研討課用的匿名是非題討論板：每題各自寫下「對」或「錯」的理由，即時同步給全班看。">
+  <link rel="stylesheet" href="../../../assets/css/fonts.css">
+  <link rel="stylesheet" href="../../../assets/css/tokens.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <header class="board-topbar">
+    <div class="board-topbar-inner">
+      <div class="board-brand">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3l8 -8"/>
+          <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"/>
+        </svg>
+        <span>是非題研討板</span>
+      </div>
+      <div class="board-session-picker">
+        <label for="session-select" class="sr-only">選擇這次研討的場次</label>
+        <select id="session-select" aria-label="選擇場次"></select>
+      </div>
+    </div>
+  </header>
+
+  <main class="board-main">
+    <p id="board-status" class="board-status" hidden></p>
+    <div id="question-list" class="question-list" aria-live="polite"></div>
+    <p id="empty-state" class="empty-state" hidden>這場研討目前還沒有加入是非題，老師可以到 <code>sessions.json</code> 補上。</p>
+  </main>
+
+  <div id="toast" class="board-toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/contrib/auto-render.min.js"></script>
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

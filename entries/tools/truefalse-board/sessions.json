@@ -1,0 +1,85 @@
+[
+  {
+    "id": "2026-09-09",
+    "title": "9/9（三）預備微積分（Handout0）",
+    "handout": "handout0",
+    "questions": [
+      { "id": "h0-q1", "text": "給定 $f(x)=\\dfrac{x^2-1}{x-1}$、$g(x) = x+1$，則 $f(x)$ 與 $g(x)$ 是完全相同的函數." },
+      { "id": "h0-q2", "text": "給定函數 $f,g:\\{-1,0,1\\} \\to \\mathbb{R}$ 定義為 $f(x)=x^2$、$g(x) = |x|$，則 $f(x)$ 與 $g(x)$ 是完全相同的函數." },
+      { "id": "h0-q3", "text": "定義中的 $0 < |x - a|$ 條件，代表函數 $f(x)$ 必須在 $x = a$ 這一點有定義，且其函數值必須剛好等於 $L$." },
+      { "id": "h0-q4", "text": "極限定義等價於：「存在一個 $\\delta > 0$，使得對於任意的 $\\varepsilon > 0$，只要滿足 $0 < |x - a| < \\delta$，就會推得 $|f(x) - L| < \\varepsilon$」." },
+      { "id": "h0-q5", "text": "在給定 $\\varepsilon > 0$ 的情況下，若我們找到了一個滿足條件的 $\\delta_1 > 0$. 那麼任何滿足 $0 < \\delta_2 < \\delta_1$ 的實數 $\\delta_2$，也必然會滿足該極限條件." },
+      { "id": "h0-q6", "text": "給定一個特定的 $\\varepsilon > 0$，若存在能滿足極限定義的 $\\delta$，則滿足該條件的 $\\delta$ 必定有無限多個." }
+    ]
+  },
+  {
+    "id": "2026-09-16",
+    "title": "9/16（三）極限與連續（Handout1）",
+    "handout": "handout1",
+    "questions": [
+      { "id": "h1-q1", "text": "若 $f(c) = 0$，則 $\\displaystyle \\lim_{x \\to c} f(x) = 0$." },
+      { "id": "h1-q2", "text": "若對於所有非零實數 $x \\in \\mathbb{R} \\setminus \\{0\\}$ 都有 $f(x) = g(x)$ ，且 $\\displaystyle \\lim_{x \\to 0} f(x) = L$，則$\\displaystyle \\lim_{x \\to 0} g(x) = L$." },
+      { "id": "h1-q3", "text": "對於任意函數 $f(x),g(x)$ 都有 $\\displaystyle \\lim_{x \\to a} [f(x) \\cdot g(x)] = \\lim_{x \\to a} f(x) \\cdot \\lim_{x \\to a} g(x)$." },
+      { "id": "h1-q4", "text": "若 $\\displaystyle \\lim_{x \\to a} f(x)$ 與 $\\displaystyle \\lim_{x \\to a} g(x)$ 皆不存在，則 $\\displaystyle \\lim_{x \\to a} (f(x) + g(x))$ 亦不存在." },
+      { "id": "h1-q5", "text": "若 $\\displaystyle \\lim_{x \\to a} f(x) = 0$ 且 $\\displaystyle \\lim_{x \\to a} g(x) = \\infty$，則 $\\displaystyle \\lim_{x \\to a} f(x)^{g(x)} = 0$." },
+      { "id": "h1-q6", "text": "若 $\\displaystyle \\lim_{x \\to a} f(x) = 1$ 且 $\\displaystyle \\lim_{x \\to a} g(x) = \\infty$，且 $\\displaystyle \\lim_{x \\to a} f(x)^{g(x)} = 1$." },
+      { "id": "h1-q7", "text": "一個函數之函數圖形至多有兩條水平漸進線." },
+      { "id": "h1-q8", "text": "若函數 $f(x)$ 之函數圖形 $y=f(x)$ 在 $x=c$ 有一條垂直漸進線，則 $f(c)$ 無定義." }
+    ]
+  },
+  {
+    "id": "2026-09-23",
+    "title": "9/23（三）微分與微分運算（Handout2）",
+    "handout": "handout2",
+    "questions": [
+      { "id": "h2-q1", "text": "$\\displaystyle \\frac{\\mathrm{d}}{\\mathrm{d} x}|x^2 + x| = |2x + 1|$." },
+      { "id": "h2-q2", "text": "If $f$ is differentiable, then $\\displaystyle \\frac{\\mathrm{d}}{\\mathrm{d} x}f(\\sqrt{x}) = \\frac{f'(x)}{2\\sqrt{f(x)}}$." },
+      { "id": "h2-q3", "text": "$\\displaystyle \\frac{\\mathrm{d}}{\\mathrm{d} x}(f \\times g) = \\frac{\\mathrm{d}}{\\mathrm{d} x}(f) \\times \\frac{\\mathrm{d}}{\\mathrm{d} x}(g)$." },
+      { "id": "h2-q4", "text": "若 $f$ 是一對一函數，則 $f^{-1}(x) = \\frac{1}{f(x)}$." },
+      { "id": "h2-q5", "text": "若 $f$ 是一對一且可微函數，則 $(f^{-1})'(x) = \\frac{1}{f'(x)}$." }
+    ]
+  },
+  {
+    "id": "2026-09-30",
+    "title": "9/30（三）微分應用（Handout3）",
+    "handout": "handout3",
+    "questions": [
+      { "id": "h3-q1", "text": "若函數在閉區間 $[a, b]$ 上連續，則它在該區間上必定有絕對極小值." },
+      { "id": "h3-q2", "text": "若 $f''(c) = 0$，則 $(c, f(c))$ 必為反曲點." },
+      { "id": "h3-q3", "text": "若 $f$ 為可微函數且 $f'(c) = 0$，則 $f$ 在 $x = c$ 處有局部極大值或局部極小值." },
+      { "id": "h3-q4", "text": "若 $f$ 在區間 $I$ 上為遞增函數且 $f(x) > 0$，則 $\\frac{1}{f(x)}$ 在 $I$ 上為遞減函數." },
+      { "id": "h3-q5", "text": "若 $f(c)$ 為局部極小值或局部極大值，則 $c$ 為臨界點（臨界數）." },
+      { "id": "h3-q6", "text": "若對所有實數 $x$ 皆有 $f'(x) > 0$，則 $f$ 會無限增長." },
+      { "id": "h3-q7", "text": "假設 $f(x)$ 與 $g(x)$ 皆為多項式，且 $g(x) = f(x) + 100$. 則 $(c, f(c))$ 是 $g(x)$ 的局部極小值，若且唯若 $(c, f(c))$ 是 $f(x)$ 的局部極小值." }
+    ]
+  },
+  {
+    "id": "2026-11-04",
+    "title": "11/4（三）黎曼和與積分（Handout4）",
+    "handout": "handout4",
+    "questions": [
+      { "id": "h4-q1", "text": "若 $f(x)$ 在 $[a,b]$ 上有時為正、有時為負，則 $\\displaystyle \\int_a^b f(x)\\,\\mathrm{d}x$ 表示曲線與 $x$ 軸之間的總面積." },
+      { "id": "h4-q2", "text": "若 $\\displaystyle \\int_0^1 f(x)\\,\\mathrm{d}x=0$，則 $f(x)=0$ 對所有 $0\\le x\\le1$ 皆成立." },
+      { "id": "h4-q3", "text": "若 $f,g$ 在 $[a,b]$ 上連續，則 $\\displaystyle \\int_a^b [f(x)+g(x)]\\,\\mathrm{d}x = \\int_a^b f(x)\\,\\mathrm{d}x+\\int_a^b g(x)\\,\\mathrm{d}x$." },
+      { "id": "h4-q4", "text": "若 $f,g$ 在 $[a,b]$ 上連續，則 $\\displaystyle \\int_a^b f(x)g(x)\\,\\mathrm{d}x = \\left(\\int_a^b f(x)\\,\\mathrm{d}x\\right) \\left(\\int_a^b g(x)\\,\\mathrm{d}x\\right)$." },
+      { "id": "h4-q5", "text": "若 $f$ 在 $[a,b]$ 上連續，則 $\\displaystyle \\int_a^b x f(x)\\,\\mathrm{d}x = x\\int_a^b f(x)\\,\\mathrm{d}x$." },
+      { "id": "h4-q6", "text": "$\\displaystyle \\int_a^b f(x)\\,\\mathrm{d}x=\\int_a^b f(z)\\,\\mathrm{d}z$." },
+      { "id": "h4-q7", "text": "若 $f$ 在 $[a,b]$ 上連續，則 $\\displaystyle \\dfrac{\\mathrm{d}}{\\mathrm{d}x}\\left(\\int_a^b f(t)\\,\\mathrm{d}t\\right)=f(x)$." },
+      { "id": "h4-q8", "text": "若 $f'$ 在 $[1,3]$ 上連續，則 $\\displaystyle \\int_1^3 f'(y)\\,\\mathrm{d}y=f(3)-f(1)$." },
+      { "id": "h4-q9", "text": "只要 $\\displaystyle \\lim_{x\\to a}\\frac{f(x)}{g(x)}$ 代入後分母為 $0$，就可以直接使用羅必達法則." },
+      { "id": "h4-q10", "text": "使用羅必達法則時，若一次微分後仍然得到 $\\frac00$，則原極限不存在." }
+    ]
+  },
+  {
+    "id": "2026-11-11",
+    "title": "11/11（三）積分技巧（Handout5）",
+    "handout": "handout5",
+    "questions": []
+  },
+  {
+    "id": "2026-11-18",
+    "title": "11/18（三）積分應用（Handout6）",
+    "handout": "handout6",
+    "questions": []
+  }
+]

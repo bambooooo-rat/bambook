@@ -460,6 +460,26 @@
       "order": 40
     },
     {
+      "id": "truefalse-board",
+      "type": "tool",
+      "path": "entries/tools/truefalse-board/",
+      "title": "是非題研討板",
+      "date": "2026-09-03",
+      "status": "active",
+      "visibility": "public",
+      "description": "研討課用的匿名是非題討論板：學生針對每題各自寫下「對」或「錯」的理由，即時同步給全班看。",
+      "summary": "研討課用的匿名是非題討論板：學生針對每題各自寫下「對」或「錯」的理由，即時同步給全班看。",
+      "tags": [
+        "微積分乙",
+        "研討",
+        "教學工具"
+      ],
+      "thumbnail": "",
+      "action": "開啟頁面 →",
+      "icon": "↗",
+      "order": null
+    },
+    {
       "id": "grades",
       "type": "tool",
       "path": "entries/tools/grades/",
