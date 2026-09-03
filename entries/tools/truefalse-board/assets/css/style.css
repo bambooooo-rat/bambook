@@ -134,12 +134,9 @@ body {
 }
 
 .question-row {
-  /* 分隔線刻意偏向「收尾上一題」：線的上方（跟上一題內容的距離）留白
-     較少，線的下方（跟這一題標題的距離）留白較多，讓每條線讀起來像是
-     結束了前一題，而不是浮在兩題中間看不出屬於哪一邊。 */
   padding-top: var(--space-8);
-  padding-bottom: var(--space-3);
-  border-top: 3px solid var(--question-divider);
+  padding-bottom: var(--space-8);
+  border-top: 0px solid var(--question-divider);
 }
 
 .question-row:first-child {
