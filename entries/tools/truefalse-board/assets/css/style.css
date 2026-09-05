@@ -134,9 +134,12 @@ body {
 }
 
 .question-row {
+  /* 分隔線刻意偏向「收尾上一題」：線的上方（跟上一題內容的距離）留白
+     較少，線的下方（跟這一題標題的距離）留白較多，讓每條線讀起來像是
+     結束了前一題，而不是浮在兩題中間看不出屬於哪一邊。 */
   padding-top: var(--space-8);
-  padding-bottom: var(--space-8);
-  border-top: 0px solid var(--question-divider);
+  padding-bottom: var(--space-3);
+  border-top: 3px solid var(--question-divider);
 }
 
 .question-row:first-child {
@@ -245,7 +248,21 @@ body {
   white-space: nowrap;
 }
 
-/* ---------- 長按留言：編輯／刪除選單 ---------- */
+/* ---------- 長按／右鍵留言：編輯／刪除提示框 ----------
+   獨立浮在 document.body 上的小提示框（像滑鼠右鍵選單），不是塞進留言
+   本身的版面裡，所以長按或右鍵不會把後面的留言、下一題往下推開。
+*/
+
+.note-popover {
+  position: fixed;
+  z-index: 30;
+  width: min(300px, 86vw);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space-3);
+}
 
 .stance-note-actions {
   display: flex;
@@ -275,18 +292,13 @@ body {
 
 .stance-note-confirm {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-  padding: var(--space-2);
-  border-radius: var(--radius);
-  background: var(--disagree-wash);
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .stance-note-confirm-text {
-  flex: 1 1 220px;
   font-size: var(--font-2xs);
-  color: var(--text);
+  color: var(--disagree);
   line-height: 1.5;
 }
 

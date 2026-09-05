@@ -15,15 +15,18 @@
 // 記憶還在，但那之後就只能再按一次「取消」，沒辦法無限次切換。
 //
 // 長按（手機長按）或按滑鼠右鍵（電腦，比長按更符合桌機使用者習慣）任何
-// 一則留言，會出現「編輯」「刪除」，因為完全匿名沒有帳號系統，所以任何
-// 人都可以編輯或刪除任何一則留言——這是刻意的設計，不是漏洞。刪除前一定
-// 會先跳出確認提示；編輯會把新的文字跟「已編輯」標記一起即時寫回
-// Firestore，其他人也會馬上看到。
+// 一則留言，會在按住／右鍵的位置附近浮出一個小提示框（像滑鼠右鍵選單），
+// 出現「編輯」「刪除」，不會把後面的留言或下一題往下推開。因為完全匿名
+// 沒有帳號系統，所以任何人都可以編輯或刪除任何一則留言——這是刻意的
+// 設計，不是漏洞。刪除前一定會先跳出確認提示；編輯會把新的文字跟
+// 「已編輯」標記一起即時寫回 Firestore，其他人也會馬上看到。這個提示框
+// 是獨立掛在 document.body 上的（見 note-popover 相關函式），不是留言
+// 列表本身的一部分，所以編輯到一半，其他同學送出新留言、按讚等即時更新
+// 都不會把正在打的字或提示框本身洗掉。
 //
 // 畫面分成「骨架」（題目、文字框，每次切換場次才重建一次）和「內容更新」
 // （留言列表、讚數，隨 Firestore 即時資料更新）兩層，這樣其他同學送出
-// 留言或按讚時，不會把正在輸入中的文字框內容洗掉；正在編輯中的留言也會
-// 在重繪後把游標位置還原回去，不會打字打到一半游標就跳走。
+// 留言或按讚時，不會把正在輸入中的文字框內容洗掉。
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {
@@ -64,11 +67,11 @@ let latestGrouped = {};
 let unsubResponses = null;
 let likedIds = loadLikedIds();
 
-// 長按留言後的小選單狀態。同一時間只會有一則留言處於「展開選單／編輯中／
-// 刪除確認中」，用留言 id 記錄，畫面重繪時照這個狀態決定要畫哪一種樣子。
-let activeNoteId = null;
-let editingNoteId = null;
-let confirmDeleteId = null;
+// 長按／右鍵留言後跳出的小提示框（獨立浮動在 document.body 上，不是塞進
+// 留言列表裡把版面往下推）。同一時間只會有一個，用這個物件記錄它現在
+// 對應哪一則留言、處於哪個畫面（menu／confirm／edit）、要浮在哪個座標。
+let popoverState = null; // { item, mode: "menu" | "confirm" | "edit", x, y }
+let popoverEl = null;
 const editDrafts = new Map(); // noteId -> 編輯中尚未送出的草稿文字
 const pendingNoteActions = new Set(); // 正在送出中的編輯／刪除（noteId）
 
@@ -181,7 +184,7 @@ function attachLongPress(el, onTrigger) {
     startX = event.clientX;
     startY = event.clientY;
     clear();
-    timer = setTimeout(onTrigger, LONG_PRESS_MS);
+    timer = setTimeout(() => onTrigger(startX, startY), LONG_PRESS_MS);
   });
 
   el.addEventListener("pointermove", (event) => {
@@ -197,18 +200,105 @@ function attachLongPress(el, onTrigger) {
   ["pointerup", "pointercancel", "pointerleave"].forEach((type) => el.addEventListener(type, clear));
 
   // 右鍵／觸控長按有時候跳出的瀏覽器原生選單一律擋掉，改成觸發我們自己
-  // 畫的「編輯／刪除」選單（部分觸控瀏覽器長按放開時也會補發一次
+  // 畫的「編輯／刪除」提示框（部分觸控瀏覽器長按放開時也會補發一次
   // contextmenu，這裡也一併處理，重複觸發 onTrigger 沒有副作用）。
   el.addEventListener("contextmenu", (event) => {
     event.preventDefault();
-    onTrigger();
+    onTrigger(event.clientX, event.clientY);
   });
 }
 
-function closeAllNoteMenus() {
-  activeNoteId = null;
-  editingNoteId = null;
-  confirmDeleteId = null;
+// ---------- 留言的「編輯／刪除」提示框 ----------
+//
+// 這是一個獨立浮在 document.body 上的小提示框（像滑鼠右鍵選單那樣），
+// 不是塞進留言本身的版面裡——這樣長按或右鍵不會把後面的留言、下一題往下
+// 推，只會在按住／右鍵的位置附近多冒出一個小框。同一時間最多只有一個。
+
+function ensurePopoverEl() {
+  if (popoverEl) return popoverEl;
+  popoverEl = document.createElement("div");
+  popoverEl.className = "note-popover";
+  popoverEl.hidden = true;
+  document.body.appendChild(popoverEl);
+
+  // 點提示框以外的地方（包含捲動、縮放視窗）就關掉它，跟一般右鍵選單、
+  // 手機的長按選單行為一致。
+  document.addEventListener("pointerdown", (event) => {
+    if (!popoverState || popoverEl.contains(event.target)) return;
+    closeNotePopover();
+  });
+  document.addEventListener(
+    "scroll",
+    () => {
+      if (popoverState) closeNotePopover();
+    },
+    true,
+  );
+  window.addEventListener("resize", () => {
+    if (popoverState) closeNotePopover();
+  });
+
+  return popoverEl;
+}
+
+function closeNotePopover() {
+  popoverState = null;
+  if (popoverEl) popoverEl.hidden = true;
+}
+
+function openNotePopover(item, x, y) {
+  if (pendingNoteActions.has(item.id)) return;
+  popoverState = { item, mode: "menu", x, y };
+  renderNotePopover();
+}
+
+function positionNotePopover() {
+  const el = popoverEl;
+  const { x, y } = popoverState;
+  const margin = 8;
+  // 先貼到觸發座標，量出實際大小之後再夾回畫面範圍內，避免在螢幕邊緣
+  // 被裁掉一部分。
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
+  const rect = el.getBoundingClientRect();
+  let left = x;
+  let top = y;
+  if (left + rect.width + margin > window.innerWidth) left = window.innerWidth - rect.width - margin;
+  if (top + rect.height + margin > window.innerHeight) top = y - rect.height - 12; // 空間不夠就往上翻
+  if (left < margin) left = margin;
+  if (top < margin) top = margin;
+  el.style.left = `${left}px`;
+  el.style.top = `${top}px`;
+}
+
+function renderNotePopover() {
+  const el = ensurePopoverEl();
+  if (!popoverState) {
+    el.hidden = true;
+    return;
+  }
+  const { item, mode } = popoverState;
+  el.innerHTML = "";
+  el.hidden = false;
+
+  if (mode === "menu") {
+    el.appendChild(buildNoteActionBar(item));
+  } else if (mode === "confirm") {
+    el.appendChild(buildNoteDeleteConfirm(item));
+  } else if (mode === "edit") {
+    el.appendChild(buildNoteEditForm(item));
+  }
+
+  positionNotePopover();
+
+  if (mode === "edit") {
+    const textarea = el.querySelector("textarea");
+    if (textarea) {
+      textarea.focus();
+      const len = textarea.value.length;
+      textarea.setSelectionRange(len, len);
+    }
+  }
 }
 
 function buildNoteActionBar(item) {
@@ -221,9 +311,9 @@ function buildNoteActionBar(item) {
   editBtn.textContent = "編輯";
   editBtn.addEventListener("click", (event) => {
     event.stopPropagation();
-    editingNoteId = item.id;
     if (!editDrafts.has(item.id)) editDrafts.set(item.id, item.text);
-    renderStancePanels();
+    popoverState = { ...popoverState, mode: "edit" };
+    renderNotePopover();
   });
 
   const deleteBtn = document.createElement("button");
@@ -232,8 +322,8 @@ function buildNoteActionBar(item) {
   deleteBtn.textContent = "刪除";
   deleteBtn.addEventListener("click", (event) => {
     event.stopPropagation();
-    confirmDeleteId = item.id;
-    renderStancePanels();
+    popoverState = { ...popoverState, mode: "confirm" };
+    renderNotePopover();
   });
 
   const closeBtn = document.createElement("button");
@@ -242,8 +332,7 @@ function buildNoteActionBar(item) {
   closeBtn.textContent = "關閉";
   closeBtn.addEventListener("click", (event) => {
     event.stopPropagation();
-    closeAllNoteMenus();
-    renderStancePanels();
+    closeNotePopover();
   });
 
   bar.appendChild(editBtn);
@@ -271,17 +360,19 @@ function buildNoteDeleteConfirm(item) {
     event.stopPropagation();
     if (pendingNoteActions.has(item.id)) return;
     pendingNoteActions.add(item.id);
-    renderStancePanels();
+    renderNotePopover();
     try {
       await deleteDoc(doc(db, "responses", item.id));
-      closeAllNoteMenus();
+      closeNotePopover();
       showToast("留言已刪除。");
     } catch (error) {
       console.error(error);
-      showToast("刪除失敗，請稍後再試。");
+      // 把實際的錯誤代碼一起顯示出來，方便判斷是不是 Firestore 規則還沒
+      // 發布成最新版（最常見原因：規則裡還沒有 allow delete: if true;）。
+      showToast(`刪除失敗（${error.code || error.message || "未知錯誤"}），請確認 Firestore 規則已發布最新版本。`);
     } finally {
       pendingNoteActions.delete(item.id);
-      renderStancePanels();
+      if (popoverState && popoverState.item.id === item.id) renderNotePopover();
     }
   });
 
@@ -292,12 +383,15 @@ function buildNoteDeleteConfirm(item) {
   cancelBtn.disabled = pending;
   cancelBtn.addEventListener("click", (event) => {
     event.stopPropagation();
-    confirmDeleteId = null;
-    renderStancePanels();
+    popoverState = { ...popoverState, mode: "menu" };
+    renderNotePopover();
   });
 
-  bar.appendChild(confirmBtn);
-  bar.appendChild(cancelBtn);
+  const btnRow = document.createElement("div");
+  btnRow.className = "stance-note-actions";
+  btnRow.appendChild(confirmBtn);
+  btnRow.appendChild(cancelBtn);
+  bar.appendChild(btnRow);
   return bar;
 }
 
@@ -308,13 +402,10 @@ function buildNoteEditForm(item) {
 
   const textarea = document.createElement("textarea");
   textarea.maxLength = 300;
-  textarea.rows = 1;
+  textarea.rows = 3;
   textarea.dataset.noteId = item.id;
   textarea.value = editDrafts.has(item.id) ? editDrafts.get(item.id) : item.text;
   textarea.disabled = pending;
-  // 點擊／按住輸入框本身不該被當成又一次「長按這則留言」。
-  textarea.addEventListener("pointerdown", (event) => event.stopPropagation());
-  textarea.addEventListener("click", (event) => event.stopPropagation());
 
   const row = document.createElement("div");
   row.className = "stance-note-edit-row";
@@ -344,9 +435,8 @@ function buildNoteEditForm(item) {
   cancelBtn.disabled = pending;
   cancelBtn.addEventListener("click", (event) => {
     event.stopPropagation();
-    closeAllNoteMenus();
     editDrafts.delete(item.id);
-    renderStancePanels();
+    closeNotePopover();
   });
 
   form.addEventListener("submit", async (event) => {
@@ -356,27 +446,26 @@ function buildNoteEditForm(item) {
     const newText = textarea.value.trim();
     if (!newText) return;
     if (newText === item.text) {
-      closeAllNoteMenus();
       editDrafts.delete(item.id);
-      renderStancePanels();
+      closeNotePopover();
       return;
     }
     pendingNoteActions.add(item.id);
-    renderStancePanels();
+    renderNotePopover();
     try {
       await updateDoc(doc(db, "responses", item.id), {
         text: newText,
         editedAt: serverTimestamp(),
       });
-      closeAllNoteMenus();
       editDrafts.delete(item.id);
+      closeNotePopover();
       showToast("留言已更新。");
     } catch (error) {
       console.error(error);
-      showToast("更新失敗，請稍後再試。");
+      showToast(`更新失敗（${error.code || error.message || "未知錯誤"}），請確認 Firestore 規則已發布最新版本。`);
     } finally {
       pendingNoteActions.delete(item.id);
-      renderStancePanels();
+      if (popoverState && popoverState.item.id === item.id) renderNotePopover();
     }
   });
 
@@ -394,61 +483,43 @@ function buildNoteRow(item) {
   row.className = "stance-note";
   row.title = "長按（或按右鍵）可編輯或刪除這則留言";
 
-  const isEditing = editingNoteId === item.id;
+  const main = document.createElement("div");
+  main.className = "stance-note-main";
 
-  // 編輯中就不重複顯示原本那行靜態文字了（下面的輸入框本身已經預填同樣
-  // 內容），避免同一句話在畫面上出現兩次。
-  if (!isEditing) {
-    const main = document.createElement("div");
-    main.className = "stance-note-main";
+  const text = document.createElement("span");
+  text.className = "stance-note-text";
+  text.textContent = item.text;
 
-    const text = document.createElement("span");
-    text.className = "stance-note-text";
-    text.textContent = item.text;
+  const meta = document.createElement("span");
+  meta.className = "stance-note-meta";
 
-    const meta = document.createElement("span");
-    meta.className = "stance-note-meta";
-
-    if (item.edited) {
-      const editedTag = document.createElement("span");
-      editedTag.className = "stance-note-edited";
-      editedTag.textContent = "已編輯";
-      meta.appendChild(editedTag);
-    }
-
-    const likeBtn = document.createElement("button");
-    likeBtn.type = "button";
-    likeBtn.className = "stance-like-btn";
-    const liked = likedIds.has(item.id);
-    likeBtn.disabled = pendingLikes.has(item.id);
-    likeBtn.setAttribute("aria-pressed", String(liked));
-    likeBtn.title = liked ? "再按一次取消讚" : "覺得這則想法也是你要說的，按讚就好，不用重打一次";
-    likeBtn.textContent = `👍 ${item.likes || 0}`;
-    if (liked) likeBtn.classList.add("is-liked");
-    likeBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      toggleLike(item.id);
-    });
-    meta.appendChild(likeBtn);
-
-    main.appendChild(text);
-    main.appendChild(meta);
-    row.appendChild(main);
+  if (item.edited) {
+    const editedTag = document.createElement("span");
+    editedTag.className = "stance-note-edited";
+    editedTag.textContent = "已編輯";
+    meta.appendChild(editedTag);
   }
 
-  if (isEditing) {
-    row.appendChild(buildNoteEditForm(item));
-  } else if (confirmDeleteId === item.id) {
-    row.appendChild(buildNoteDeleteConfirm(item));
-  } else if (activeNoteId === item.id) {
-    row.appendChild(buildNoteActionBar(item));
-  }
-
-  attachLongPress(row, () => {
-    if (pendingNoteActions.has(item.id) || editingNoteId === item.id || confirmDeleteId === item.id) return;
-    activeNoteId = item.id;
-    renderStancePanels();
+  const likeBtn = document.createElement("button");
+  likeBtn.type = "button";
+  likeBtn.className = "stance-like-btn";
+  const liked = likedIds.has(item.id);
+  likeBtn.disabled = pendingLikes.has(item.id);
+  likeBtn.setAttribute("aria-pressed", String(liked));
+  likeBtn.title = liked ? "再按一次取消讚" : "覺得這則想法也是你要說的，按讚就好，不用重打一次";
+  likeBtn.textContent = `👍 ${item.likes || 0}`;
+  if (liked) likeBtn.classList.add("is-liked");
+  likeBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleLike(item.id);
   });
+  meta.appendChild(likeBtn);
+
+  main.appendChild(text);
+  main.appendChild(meta);
+  row.appendChild(main);
+
+  attachLongPress(row, (x, y) => openNotePopover(item, x, y));
 
   return row;
 }
@@ -566,15 +637,10 @@ function renderSkeleton(session) {
 function renderStancePanels() {
   if (!currentSession) return;
 
-  // 如果使用者正在編輯某則留言、游標目前就在那個輸入框裡，先記住游標
-  // 位置——即時資料更新（別人送出新留言、按讚等）觸發的重繪才不會把
-  // 正在打的字或游標弄丟。
-  const activeEl = document.activeElement;
-  const hadEditFocus =
-    editingNoteId &&
-    activeEl instanceof HTMLTextAreaElement &&
-    activeEl.dataset.noteId === editingNoteId;
-  const editCaret = hadEditFocus ? { start: activeEl.selectionStart, end: activeEl.selectionEnd } : null;
+  // 編輯／刪除是在獨立的浮動提示框（見上面 note-popover 相關函式）裡進行
+  // 的，不在這份清單自己的 DOM 裡，所以這裡不需要再處理「重繪時保留游標
+  // 位置」——重繪只會動到留言清單本身，浮動提示框在 document.body 上，
+  // 不會被這裡的 innerHTML 重建動到。
 
   currentSession.questions.forEach((q) => {
     ["agree", "disagree"].forEach((stance) => {
@@ -598,18 +664,6 @@ function renderStancePanels() {
   });
 
   renderMath(listEl);
-
-  if (hadEditFocus) {
-    const restored = listEl.querySelector(`textarea[data-note-id="${CSS.escape(editingNoteId)}"]`);
-    if (restored) {
-      restored.focus();
-      try {
-        restored.setSelectionRange(editCaret.start, editCaret.end);
-      } catch (error) {
-        // 部分瀏覽器在特定狀態下可能丟例外，忽略即可，不影響其他功能。
-      }
-    }
-  }
 }
 
 function switchSession(sessionId) {
