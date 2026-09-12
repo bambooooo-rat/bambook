@@ -669,12 +669,23 @@ function formatScheduleDate(date) {
   return date.toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "short" });
 }
 
+// 判斷一場研討是否已經「結束」，用的不是研討的開始時間，而是研討當天的
+// 21:00——如果直接拿開始時間跟現在比較，學生在研討進行中（已經過了開始
+// 時間，但研討根本還沒結束）打開頁面時，看到的會是「下一次研討」而不是
+// 當次研討，但這時候學生需要下載的其實是當次的教材，不是下一次的。研討
+// 時段通常在晚上，用當天 21:00 當作「視覺上」的結束時間，研討進行中打開
+// 頁面時仍然會看到當次研討，才符合實際需求。
+function scheduleIsPast(date, now) {
+  const cutoff = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 21, 0, 0, 0);
+  return cutoff < now;
+}
+
 function scheduleContent(rawItems, handouts = []) {
   const now = new Date();
   const parsed = rawItems
     .map(item => {
       const date = parseScheduleDate(item?.date);
-      return date ? { ...item, parsedDate: date, displayDate: formatScheduleDate(date), isPast: date < now } : null;
+      return date ? { ...item, parsedDate: date, displayDate: formatScheduleDate(date), isPast: scheduleIsPast(date, now) } : null;
     })
     .filter(Boolean)
     .sort((a, b) => a.parsedDate - b.parsedDate);
