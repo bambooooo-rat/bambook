@@ -130,7 +130,7 @@ body {
 .question-list {
   display: flex;
   flex-direction: column;
-  border-bottom: 3px solid var(--question-divider);
+  border-bottom: 0px solid var(--question-divider);
 }
 
 .question-row {
@@ -139,7 +139,7 @@ body {
      結束了前一題，而不是浮在兩題中間看不出屬於哪一邊。 */
   padding-top: var(--space-8);
   padding-bottom: var(--space-3);
-  border-top: 3px solid var(--question-divider);
+  border-top: 0px solid var(--question-divider);
 }
 
 .question-row:first-child {
