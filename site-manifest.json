@@ -397,6 +397,21 @@
   },
   "articles": [
     {
+      "path": "預備知識/math_language.md",
+      "title": "一些數學語言",
+      "date": "2026-09-22",
+      "tags": [
+        "集合",
+        "命題",
+        "邏輯",
+        "證明方法",
+        "函數",
+        "數學語言",
+        "微積分乙"
+      ],
+      "summary": "在正式進入微積分之前，先建立看懂、寫對數學敘述所需要的共同語言，包含規則與結論的分類、命題與集合、函數的基本定義，並在最後用這些語言回頭介紹幾種常見的證明方法"
+    },
+    {
       "path": "預備知識/function_and_formula.md",
       "title": "函數特性與常用代數公式",
       "date": "2026-07-19",
@@ -426,8 +441,8 @@
       "type": "tool",
       "path": "entries/tools/geomaster/",
       "title": "GeoMaster",
-      "date": "",
-      "status": "",
+      "date": "2026-06-26",
+      "status": "active",
       "visibility": "public",
       "description": "GeoGuessr 的國家、地圖與地理特徵資料視覺化。",
       "summary": "GeoGuessr 的國家、地圖與地理特徵資料視覺化。",
@@ -445,8 +460,8 @@
       "type": "tool",
       "path": "entries/tools/spectrumAnalysis/",
       "title": "Parametric EQ",
-      "date": "",
-      "status": "",
+      "date": "2026-06-26",
+      "status": "active",
       "visibility": "public",
       "description": "播放樣本、檢視波形並探索參數等化的音訊工具。",
       "summary": "播放樣本、檢視波形並探索參數等化的音訊工具。",

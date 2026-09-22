@@ -1,0 +1,11 @@
+{
+  "title": "Parametric EQ",
+  "type": "tool",
+  "date": "2026-06-26",
+  "status": "active",
+  "visibility": "public",
+  "summary": "播放樣本、檢視波形並探索參數等化的音訊工具。",
+  "tags": ["音訊", "EQ"],
+  "icon": "≈",
+  "order": 40
+}

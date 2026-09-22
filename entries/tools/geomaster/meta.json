@@ -1,0 +1,11 @@
+{
+  "title": "GeoMaster",
+  "type": "tool",
+  "date": "2026-06-26",
+  "status": "active",
+  "visibility": "public",
+  "summary": "GeoGuessr 的國家、地圖與地理特徵資料視覺化。",
+  "tags": ["地理", "GeoGuessr"],
+  "icon": "◎",
+  "order": 20
+}
