@@ -7,10 +7,16 @@
    theme (the standalone tools have no dark mode).
 */
 :root {
-  --bg: #ffffff;
+  /* --bg/--text are deliberately a soft gray pair rather than pure white/
+     near-black — pure black text on pure white is a harsher contrast than
+     reading comfortably needs. Every page pulls its base text/background
+     colors from these two tokens (nothing hardcodes #fff/#000), so this is
+     the single place that sets the "how dark is black, how white is white"
+     feel for the whole site. --accent* stays untouched by this. */
+  --bg: #f6f6f6;
   --surface: #ffffff;
-  --surface-soft: #f2f4f6;
-  --text: #1a1a1a;
+  --surface-soft: #edeff1;
+  --text: #2b2b2e;
   --muted: #666666;
   --border: #d9d9d9;
   --accent: #3fa9f5;

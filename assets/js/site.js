@@ -90,9 +90,11 @@ function bindEvents() {
     if (target.closest("[data-toggle-all-months]")) {
       const groups = Array.from(document.querySelectorAll(".sidebar-month-group"));
       const shouldOpen = groups.some(group => !group.open);
-      groups.forEach(group => {
-        group.open = shouldOpen;
-      });
+      if (prefersReducedMotion()) {
+        groups.forEach(group => { group.open = shouldOpen; });
+      } else {
+        groups.forEach(group => toggleAnimatedDetails(group, shouldOpen));
+      }
       return;
     }
 
@@ -112,6 +114,15 @@ function bindEvents() {
     if (summary && details && !prefersReducedMotion()) {
       event.preventDefault();
       toggleAnimatedDetails(details);
+      return;
+    }
+    // 文章索引（.sidebar-month-group）分類收合，跟上面的 .resource-details
+    // 走同一套動畫函式——原本這裡完全沒有處理，點擊會落回瀏覽器原生的
+    // <details> 開合，跟 ::details-content 的支援度一樣不穩定。
+    const monthGroup = summary?.closest(".sidebar-month-group");
+    if (summary && monthGroup && !prefersReducedMotion()) {
+      event.preventDefault();
+      toggleAnimatedDetails(monthGroup);
       return;
     }
   });
@@ -140,9 +151,13 @@ const detailsAnimations = new WeakMap();
 const detailsTargetState = new WeakMap();
 const DETAILS_ANIMATION_MS = 180;
 
-function toggleAnimatedDetails(details) {
+function toggleAnimatedDetails(details, forceOpen) {
   const currentlyOpen = detailsTargetState.has(details) ? detailsTargetState.get(details) : details.open;
-  const opening = !currentlyOpen;
+  const opening = typeof forceOpen === "boolean" ? forceOpen : !currentlyOpen;
+  // forceOpen lets a caller drive several <details> toward the same target
+  // state at once (see [data-toggle-all-months] in bindEvents()) without
+  // re-animating ones that are already there.
+  if (opening === currentlyOpen) return;
   detailsTargetState.set(details, opening);
   detailsAnimations.get(details)?.cancel();
 
@@ -955,7 +970,7 @@ function renderArticlesPage(requestedPath = "") {
   app.innerHTML = `
     <div class="article-reader">
       <div class="articles-layout">
-        <aside class="article-list"><h2>文章索引</h2>${articleListGrouped(record.path)}</aside>
+        <aside class="article-list">${articleListGrouped(record.path)}</aside>
         <div id="content-scroll" class="article-scroll">
           <article id="article-view" class="article"><p class="notice">正在載入文章…</p></article>
         </div>
@@ -993,13 +1008,14 @@ function articleListGrouped(activePath) {
     .sort(compareArticlesForIndex);
 
   if (!articles.length) {
-    return `<p class="toc-empty">目前沒有文章。</p>`;
+    return `<h2>文章索引</h2><p class="toc-empty">目前沒有文章。</p>`;
   }
 
   return `
-    <button type="button" class="sidebar-index-toggle" data-toggle-all-months>
-      展開 / 收合所有分類
-    </button>
+    <div class="article-list-head">
+      <h2>文章索引</h2>
+      <button type="button" class="sidebar-index-toggle" data-toggle-all-months aria-label="展開或收合所有分類" title="展開或收合所有分類">↕</button>
+    </div>
 
     <div class="sidebar-month-list">
       ${groupArticlesByMonth(articles).map(([month, monthArticles]) => `

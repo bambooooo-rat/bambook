@@ -519,7 +519,6 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   min-height: 0;
   height: 100%;
   padding-right: 1.25rem;
-  border-right: 1px solid var(--border);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
@@ -527,7 +526,24 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   scrollbar-color: #d1d5db transparent;
 }
 
-.article-list h2 {
+.article-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin: 0 0 .75rem;
+}
+
+.article-list-head h2 {
+  margin: 0;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.article-list > h2 {
   margin: 0 0 .75rem;
   color: var(--muted);
   font-size: .78rem;
@@ -536,37 +552,33 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   text-transform: uppercase;
 }
 
+/* Quiet icon control, not a standalone button — same transparent/bordered-
+   on-hover treatment as .icon-button in the header, so it reads as part of
+   the "文章索引" title row rather than a separate UI element. */
 .sidebar-index-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .35rem;
-  width: calc(100% - 1rem);
-  margin: 0 .5rem .75rem;
-  padding: .42rem .55rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
-  font-size: .72rem;
-  font-weight: 750;
-  letter-spacing: .02em;
-}
-
-.sidebar-index-toggle::before {
-  content: "↕";
-  color: var(--muted);
-  font-size: .8rem;
+  font-size: .85rem;
+  line-height: 1;
+  transition: border-color .14s ease, background-color .14s ease, color .14s ease, transform .1s var(--ease-out);
 }
 
 .sidebar-index-toggle:hover {
-  background: var(--accent-soft);
+  border-color: var(--border);
+  background: var(--surface);
   color: var(--accent-strong);
 }
 
-.sidebar-index-toggle:hover::before {
-  color: var(--accent-strong);
+.sidebar-index-toggle:active {
+  transform: scale(.92);
 }
 
 .sidebar-month-list {
@@ -599,16 +611,25 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   display: none;
 }
 
+/* A CSS-drawn corner (border-right + border-bottom rotated 45deg) instead
+   of swapping the ▾/▸ glyph in `content` — a glyph swap can't transition,
+   it just cuts; rotating one shape can, so the indicator turns in step
+   with the row expanding/collapsing instead of snapping. */
 .sidebar-month-label::before {
-  content: "▾";
+  content: "";
   flex: 0 0 auto;
-  margin-right: .35rem;
-  color: var(--muted);
-  font-size: .7rem;
+  box-sizing: border-box;
+  width: .38rem;
+  height: .38rem;
+  margin-right: .4rem;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform .18s var(--ease-out);
 }
 
 .sidebar-month-group:not([open]) .sidebar-month-label::before {
-  content: "▸";
+  transform: rotate(-45deg);
 }
 
 .sidebar-month-label span {
@@ -681,23 +702,13 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   font-weight: 800;
 }
 
-/* .resource-details (投影片/練習與資源 on course pages) gets its open/close
-   animation from assets/js/site.js (bindAnimatedDetails) instead of
-   ::details-content — that pseudo-element's browser support is still too
-   thin to rely on alone. */
-@supports selector(::details-content) {
-  .sidebar-month-group::details-content {
-    block-size: 0;
-    overflow: hidden;
-    transition:
-      block-size .18s var(--ease-out),
-      content-visibility .18s allow-discrete;
-  }
-
-  .sidebar-month-group[open]::details-content {
-    block-size: auto;
-  }
-}
+/* .resource-details (投影片/練習與資源 on course pages) and .sidebar-month-
+   group (文章索引 category rows) both get their open/close animation from
+   assets/js/site.js (toggleAnimatedDetails) instead of ::details-content —
+   that pseudo-element's browser support is still too thin to rely on
+   alone, and driving both through the same JS animator keeps their motion
+   consistent everywhere ::details-content would otherwise still be a
+   native, un-animated snap. */
 
 .article-scroll {
   min-width: 0;
@@ -707,14 +718,18 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   padding-right: .25rem;
   background: transparent;
 }
-.article { min-width: 0; padding: 0 0 2rem; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+/* max-width caps the reading measure (~72 characters) so lines stay
+   comfortable to track even when the middle grid column (.articles-layout's
+   minmax(0, 2.4fr) share) is very wide on a large viewport; header and body
+   share it since both live inside .article. Left-aligned, not centered —
+   consistent with the rest of the page-shell layout. */
+.article { min-width: 0; max-width: 72ch; padding: 0 0 2rem; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .article-toc {
   height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   padding-left: 1.25rem;
-  border-left: 1px solid var(--border);
 }
 .article-toc h2 { margin-bottom: .75rem; color: var(--muted); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
 .toc-nav { display: grid; gap: .15rem; }
@@ -745,12 +760,19 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .article-body h3 { font-size: 1.15rem; }
 .article-body h4 { font-size: 1rem; }
 .article-body h5, .article-body h6 { color: var(--muted); font-size: .92rem; }
-.article-body p, .article-body li { color: color-mix(in srgb, var(--text) 88%, var(--muted)); }
+/* No separate color-mix blend here any more — --text itself is now the
+   softened gray (see tokens.css), so paragraphs/list items just inherit it
+   like every other black/white text on the site instead of a one-off
+   local mix. The letter-spacing is the only thing still specific to running
+   body copy: headings stay tight (-.025em, they're large), body text at
+   this size reads better with a touch of positive tracking. */
+.article-body p, .article-body li { letter-spacing: .012em; }
+.article-body p { margin: 0 0 1.15em; }
 .article-body a { color: var(--accent-strong); }
 .article-body code { padding: .1rem .32rem; border-radius: 5px; background: var(--surface-soft); font-family: var(--font-mono); font-size: .88em; }
-.article-body pre { overflow-x: auto; padding: 1rem; border-radius: 10px; background: #15201d; color: #e8f1ed; }
+.article-body pre { overflow-x: auto; padding: 1rem; border-radius: 10px; background: #1b2420; color: #dce8e2; }
 .article-body pre code { padding: 0; background: transparent; }
-.article-body blockquote { margin: 1rem 0; padding: .25rem 1rem; border-left: 3px solid var(--accent); color: var(--muted); }
+.article-body blockquote { margin: 1rem 0; padding: .55rem 1rem; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; background: var(--surface-soft); color: var(--muted); }
 .article-body .math-block,
 .article-body .katex-display {
   display: block;
