@@ -37,6 +37,7 @@ const ICONS = {
   article: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>'),
   tool: tablerIcon('<path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5"/>'),
   chevron: tablerIcon('<path d="M9 6l6 6l-6 6"/>'),
+  unfoldVertical: tablerIcon('<path d="M8 7l4 -4l4 4"/><path d="M16 17l-4 4l-4 -4"/><path d="M12 3l0 18"/>'),
   // Added for the course-page schedule section (research/study-group session times).
   calendar: tablerIcon('<path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1"/><path d="M12 15v3"/>'),
   // 講義連結專用：填空版是「空白待寫」的版本，用單純的文件外框（沒有內文）；
@@ -61,6 +62,7 @@ const state = {
   forwardClickPending: false,
   forwardClickResetTimer: null,
   manifestError: "",
+  articleOverviewObserver: null,
 };
 
 document.addEventListener("DOMContentLoaded", initialise);
@@ -414,13 +416,17 @@ function navigate() {
 // visible. The initial page load calls route() directly, unanimated.
 function route() {
   clearArticleTocScroll();
+  clearArticleOverviewPager();
   document.body.classList.remove("article-mode");
   window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   const hash = decodedHash();
   const [name, value = ""] = hash.split(/=(.*)/s);
 
   if (name === "materials") { if (value) renderCourse(value); else renderMaterialsIndex(); }
-  else if (name === "articles") renderArticlesPage();
+  else if (name === "articles") {
+    const tagMatch = /^tag:(.+)$/.exec(value || "");
+    renderArticlesPage("", tagMatch ? tagMatch[1] : "");
+  }
   else if (name === "article") renderArticlesPage(value);
   else if (name === "tools") renderTools();
   else renderHome();
@@ -431,6 +437,11 @@ function clearArticleTocScroll() {
   (state.tocScrollRoot || window).removeEventListener("scroll", state.tocScrollHandler);
   state.tocScrollHandler = null;
   state.tocScrollRoot = null;
+}
+
+function clearArticleOverviewPager() {
+  state.articleOverviewObserver?.disconnect();
+  state.articleOverviewObserver = null;
 }
 
 function renderHome() {
@@ -928,7 +939,7 @@ async function loadArticle(record) {
       <header class="article-header">
         <div class="article-date">${escapeHTML(formatDate(article.date))}</div>
         <h1>${escapeHTML(article.title)}</h1>
-        <div class="tag-list">${article.tags.map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("")}</div>
+        <div class="tag-list">${article.tags.map(tag => `<a class="tag" href="#articles=tag:${encodeURIComponent(tag)}">${escapeHTML(tag)}</a>`).join("")}</div>
         ${article.summary ? `<p class="article-summary">${escapeHTML(article.summary)}</p>` : ""}
       </header>
       <div class="article-body">${DOMPurify.sanitize(dirtyHTML, markdownSanitizeOptions)}</div>`;
@@ -940,7 +951,7 @@ async function loadArticle(record) {
   }
 }
 
-function renderArticlesPage(requestedPath = "") {
+function renderArticlesPage(requestedPath = "", tagFilter = "") {
   setActiveNav("articles");
   if (state.manifestError) {
     renderNotFound("文章資料無法載入", state.manifestError);
@@ -951,13 +962,24 @@ function renderArticlesPage(requestedPath = "") {
     return;
   }
   if (!requestedPath) {
-    document.title = "文章 | Bambook";
+    const matched = tagFilter ? state.articles.filter(article => article.tags.includes(tagFilter)) : state.articles;
+    document.title = tagFilter ? `標籤：${tagFilter} | Bambook` : "文章 | Bambook";
+    const crumbs = tagFilter
+      ? [{ label: "首頁", href: "#home" }, { label: "文章", href: "#articles" }, { label: `標籤：${tagFilter}` }]
+      : [{ label: "首頁", href: "#home" }, { label: "文章" }];
+    const heading = tagFilter
+      ? `<header class="page-heading"><p class="eyebrow">Tag</p><h1>${escapeHTML(tagFilter)}</h1><p>共 ${matched.length} 篇文章使用了這個標籤。</p></header>`
+      : `<header class="page-heading"><p class="eyebrow">Articles</p><h1>文章</h1><p>筆記、故事與碎碎念。</p></header>`;
     app.innerHTML = `
       <section class="article-overview">
-        ${breadcrumb([{ label: "首頁", href: "#home" }, { label: "文章" }])}
-        <header class="page-heading"><p class="eyebrow">Articles</p><h1>文章</h1><p>筆記、故事與碎碎念。</p></header>
-        ${articleOverviewByMonth()}
+        ${breadcrumb(crumbs)}
+        ${heading}
+        ${matched.length
+          ? `<div class="article-overview-list" data-article-overview-list></div>
+             <div class="article-overview-sentinel" data-article-overview-sentinel aria-hidden="true"></div>`
+          : `<p class="empty-state">沒有文章使用「${escapeHTML(tagFilter)}」這個標籤。</p>`}
       </section>`;
+    if (matched.length) initArticleOverviewPager(matched);
     return;
   }
 
@@ -991,9 +1013,9 @@ function findArticleByPath(requestedPath) {
   if (!filename) return null;
   return state.articles.find(article => String(article.path || "").split("/").pop() === filename) || null;
 }
-function articleMonthGroups() {
+function articleMonthGroups(articles = state.articles) {
   const groups = new Map();
-  state.articles.forEach(article => {
+  articles.forEach(article => {
     const key = articleFolderLabel(article);
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(article);
@@ -1014,7 +1036,7 @@ function articleListGrouped(activePath) {
   return `
     <div class="article-list-head">
       <h2>文章索引</h2>
-      <button type="button" class="sidebar-index-toggle" data-toggle-all-months aria-label="展開或收合所有分類" title="展開或收合所有分類">↕</button>
+      <button type="button" class="sidebar-index-toggle" data-toggle-all-months aria-label="展開或收合所有分類" title="展開或收合所有分類">${ICONS.unfoldVertical}</button>
     </div>
 
     <div class="sidebar-month-list">
@@ -1085,12 +1107,65 @@ function compareArticlesForIndex(a, b) {
   return bPath.localeCompare(aPath);
 }
 
-function articleOverviewByMonth() {
-  return `<div class="article-overview-list">${articleMonthGroups().map(([month, articles]) => `
-    <section class="article-overview-month">
-      <h2>${escapeHTML(month)}</h2>
-      <div class="row-list">${articles.map(articleOverviewItem).join("")}</div>
-    </section>`).join("")}</div>`;
+// #articles used to render every month/article in one go via
+// articleOverviewByMonth() — fine at a dozen articles, but it means the
+// list page's DOM work (and the images/markup inside each row) grows
+// without bound as the archive grows. This renders one batch at a time
+// instead: an IntersectionObserver on a trailing sentinel appends the next
+// ARTICLE_OVERVIEW_PAGE_SIZE articles (continuing mid-month-section where a
+// batch boundary lands inside one) as the sentinel nears the viewport, and
+// disconnects once everything is rendered. clearArticleOverviewPager()
+// (called from route() on every navigation) disconnects a still-active
+// observer so leaving the page before it finishes doesn't leak one.
+const ARTICLE_OVERVIEW_PAGE_SIZE = 12;
+
+function initArticleOverviewPager(articles = state.articles) {
+  const listEl = document.querySelector("[data-article-overview-list]");
+  const sentinel = document.querySelector("[data-article-overview-sentinel]");
+  if (!listEl || !sentinel) return;
+
+  const queue = [];
+  articleMonthGroups(articles).forEach(([month, monthArticles]) => {
+    monthArticles.forEach((article, index) => queue.push({ month, article, isFirstOfMonth: index === 0 }));
+  });
+
+  let cursor = 0;
+  let currentMonthList = null;
+
+  function renderNextBatch() {
+    const end = Math.min(cursor + ARTICLE_OVERVIEW_PAGE_SIZE, queue.length);
+    for (; cursor < end; cursor++) {
+      const { month, article, isFirstOfMonth } = queue[cursor];
+      if (isFirstOfMonth || !currentMonthList) {
+        const section = document.createElement("section");
+        section.className = "article-overview-month";
+        section.innerHTML = `<h2>${escapeHTML(month)}</h2><div class="row-list"></div>`;
+        listEl.appendChild(section);
+        currentMonthList = section.querySelector(".row-list");
+      }
+      currentMonthList.insertAdjacentHTML("beforeend", articleOverviewItem(article));
+    }
+    if (cursor >= queue.length) {
+      clearArticleOverviewPager();
+    } else if (state.articleOverviewObserver) {
+      // An IntersectionObserver only fires on a state *change* — with a
+      // generous rootMargin (below) and short batches, the sentinel can
+      // stay inside that margin (still "intersecting") across several
+      // batches with no new transition to fire on, stalling the load.
+      // Re-observing forces a fresh check/callback for wherever the
+      // sentinel actually is now.
+      state.articleOverviewObserver.unobserve(sentinel);
+      state.articleOverviewObserver.observe(sentinel);
+    }
+  }
+
+  renderNextBatch();
+  if (cursor < queue.length) {
+    state.articleOverviewObserver = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) renderNextBatch();
+    }, { rootMargin: "800px 0px" });
+    state.articleOverviewObserver.observe(sentinel);
+  }
 }
 
 // scrollRoot (#content-scroll) has no positioned ancestor of its own, so a
