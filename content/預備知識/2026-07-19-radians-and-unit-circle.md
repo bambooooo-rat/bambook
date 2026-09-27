@@ -1,11 +1,9 @@
 ---
-title: 弳度與單位圓上的三角函數
+title: 弳度與單位圓
 date: 2026-09-23
 tags: 函數, 公式, 化簡, 微積分乙
 summary: 為什麼微積分裡角度一律用弳度？單位圓上的座標怎麼定義出六個三角函數？正弦、餘弦這些名字又是怎麼來的？
 ---
-
-# 弳度與單位圓上的三角函數
 
 在微積分與工程數學中，角度的標準衡量單位是一律採用弳度（Radians）。給定一個半徑為 $r$ 的圓，若圓心角 $\theta$ 所張出的弧長為 $s$，則弳度的定義為該弧長所包含的「半徑單位」數量，即 $\theta = s/r$：
 
@@ -39,7 +37,7 @@ $$1^\circ = \frac{\pi}{180} \text{ 弳度} \approx 0.017 \text{ 弳度}$$
 * $\cos\theta = x$
 * $\tan\theta = \frac{y}{x}$
 
-![trigonometric functions in the unit circle](media/Unit_Circle_Definitions_of_Six_Trigonometric_Functions.png)
+![單位圓上 sinθ、cosθ、tanθ 三段線段](../../media/unit-circle-trig.png)
 
 利用「奇變偶不變、符號看象限」口訣，可以得到以下第一象限至第四象限常見特殊角的值：
 

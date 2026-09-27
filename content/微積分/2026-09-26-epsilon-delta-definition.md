@@ -1,11 +1,9 @@
 ---
-title: ε-δ 語言：極限的嚴謹定義
+title: ε-δ極限定義
 date: 2026-09-26
 tags: 極限, 微積分乙
 summary: 「x 趨近於 2」到底有多接近？為什麼一下子可以消去零因子、一下子又能直接代入？這篇文章用一個排隊的比喻，帶出極限最嚴謹的 ε-δ 定義。
 ---
-
-# ε-δ 語言：極限的嚴謹定義
 
 「$x$ 趨近於某個值」聽起來很直覺，但如果追問「趨近」到底要多接近，這個說法其實相當模糊。這種模糊在實際計算極限時，很容易讓人自相矛盾。
 
@@ -21,6 +19,8 @@ $$\lim_{x \to 2} \frac{(x+5)(x-2)}{x-2}$$
 
 把這個比喻搬到函數上：排隊編號看作自變數 $x$，人的位置看作函數值 $f(x)$。給定任意小的函數值誤差範圍 $\varepsilon$，我們希望總能找到一個對應的自變數範圍 $\delta_\varepsilon$，使得只要 $x$ 落在這個 $\delta_\varepsilon$ 範圍內（但 $x \neq x_0$），函數值 $f(x)$ 就會落在 $\varepsilon$ 範圍內。
 
+![排隊逼近目標的示意圖](../../media/epsilon-delta-queue.png)
+
 ## 正式定義
 
 > 給定函數 $f(x)$ 以及定義域內的任意值 $x_0$，我們說
@@ -29,6 +29,8 @@ $$\lim_{x \to 2} \frac{(x+5)(x-2)}{x-2}$$
 > $$\forall \varepsilon > 0,\ \exists\, \delta_\varepsilon > 0 \text{ s.t. } 0 < |x-x_0| < \delta_\varepsilon \ \Rightarrow\ |f(x)-L| < \varepsilon$$
 
 這個定義裡藏著四個步驟：先任意給定一個 $\varepsilon$；接著找到與之對應的 $\delta_\varepsilon$；再假設 $x$ 滿足 $0<|x-x_0|<\delta_\varepsilon$；最後由此推導出 $|f(x)-L|<\varepsilon$。每次用 $\varepsilon-\delta$ 語言證明一個極限，都要照這四步走一遍。
+
+![ε-δ 極限定義的圖形](../../media/epsilon-delta-graph.png)
 
 實際操作時有個常見的順序問題：給定 $\varepsilon$ 之後，我們通常沒有線索一眼看出 $\delta_\varepsilon$ 該長怎樣。所以慣用的做法是先把 $\delta_\varepsilon$ 空著，直接去化簡 $|f(x)-L|$，等看清楚它跟 $|x-x_0|$ 的關係之後，再反過來決定 $\delta_\varepsilon$ 要怎麼選。
 

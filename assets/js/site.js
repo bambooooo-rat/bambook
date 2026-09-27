@@ -1,4 +1,5 @@
 import MarkdownIt from "https://cdn.jsdelivr.net/npm/markdown-it@14.2.0/+esm";
+import markdownItCjkFriendly from "https://cdn.jsdelivr.net/npm/markdown-it-cjk-friendly@3.0.0/+esm";
 import markdownItAbbr from "https://cdn.jsdelivr.net/npm/markdown-it-abbr@2.0.0/+esm";
 import markdownItDeflist from "https://cdn.jsdelivr.net/npm/markdown-it-deflist@3.0.0/+esm";
 import markdownItFootnote from "https://cdn.jsdelivr.net/npm/markdown-it-footnote@4.0.0/+esm";
@@ -11,6 +12,17 @@ import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.4.11/+esm";
 import renderMathInElement from "https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/contrib/auto-render.mjs";
 
 const markdown = new MarkdownIt({ html: true, linkify: true, typographer: true })
+  // CommonMark's emphasis rule looks at the character right outside a `**`
+  // delimiter: if it's not whitespace and not punctuation, the delimiter run
+  // doesn't count as "flanking" and `**text**` is left as literal asterisks
+  // instead of becoming <strong>. That's invisible in English (spaces do the
+  // job) but bites constantly in Chinese, where bold text sits directly
+  // against surrounding characters with no space — e.g. 的**定義域（Domain）**是
+  // fails right after the full-width "）" because the next character (是) is
+  // neither whitespace nor punctuation. This plugin patches just that CJK
+  // edge case so `**text**` always renders with no surrounding space needed;
+  // it doesn't change behavior for any non-CJK content.
+  .use(markdownItCjkFriendly)
   .use(markdownItAbbr)
   .use(markdownItDeflist)
   .use(markdownItFootnote)
