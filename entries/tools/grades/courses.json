@@ -511,6 +511,86 @@
             "credits": 1.0,
             "grade": "A-",
             "teacher": "陳賢修"
+        },
+        {
+            "course_code": "00UP109",
+            "name": "體育（羽球初級）",
+            "semester": "1151",
+            "credits": 1.0,
+            "grade": "未定",
+            "teacher": "潘光敏"
+        },
+        {
+            "course_code": "AEU0020",
+            "name": "電子學（三）",
+            "semester": "1151",
+            "credits": 3.0,
+            "grade": "未定",
+            "teacher": "張譽騰"
+        },
+        {
+            "course_code": "AEU0027",
+            "name": "通訊原理（一）",
+            "semester": "1151",
+            "credits": 3.0,
+            "grade": "未定",
+            "teacher": "王嘉斌"
+        },
+        {
+            "course_code": "IEU0111",
+            "name": "技術及職業教育概論",
+            "semester": "1151",
+            "credits": 2.0,
+            "grade": "未定",
+            "teacher": "曾璧光 詹勲育"
+        },
+        {
+            "course_code": "MAC9029",
+            "name": "科學計算導論",
+            "semester": "1151",
+            "credits": 3.0,
+            "grade": "未定",
+            "teacher": "黃聰明"
+        },
+        {
+            "course_code": "MAC9038",
+            "name": "科學計算導論探索",
+            "semester": "1151",
+            "credits": 1.0,
+            "grade": "未定",
+            "teacher": "黃聰明"
+        },
+        {
+            "course_code": "MAU0013",
+            "name": "複變數函數論",
+            "semester": "1151",
+            "credits": 3.0,
+            "grade": "未定",
+            "teacher": "林延輯"
+        },
+        {
+            "course_code": "MAU0106",
+            "name": "微分幾何（一）",
+            "semester": "1151",
+            "credits": 3.0,
+            "grade": "未定",
+            "teacher": "林俊吉"
+        },
+        {
+            "course_code": "MAU0166",
+            "name": "代數學（一）",
+            "semester": "1151",
+            "credits": 3.0,
+            "grade": "未定",
+            "teacher": "劉家新"
+        },
+        {
+            "course_code": "MAU0176",
+            "name": "代數學探索（一）",
+            "semester": "1151",
+            "credits": 1.0,
+            "grade": "未定",
+            "teacher": "劉家新"
         }
     ]
 }
