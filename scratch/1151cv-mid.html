@@ -3,10 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="only light">
 <title>複變函數論期中考速查</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500&display=swap">
 <script>
 MathJax = {
   tex: { inlineMath:[['$','$'],['\\(','\\)']], displayMath:[['\\[','\\]']], tags:'none' },
@@ -16,100 +13,144 @@ MathJax = {
 };
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
-
 <style>
 :root {
-  --bg:#ffffff; --bg2:#f4f4f4; --bg3:#e8e8e8;
-  --fg:#111111; --fg2:#444444; --fg3:#888888;
-  --ac1:#2563eb; --ac2:#7c3aed; --danger:#dc2626;
-  --frm:#eff6ff; --err:#fef2f2; --tip:#faf5ff;
-  --brd:#e0e0e0; color-scheme:only light;
+  --bg:    #f2f2f7;
+  --card:  #ffffff;
+  --hdr:   rgba(242,242,247,.88);
+  --fg:    #1c1c1e;
+  --fg2:   #48484a;
+  --fg3:   #8e8e93;
+  --blue:  #007aff;
+  --purp:  #5856d6;
+  --red:   #ff3b30;
+  --ora:   #ff9f0a;
+  --frm:   #eff6ff;
+  --warn:  #fff4e5;
+  --tip:   #f3f0ff;
+  --sep:   rgba(60,60,67,.18);
+  --r:     12px;
+  --rs:    8px;
+  color-scheme: only light;
 }
-*{box-sizing:border-box;}
+*,*::before,*::after{box-sizing:border-box;}
 body{
-  background:var(--bg); color:var(--fg);
-  font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
-  font-size:15px; line-height:1.75; margin:0;
+  background:var(--bg);color:var(--fg);margin:0;
+  font:400 15px/1.6 -apple-system,BlinkMacSystemFont,'PingFang TC','Heiti TC','Microsoft JhengHei',sans-serif;
   padding-left:max(16px,env(safe-area-inset-left,0px));
   padding-right:max(16px,env(safe-area-inset-right,0px));
   padding-block:0;
 }
+/* Header */
 .site-hdr{
-  position:sticky; top:env(safe-area-inset-top,0px);
-  background:var(--bg); border-bottom:1.5px solid var(--brd);
-  z-index:200; padding-block:10px;
+  position:sticky;top:env(safe-area-inset-top,0px);
+  background:var(--hdr);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:.5px solid var(--sep);z-index:200;padding-block:10px;
 }
 .hdr-in{max-width:860px;margin:0 auto;}
-.hdr-top{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
-.hdr-top h1{
-  font-family:'Noto Serif TC',serif; font-size:1.05rem;
-  font-weight:700; color:var(--ac1); margin:0;
+.hdr-top{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.hdr-top h1{font-size:1rem;font-weight:700;margin:0;color:var(--fg);letter-spacing:-.025em;}
+.scope{font-size:.72rem;color:var(--fg3);background:rgba(142,142,147,.12);border-radius:20px;padding:2px 9px;}
+/* Tabs */
+.tabs{
+  display:flex;gap:3px;background:rgba(118,118,128,.12);
+  border-radius:9px;padding:2px;overflow-x:auto;scrollbar-width:none;
 }
-.scope{font-size:.74rem;color:var(--fg3);border:1px solid var(--brd);border-radius:20px;padding:1px 9px;}
-.tabs{display:flex;gap:5px;flex-wrap:wrap;}
+.tabs::-webkit-scrollbar{display:none;}
 .tbtn{
-  padding:4px 13px; border:1.5px solid var(--brd); border-radius:20px;
-  background:transparent; color:var(--fg2); font-family:inherit;
-  font-size:.8rem; cursor:pointer; transition:all .15s; white-space:nowrap;
+  flex:1;min-width:68px;padding:5px 7px;border:none;border-radius:7px;
+  background:transparent;color:var(--fg2);cursor:pointer;white-space:nowrap;
+  font:600 .75rem/1 -apple-system,BlinkMacSystemFont,'PingFang TC',sans-serif;
+  transition:background .12s,color .12s,box-shadow .12s;
 }
-.tbtn:hover:not(.active){border-color:var(--ac1);color:var(--ac1);}
-.tbtn.active{background:var(--ac1);border-color:var(--ac1);color:#fff;}
-.content{max-width:860px;margin:0 auto;padding-block:18px 48px;}
-.section{display:none;}
-.section.active{display:block;}
+.tbtn.active{background:var(--card);color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.12),0 .5px 1px rgba(0,0,0,.07);}
+.tbtn:not(.active):hover{color:var(--blue);}
+/* Content */
+.content{max-width:860px;margin:0 auto;padding-block:16px 60px;}
+.section{display:none;}.section.active{display:block;}
 .sec-intro{
-  font-size:.83rem;color:var(--fg2);background:var(--bg2);
-  border-left:3px solid var(--ac1);border-radius:0 7px 7px 0;
-  padding:9px 13px;margin-bottom:18px;
+  font-size:.82rem;color:var(--fg2);line-height:1.55;
+  background:rgba(0,122,255,.06);border-left:3px solid var(--blue);
+  border-radius:0 var(--rs) var(--rs) 0;padding:10px 13px;margin-bottom:14px;
 }
-.mth{margin-bottom:12px;border:1px solid var(--brd);border-radius:10px;overflow:hidden;}
-.mhdr{
-  display:flex;align-items:center;gap:9px;padding:9px 13px;
-  background:var(--bg2);border-bottom:1px solid var(--brd);
-  cursor:pointer;user-select:none;
-}
-.mhdr:hover{background:var(--bg3);}
-.mbdg{
-  min-width:25px;height:25px;border-radius:50%;background:var(--ac1);
-  color:#fff;display:flex;align-items:center;justify-content:center;
-  font-size:.72rem;font-weight:700;flex-shrink:0;
-}
-.mtit{
-  font-family:'Noto Serif TC',serif;font-size:.91rem;font-weight:600;
-  color:var(--fg);flex:1;min-width:0;
-}
-.mchv{color:var(--fg3);font-size:.74rem;flex-shrink:0;}
-.mbdy{padding:13px 15px;}
+/* Cards */
+.mth{background:var(--card);border-radius:var(--r);overflow:hidden;margin-bottom:10px;
+     box-shadow:0 1px 2px rgba(0,0,0,.06),0 .5px 1px rgba(0,0,0,.04);}
+.mhdr{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;user-select:none;transition:background .1s;}
+.mhdr:active{background:rgba(0,0,0,.03);}
+.mbdg{min-width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;
+       display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0;}
+.mbdg.p{background:var(--purp);}.mbdg.r{background:var(--red);}
+.mtit{font-size:.88rem;font-weight:600;color:var(--fg);flex:1;min-width:0;letter-spacing:-.015em;}
+.mchv{color:var(--fg3);font-size:.72rem;flex-shrink:0;}
+.mbdy{padding:2px 16px 14px;border-top:.5px solid var(--sep);}
 .mbdy.closed{display:none;}
-.fml{background:var(--frm);border-radius:7px;padding:10px 13px;margin:9px 0;overflow-x:auto;}
-.flbl{font-size:.68rem;font-weight:700;color:var(--ac1);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
-.stp{list-style:none;padding:0;margin:9px 0;counter-reset:s;}
-.stp li{
-  display:flex;gap:8px;margin-bottom:6px;
-  font-size:.85rem;color:var(--fg2);counter-increment:s;
-}
+/* Formula */
+.fml{background:var(--frm);border-radius:var(--rs);padding:10px 13px;margin:10px 0;overflow-x:auto;}
+.flbl{font-size:.66rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+/* Steps */
+.stp{list-style:none;padding:0;margin:10px 0;counter-reset:s;}
+.stp li{display:flex;gap:8px;margin-bottom:6px;font-size:.84rem;color:var(--fg2);counter-increment:s;}
 .stp li::before{
-  content:counter(s);min-width:19px;height:19px;border-radius:50%;
-  background:var(--bg3);color:var(--fg3);display:flex;align-items:center;
-  justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0;margin-top:3px;
+  content:counter(s);min-width:18px;height:18px;border-radius:50%;
+  background:rgba(0,122,255,.12);color:var(--blue);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.66rem;font-weight:700;flex-shrink:0;margin-top:3px;
 }
-.ex{margin-top:12px;font-size:.86rem;}
-.elbl{font-size:.68rem;font-weight:700;color:var(--ac2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
-.eq{color:var(--fg);margin-bottom:6px;overflow-x:auto;}
-.es{color:var(--fg2);overflow-x:auto;}
-.errb,.tipb{margin-top:9px;padding:6px 10px;border-radius:6px;font-size:.82rem;}
-.errb{background:var(--err);border-left:3px solid var(--danger);color:var(--fg2);}
-.errb::before{content:"⚠ ";font-weight:700;color:var(--danger);}
-.tipb{background:var(--tip);border-left:3px solid var(--ac2);color:var(--fg2);}
+/* Examples */
+.ex{margin-top:11px;font-size:.85rem;}
+.elbl{font-size:.66rem;font-weight:700;color:var(--purp);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
+.eq{color:var(--fg);margin-bottom:5px;overflow-x:auto;}
+.es{color:var(--fg2);overflow-x:auto;line-height:1.65;}
+/* Callouts */
+.errb,.tipb{margin-top:10px;padding:8px 11px;border-radius:var(--rs);font-size:.81rem;line-height:1.55;}
+.errb{background:var(--warn);border-left:3px solid var(--ora);color:var(--fg2);}
+.errb::before{content:"⚠ ";font-weight:700;color:var(--ora);}
+.tipb{background:var(--tip);border-left:3px solid var(--purp);color:var(--fg2);}
 .tipb::before{content:"💡 ";}
-.rt{width:100%;border-collapse:collapse;font-size:.83rem;margin-top:6px;}
-.rt th{text-align:left;padding:5px 7px;color:var(--ac1);border-bottom:1.5px solid var(--brd);font-weight:600;}
-.rt td{padding:5px 7px;border-bottom:1px solid var(--brd);color:var(--fg2);}
+/* Tables */
+.rt{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:8px;}
+.rt th{text-align:left;padding:6px 10px;color:var(--blue);font-weight:600;border-bottom:1px solid var(--sep);}
+.rt td{padding:6px 10px;border-bottom:.5px solid var(--sep);color:var(--fg2);}
 .rt tr:last-child td{border-bottom:none;}
+/* MathJax */
 mjx-container{overflow-x:auto;overflow-y:hidden;}
-mjx-container[display="true"]{margin:6px 0;}
-#mathbadge{position:fixed;bottom:14px;right:14px;background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:4px 12px;font-size:.76rem;color:var(--fg3);z-index:300;}
-@media(max-width:540px){.mtit{font-size:.85rem;}.tbtn{font-size:.76rem;padding:3px 9px;}}
+mjx-container[display="true"]{margin:7px 0;}
+/* Math badge */
+#mathbadge{
+  position:fixed;bottom:16px;right:16px;
+  background:var(--card);border-radius:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);padding:5px 13px;
+  font-size:.73rem;color:var(--fg3);z-index:300;
+}
+/* Weakness cards (Tab 5) */
+.wk{background:var(--card);border-radius:var(--r);overflow:hidden;margin-bottom:10px;
+     box-shadow:0 1px 2px rgba(0,0,0,.06);}
+.wk-hdr{display:flex;align-items:center;gap:10px;padding:11px 16px;
+         background:rgba(255,59,48,.05);border-bottom:.5px solid rgba(255,59,48,.15);}
+.wk-num{min-width:22px;height:22px;border-radius:50%;background:var(--red);color:#fff;
+         display:flex;align-items:center;justify-content:center;
+         font-size:.68rem;font-weight:700;flex-shrink:0;}
+.wk-ttl{font-size:.88rem;font-weight:600;color:var(--fg);letter-spacing:-.015em;}
+.wk-bdy{padding:11px 16px;font-size:.84rem;color:var(--fg2);line-height:1.65;}
+/* Decision grid (Tab 5) */
+.dec{display:grid;gap:6px;margin:10px 0;}
+.dec-row{display:grid;grid-template-columns:1fr auto 1.6fr;gap:8px;align-items:center;
+          background:var(--card);border-radius:var(--rs);padding:8px 12px;
+          box-shadow:0 .5px 1px rgba(0,0,0,.05);}
+.dec-cond{font-size:.82rem;color:var(--fg2);}
+.dec-arr{color:var(--fg3);font-size:.85rem;text-align:center;}
+.dec-method{font-size:.82rem;font-weight:600;color:var(--blue);}
+.dec-row.root{background:rgba(0,122,255,.08);border-left:3px solid var(--blue);}
+.dec-row.root .dec-cond{color:var(--fg);font-weight:600;}
+@media(max-width:540px){
+  .tbtn{font-size:.7rem;padding:4px 5px;min-width:58px;}
+  .mtit{font-size:.84rem;}
+  .dec-row{grid-template-columns:1fr;}
+  .dec-arr{display:none;}
+}
 </style>
 </head>
 <body>
@@ -123,10 +164,11 @@ mjx-container[display="true"]{margin:6px 0;}
       <span class="scope">Brown &amp; Churchill Ch.1–9 ｜ 11/10 期中考</span>
     </div>
     <div class="tabs">
-      <button class="tbtn active" onclick="sw('t1',this)">① 代數・解析・論證</button>
-      <button class="tbtn" onclick="sw('t2',this)">② 積分計算</button>
-      <button class="tbtn" onclick="sw('t3',this)">③ 冪級數 &amp; Laurent</button>
-      <button class="tbtn" onclick="sw('t4',this)">④ 留數計算</button>
+      <button class="tbtn active" onclick="sw('t1',this)">① 代數解析</button>
+      <button class="tbtn" onclick="sw('t2',this)">② 積分</button>
+      <button class="tbtn" onclick="sw('t3',this)">③ 冪級數</button>
+      <button class="tbtn" onclick="sw('t4',this)">④ 留數</button>
+      <button class="tbtn" onclick="sw('t5',this)">⑤ 考前重點</button>
     </div>
   </div>
 </header>
@@ -135,9 +177,7 @@ mjx-container[display="true"]{margin:6px 0;}
 
 <!-- ═══════ TAB 1 ═══════ -->
 <div id="t1" class="section active">
-<div class="sec-intro">
-  涵蓋：複數代數運算、區域與單連通判別、極限不存在論證、CR 方程解析性驗證與否定、Liouville 定理及加強版、特殊導數公式論證。
-</div>
+<div class="sec-intro">涵蓋：複數代數運算、區域與單連通判別、極限不存在論證、CR 方程解析性驗證與否定、Liouville 定理及加強版、特殊導數公式論證。</div>
 
 <div class="mth">
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">A</div><div class="mtit">極式、De Moivre、開方根</div><div class="mchv">▾</div></div>
@@ -148,7 +188,7 @@ mjx-container[display="true"]{margin:6px 0;}
 <div class="ex"><div class="elbl">HW1 Q2 — $z^3=-8$</div>
 <div class="es">$-8=8e^{i\pi}$，故 $z_k=2e^{i(\pi+2k\pi)/3}$，$k=0,1,2$：$z_0=1+i\sqrt{3}$，$z_1=-2$，$z_2=1-i\sqrt{3}$。</div></div>
 <div class="ex"><div class="elbl">HW1 Q3 — De Moivre：$\tan4\theta$ 以 $\tan\theta$ 表示</div>
-<div class="es">展開 $(\cos\theta+i\sin\theta)^4=\cos4\theta+i\sin4\theta$ 右側，取虛部/實部相除：
+<div class="es">展開 $(\cos\theta+i\sin\theta)^4=\cos4\theta+i\sin4\theta$，取虛部/實部相除：
 \[\tan4\theta=\frac{4t-4t^3}{1-6t^2+t^4},\quad t=\tan\theta.\]</div></div>
 <div class="tipb">根的 $k$ 個解均勻分布在半徑 $r^{1/n}$ 的圓上，間隔 $2\pi/n$；主幅角 $\operatorname{Arg}z\in(-\pi,\pi]$。</div>
 </div></div>
@@ -156,18 +196,16 @@ mjx-container[display="true"]{margin:6px 0;}
 <div class="mth">
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">B</div><div class="mtit">區域草圖 &amp; 單連通域判別</div><div class="mchv">▾</div></div>
 <div class="mbdy">
-<div class="fml"><div class="flbl">定義</div>
-<strong>單連通（Simply connected）</strong>：域內任意閉曲線均可在域內縮為一點（即「無洞」）。
-</div>
+<div class="fml"><div class="flbl">定義</div><strong>單連通（Simply connected）</strong>：域內任意閉曲線均可在域內縮為一點（即「無洞」）。</div>
 <div class="ex"><div class="elbl">HW3 Q2 — 五題判別</div>
 <div class="es">
 水平帶 $|\operatorname{Im}z|&lt;1$ → 單連通 ✓（無洞）<br>
 環域 $1&lt;|z|&lt;2$ → 非單連通 ✗（有洞）<br>
 穿孔盤 $0&lt;|2z-1|&lt;2$ → 非單連通 ✗（有洞）<br>
-ℂ 排除非正實軸（主值分支定義域）→ 單連通 ✓<br>
-橢圓 $x^2+4y^2=1$ 的<strong>外部</strong>→ 非單連通 ✗（無窮遠處的「洞」）
+ℂ 排除非正實軸 → 單連通 ✓<br>
+橢圓外部 → 非單連通 ✗（無窮遠處有洞）
 </div></div>
-<div class="errb">「有界」≠「單連通」；外部域（橢圓外面）的洞在無窮遠，故非單連通。原函數存在的前提之一是域為單連通。</div>
+<div class="errb">「有界」≠「單連通」；外部域的洞在無窮遠，故非單連通。原函數存在的前提之一是域為單連通。</div>
 </div></div>
 
 <div class="mth">
@@ -175,10 +213,9 @@ mjx-container[display="true"]{margin:6px 0;}
 <div class="mbdy">
 <div class="fml"><div class="flbl">方法</div>沿不同路徑 $z\to z_0$ 得到不同值 → 極限不存在。</div>
 <div class="ex"><div class="elbl">HW1 Q5 — $\lim(\bar{z}/z)^2$ 在 $z\to0$</div>
-<div class="es">沿實軸 $z=x\to0$：$(x/x)^2=1$。沿對角線 $z=x+ix$：$\bar{z}/z=(x-ix)/(x+ix)=-i$，$(-i)^2=-1$。兩者不同，故極限不存在。 ∎</div></div>
+<div class="es">沿實軸 $z=x\to0$：$(x/x)^2=1$。沿對角線 $z=x+ix$：$\bar{z}/z=-i$，$(-i)^2=-1$。兩者不同，故極限不存在。 ∎</div></div>
 <div class="ex"><div class="elbl">HW2 Q1 — $\lim\tan(a+iy)$ 當 $y\to\pm\infty$</div>
-<div class="es">寫 $\tan z=-i(e^{2iz}-1)/(e^{2iz}+1)$，$z=a+iy$ 時 $e^{2iz}=e^{2ia-2y}$：
-$y\to+\infty$：$e^{2iz}\to0$，$\tan z\to i$；$y\to-\infty$：$e^{2iz}\to\infty$，$\tan z\to-i$。</div></div>
+<div class="es">$\tan z=-i(e^{2iz}-1)/(e^{2iz}+1)$，$z=a+iy$ 時 $e^{2iz}=e^{2ia-2y}$：$y\to+\infty$：$\to i$；$y\to-\infty$：$\to-i$。</div></div>
 </div></div>
 
 <div class="mth">
@@ -191,23 +228,21 @@ $y\to+\infty$：$e^{2iz}\to0$，$\tan z\to i$；$y\to-\infty$：$e^{2iz}\to\inft
 <ol class="stp">
   <li>分離實部虛部寫出 $u(x,y)$、$v(x,y)$</li>
   <li>計算四個偏導數 $u_x, u_y, v_x, v_y$</li>
-  <li>判斷 $u_x=v_y$ 且 $u_y=-v_x$ 是否在<em>整個區域</em>成立</li>
+  <li>判斷 $u_x=v_y$ 且 $u_y=-v_x$ 是否在整個區域成立</li>
 </ol>
 <div class="ex"><div class="elbl">HW1 Q6 — 驗證 $g(z)=(x^3-3xy^2)+i(3x^2y-y^3)$</div>
 <div class="es">$u_x=3x^2-3y^2=v_y$ ✓，$u_y=-6xy=-v_x$ ✓，全域成立，$g(z)=z^3$ 整函數。</div></div>
 <div class="ex"><div class="elbl">HW1 Q7 — $|z|^2$ 不可微</div>
-<div class="es">$u=x^2+y^2$，$v=0$。$u_x=2x$，$v_y=0$；僅 $x=0$ 時相等。$u_y=2y$，$-v_x=0$；僅 $y=0$ 時相等。CR 僅在原點滿足，故 $|z|^2$ 在任何開集上都<strong>不解析</strong>。</div></div>
-<div class="ex"><div class="elbl">HW1 Q8 — 極坐標偏導公式推導</div>
-<div class="es">$x=r\cos\theta$，對 $x$ 偏微：$u_x=u_r\cos\theta-u_\theta\frac{\sin\theta}{r}$（鏈法則），同理 $u_y$；代入直角 CR 得極坐標版。</div></div>
+<div class="es">$u=x^2+y^2$，$v=0$。$u_x=2x\ne v_y=0$ 除非 $x=0$，$u_y=2y\ne-v_x=0$ 除非 $y=0$。CR 僅在原點滿足，故不解析。</div></div>
 </div></div>
 
 <div class="mth">
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">E</div><div class="mtit">求諧函數共軛 $v$（已知 $u$）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <div class="fml"><div class="flbl">方法</div>用 CR：$v_y=u_x$，對 $y$ 積分得 $v+g(x)$；再用 $-v_x=u_y$ 決定 $g'(x)$，積分得 $g$。</div>
-<div class="ex"><div class="elbl">例：$u=x^3-3xy^2$（即 $\operatorname{Re}z^3$）</div>
-<div class="es">$v_y=u_x=3x^2-3y^2$ → $v=3x^2y-y^3+g(x)$。
-$-v_x=-6xy-g'(x)=u_y=-6xy$ → $g'(x)=0$ → $g=c$。
+<div class="ex"><div class="elbl">例：$u=x^3-3xy^2$</div>
+<div class="es">$v_y=u_x=3x^2-3y^2$ → $v=3x^2y-y^3+g(x)$。<br>
+$-v_x=-6xy-g'(x)=u_y=-6xy$ → $g'(x)=0$ → $g=c$。<br>
 故 $f=z^3+ic$。</div></div>
 </div></div>
 
@@ -216,10 +251,9 @@ $-v_x=-6xy-g'(x)=u_y=-6xy$ → $g'(x)=0$ → $g=c$。
 <div class="mbdy">
 <div class="ex"><div class="elbl">HW1 Q9 — $|f(z)|=1$，$f$ 整函數 → $f$ 常數</div>
 <div class="es"><strong>法1（Liouville）</strong>：$|f|\le1$ 有界 + 整函數 → Liouville → 常數。<br>
-<strong>法2（CR）</strong>：$u^2+v^2=c$ → 對 $x$ 偏微：$uu_x+vv_x=0$；對 $y$ 偏微：$uu_y+vv_y=0$。代入 CR（$v_x=-u_y$, $v_y=u_x$）→ $(u^2+v^2)u_x=0$ → $u_x=0$（因 $c\ne0$），同理 $u_y=0$ → $u$、$v$ 均為常數。</div></div>
-<div class="ex"><div class="elbl">應用：$\operatorname{Re}f=c$（實部為常數）→ $f$ 常數</div>
-<div class="es">$u=c$ → $u_x=u_y=0$；由 CR：$v_x=-u_y=0$，$v_y=u_x=0$ → $v$ 也為常數 → $f$ 常數。<br>
-類似：$\operatorname{Im}f=c$ → 常數；$|e^f|=e^{\operatorname{Re}f}=$常數 → $\operatorname{Re}f=$常數 → $f$ 常數。</div></div>
+<strong>法2（CR）</strong>：$u^2+v^2=c$，對 $x$ 偏微：$uu_x+vv_x=0$；代入 CR → $(u^2+v^2)u_x=0$ → $u_x=0$，同理 $u_y=v_x=v_y=0$ → 常數。</div></div>
+<div class="ex"><div class="elbl">應用：$\operatorname{Re}f=c$ → $f$ 常數</div>
+<div class="es">$u=c$ → $u_x=u_y=0$；由 CR：$v_x=v_y=0$ → $f$ 常數。類似：$|e^f|=e^{\operatorname{Re}f}=$常數 → $\operatorname{Re}f=$常數 → 常數。</div></div>
 </div></div>
 
 <div class="mth">
@@ -229,79 +263,63 @@ $-v_x=-6xy-g'(x)=u_y=-6xy$ → $g'(x)=0$ → $g=c$。
 <div class="fml"><div class="flbl">HW4 Q1 — 加強版：$|f(z)|\le C|z|$ → $f(z)=Az$</div>
 對任意 $z_0$，取半徑 $R$ 的圓，對 $f''$ 用 Cauchy 估計：
 \[|f''(z_0)|\le\frac{2!\cdot C\max_{|z-z_0|=R}|z|}{R^2}\le\frac{2C(|z_0|+R)}{R^2}\xrightarrow{R\to\infty}0\]
-故 $f''\equiv0$ → $f(z)=Az+B$；由 $|f(0)|\le C\cdot0=0$ 得 $B=0$，故 $f=Az$。
+故 $f''\equiv0$ → $f(z)=Az+B$；由 $|f(0)|\le C\cdot0=0$ 得 $B=0$。
 </div>
-<div class="tipb">廣義：$|f(z)|\le C|z|^n$ 整函數 → $f$ 為次數 $\le n$ 的多項式。</div>
+<div class="tipb">廣義：$|f(z)|\le C|z|^n$ 整函數 → $f$ 為次數 $\le n$ 的多項式。考試常見：先對 $f'$ 或 $f''$ 用 Cauchy 估計，再令 $R\to\infty$ 迫使它為 $0$。</div>
 </div></div>
 
 <div class="mth">
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">H</div><div class="mtit">論證導數公式（arctan、鏈法則）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <div class="ex"><div class="elbl">HW2 Q2 — $\arctan z = \frac{1}{2i}\log\frac{i-z}{i+z}$</div>
-<div class="es">令 $w=\arctan z$ → $\tan w=z$ → $(e^{2iw}-1)/(i(e^{2iw}+1))=z$，解 $e^{2iw}=(i+z)/(i-z)$：
-\[w=\frac{1}{2i}\log\frac{i+z}{i-z}=\frac{1}{2i}\log\frac{i-z}{i+z}\cdot(-1)=\frac{1}{2i}\log\frac{i-z}{i+z}\]
-推導：$\frac{d}{dz}\arctan z=\frac{1}{2i}\cdot\frac{-2i}{i^2-z^2}=\frac{1}{1+z^2}$。</div></div>
+<div class="es">令 $w=\arctan z$ → $\tan w=z$，解 $e^{2iw}$：
+\[\frac{d}{dz}\arctan z=\frac{1}{1+z^2}\]</div></div>
 <div class="ex"><div class="elbl">HW2 Q3 — $\frac{d}{dt}[w(t)]^2 = 2w(t)w'(t)$</div>
-<div class="es">由極限定義：
-\[\frac{d}{dt}[w^2]=\lim_{h\to 0}\frac{w(t+h)^2-w(t)^2}{h}=\lim_{h\to 0}[w(t+h)+w(t)]\cdot\frac{w(t+h)-w(t)}{h}=2w\cdot w'\]</div></div>
-<div class="ex"><div class="elbl">HW1 Q10 — $|e^z|=e^{\operatorname{Re}z}$</div>
-<div class="es">$z=x+iy$：$|e^z|=|e^x\cdot e^{iy}|=e^x\cdot1=e^x=e^{\operatorname{Re}z}$。</div></div>
+<div class="es">由極限定義：$\lim_{h\to 0}[w(t+h)+w(t)]\cdot\frac{w(t+h)-w(t)}{h}=2w\cdot w'$。</div></div>
 </div></div>
 
 </div><!-- /t1 -->
 
-
 <!-- ═══════ TAB 2 ═══════ -->
 <div id="t2" class="section">
-<div class="sec-intro">
-  <strong>選法流程：</strong>被積函數在 $C$ 內是否解析？→ 是、閉合 → Cauchy 定理（$=0$）或原函數法；→ 有奇點 → 分母次數1用 CIF，$&gt;1$ 用高階 CIF 或留數定理；→ 含 $\bar{z}$ / 不解析 → 直接參數化。
-</div>
+<div class="sec-intro"><strong>選法順序：</strong>全解析 → Cauchy（=0） | 含 $\bar{z}$ → 參數化 | 路徑無關 → 反導函數 | 分母一次 → CIF | 分母高次 → CIF 高階 | 多奇點 → 留數定理。</div>
 
 <div class="mth">
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">A</div><div class="mtit">直接參數化線積分</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <div class="fml"><div class="flbl">公式</div>\[\int_C f(z)\,dz=\int_a^b f(z(t))\,z'(t)\,dt\]</div>
 <div class="ex"><div class="elbl">HW2 Q6(b) — 沿 $y=x^3$</div>
-<div class="es">$z(t)=t+it^3$，$t\in[-1,1]$，$z'=1+3it^2$；分段代入即可。</div></div>
-<div class="errb">含 $\bar{z}$ 的被積函數一定要參數化，不能用原函數；忘乘 $z'(t)$ 是最常見錯誤。</div>
+<div class="es">$z(t)=t+it^3$，$t\in[-1,1]$，$z'=1+3it^2$；代入即可。</div></div>
+<div class="errb">含 $\bar{z}$ 一定要參數化；忘乘 $z'(t)$ 是最常見錯誤。</div>
 </div></div>
 
 <div class="mth">
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">B</div><div class="mtit">ML 不等式（估計上界）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <div class="fml"><div class="flbl">公式</div>\[\left|\int_C f\,dz\right|\le M\cdot L,\quad M=\max_{z\in C}|f(z)|,\quad L=\text{弧長}\]</div>
-<div class="ex"><div class="elbl">HW2 Q8 — $C_R\colon|z|=R\,(R&gt;1)$ 上 $\int\operatorname{Log}z/z^2\,dz\to0$</div>
-<div class="es">$|\operatorname{Log}z|\le\ln R+\pi$，故 $M=(\ln R+\pi)/R^2$，$L=2\pi R$：
-\[\left|\int_{C_R}\frac{\operatorname{Log}z}{z^2}\,dz\right|\le\frac{2\pi(\ln R+\pi)}{R}\xrightarrow{R\to\infty}0\]</div></div>
+<div class="ex"><div class="elbl">HW2 Q8 — $\int_{C_R}\operatorname{Log}z/z^2\,dz\to0$（$R\to\infty$）</div>
+<div class="es">$M=(\ln R+\pi)/R^2$，$L=2\pi R$：$\le 2\pi(\ln R+\pi)/R\to0$ ✓</div></div>
 </div></div>
 
 <div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">C</div><div class="mtit">原函數法（與路徑無關）＋分支函數積分</div><div class="mchv">▾</div></div>
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">C</div><div class="mtit">原函數法（與路徑無關）＋分支函數積分 ★</div><div class="mchv">▾</div></div>
 <div class="mbdy">
-<div class="fml"><div class="flbl">定理</div>
-$f$ 在<strong>單連通域</strong> $D$ 上解析 ⇒ $\int f\,dz=F(\text{end})-F(\text{start})$（與路徑無關），閉合積分 $=0$。
-</div>
-<div class="ex"><div class="elbl">HW2 Q6(a) — $\oint\pi e^{\pi z}\,dz$，$C$ 為正方形</div>
-<div class="es">$\pi e^{\pi z}$ 整函數，原函數為 $e^{\pi z}$，閉合積分 $=0$。</div></div>
-<div class="ex"><div class="elbl">HW3 Q1 — ★分支函數積分：$\int_{-1}^{1}z^i\,dz$</div>
+<div class="fml"><div class="flbl">定理</div>$f$ 在單連通域 $D$ 上解析 ⇒ $\int f\,dz=F(\text{end})-F(\text{start})$，閉合積分 $=0$。</div>
+<div class="ex"><div class="elbl">HW3 Q1 — ★ 分支函數：$\int_{-1}^{1}z^i\,dz$</div>
 <div class="eq">\[\int_{-1}^{1}z^i\,dz=\frac{(1+e^{-\pi})(1-i)}{2}\]</div>
-<div class="es">$z^i=\exp(i\operatorname{Log}z)$，主值分支（切線在負實軸）；路徑在上半平面，不穿越切線 ✓。<br>
-原函數：$F(z)=z^{i+1}/(i+1)=\exp((i+1)\operatorname{Log}z)/(i+1)$。<br>
-$F(1)=e^0/(i+1)=1/(i+1)=(1-i)/2$。<br>
-$F(-1)=\exp((i+1)i\pi)/(i+1)=e^{-\pi+i\pi}/(i+1)=-e^{-\pi}/(i+1)=-e^{-\pi}(1-i)/2$。<br>
-結果：$(1-i)/2+e^{-\pi}(1-i)/2=(1+e^{-\pi})(1-i)/2$ ✓</div></div>
-<div class="ex"><div class="elbl">HW2 Q9 — $e^{z^2}$ 有原函數</div>
-<div class="es">$e^{z^2}$ 整函數（$\mathbb{C}$ 單連通）→ 有原函數 $F=\sum z^{2n+1}/(n!(2n+1))$，故閉合積分 $=0$。</div></div>
-<div class="errb">$1/z$ 在 $\mathbb{C}\setminus\{0\}$ 解析，但此域<strong>非單連通</strong>，無全局原函數：$\oint 1/z=2\pi i\ne0$。分支函數積分的關鍵：路徑須完全在所選分支（同一 $2\pi$ 區間）的定義域內。</div>
+<div class="es">選主值分支（切線在<strong>負實軸</strong>）；路徑在上半平面，不穿越切線 ✓。<br>
+原函數：$F(z)=z^{i+1}/(i+1)$。<br>
+$F(1)=(1-i)/2$，$F(-1)=-e^{-\pi}(1-i)/2$，結果相減。</div></div>
+<div class="errb">分支函數的關鍵：確認路徑全程在同一分支的定義域內，不穿越切線。</div>
 </div></div>
 
 <div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">D</div><div class="mtit">Cauchy 定理（積分=0）</div><div class="mchv">▾</div></div>
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">D</div><div class="mtit">Cauchy–Goursat 定理（積分 $=0$）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
-<div class="fml"><div class="flbl">Cauchy–Goursat</div>$f$ 在 $C$ 及其內部解析 $\Rightarrow \oint_C f\,dz=0$。</div>
+<div class="fml"><div class="flbl">定理</div>$f$ 在 $C$ 及內部解析 $\Rightarrow \oint_C f\,dz=0$。先確認所有奇點在 $C$ 外！</div>
 <div class="ex"><div class="elbl">例</div>
-<div class="es">$\oint_{|z|=1}e^z/(z^2+9)\,dz=0$（奇點 $\pm3i$ 均在圓外）。<br>
-HW4 Q7(c)：$\oint_{|z|=1}\tanh z\,dz=0$（奇點 $z=\pm i\pi/2$，$|i\pi/2|=\pi/2\approx1.57&gt;1$，在圓外 ✓）。</div></div>
+<div class="es">$\oint_{|z|=1}e^z/(z^2+9)\,dz=0$（奇點 $\pm3i$，$|\pm3i|=3&gt;1$，在外 ✓）。<br>
+HW4 Q7(c)：$\oint_{|z|=1}\tanh z\,dz=0$（奇點 $\pm i\pi/2$，$|\pi/2|\approx1.57&gt;1$，在外 ✓）。</div></div>
 </div></div>
 
 <div class="mth">
@@ -311,22 +329,15 @@ HW4 Q7(c)：$\oint_{|z|=1}\tanh z\,dz=0$（奇點 $z=\pm i\pi/2$，$|i\pi/2|=\pi
 \[\oint_C\frac{f(z)}{z-z_0}\,dz=2\pi i\,f(z_0)\quad(z_0\text{ 在 }C\text{ 內，}f\text{ 在 }C\text{ 及內部解析})\]
 </div>
 <ol class="stp">
-  <li>確認分母是一次式 $(z-z_0)$；有多個極點先拆部分分式</li>
-  <li>逐一確認每個 $z_k$ 是否在 $C$ 內（比較 $|z_k|$ 與曲線半徑）</li>
-  <li>圓內奇點：結果 $=2\pi i\cdot f(z_k)$；圓外貢獻 $0$</li>
+  <li>確認分母是一次式 $(z-z_0)$；多極點先拆部分分式</li>
+  <li>逐一確認每個 $z_k$ 是否在 $C$ 內</li>
+  <li>圓內奇點：$2\pi i\cdot f(z_k)$；圓外貢獻 $0$，加總</li>
 </ol>
-<div class="ex"><div class="elbl">261006/HW3 Q4(a)</div>
-<div class="es">$\oint_{|C|=4}e^{-z}/(z-\pi i/2)\,dz$：$z_0=\pi i/2$，$|z_0|\approx1.57&lt;4$ ✓，$f=e^{-z}$：
-\[=2\pi i\cdot e^{-\pi i/2}=2\pi i\cdot(-i)=\boxed{2\pi}\]</div></div>
+<div class="ex"><div class="elbl">HW3 Q4(a)</div>
+<div class="es">$\oint_{|C|=4}e^{-z}/(z-\pi i/2)\,dz$：$z_0=\pi i/2$，$|z_0|\approx1.57&lt;4$ ✓：$=2\pi i\cdot e^{-\pi i/2}=2\pi i\cdot(-i)=\boxed{2\pi}$</div></div>
 <div class="ex"><div class="elbl">HW3 Q3 — 部分分式：$\oint_{|z|=2}(z-8)/(z^2-4z)\,dz$</div>
-<div class="es">$z^2-4z=z(z-4)$；$z=0$（$|0|&lt;2$，在內），$z=4$（$|4|&gt;2$，在外）。
-$f(z)=(z-8)/(z-4)$，$f(0)=2$：
-\[=2\pi i\cdot 2=\boxed{4\pi i}\]</div></div>
-<div class="ex"><div class="elbl">261006/HW3 Q4(b) — 正方形 $|x|,|y|\le2$</div>
-<div class="es">$\oint_C\cos z/(z(z^2+8))\,dz$：$z=0$（實部=0，虛部=0，在正方形內 ✓）；$z=\pm2i\sqrt{2}$（虛部 $=\pm2\sqrt{2}\approx2.83&gt;2$，在正方形<strong>外</strong>）。
-$f(z)=\cos z/(z^2+8)$，$f(0)=1/8$：
-\[=2\pi i\cdot\tfrac{1}{8}=\boxed{\tfrac{\pi i}{4}}\]</div></div>
-<div class="errb">「圓形 $|z|\le2$」≠「正方形 $|x|,|y|\le2$」！正方形對角線距離 $\approx2.83$，需個別判斷奇點位置。</div>
+<div class="es">$z(z-4)$；$z=0$（$|0|&lt;2$，在內），$z=4$（在外）。$f(z)=(z-8)/(z-4)$，$f(0)=2$：$=2\pi i\cdot2=\boxed{4\pi i}$</div></div>
+<div class="errb">「圓形 $|z|\le2$」≠「正方形 $|x|,|y|\le2$」！正方形對角線 $\approx2.83$，需個別判斷。</div>
 </div></div>
 
 <div class="mth">
@@ -336,11 +347,9 @@ $f(z)=\cos z/(z^2+8)$，$f(0)=1/8$：
 \[\oint_C\frac{f(z)}{(z-z_0)^{n+1}}\,dz=\frac{2\pi i}{n!}\,f^{(n)}(z_0)\]
 </div>
 <div class="ex"><div class="elbl">HW3 Q4(c) — $\oint e^z\sin z/z^4\,dz$</div>
-<div class="es">$z^4=(z-0)^{3+1}\to n=3$，$f=e^z\sin z$，$f'''(0)$：
-$f'=e^z(\sin z+\cos z)$，$f''=2e^z\cos z$，$f'''=2e^z(\cos z-\sin z)$，$f'''(0)=2$：
-\[=\frac{2\pi i}{3!}\cdot 2=\boxed{\frac{2\pi i}{3}}\]</div></div>
+<div class="es">$n=3$，$f=e^z\sin z$，$f'''(0)=2$：$=\frac{2\pi i}{3!}\cdot2=\boxed{\frac{2\pi i}{3}}$</div></div>
 <div class="ex"><div class="elbl">HW4 Q7(a) — $\oint e^z/z^3$</div>
-<div class="es">$n=2$，$f=e^z$，$f''(0)=1$：$=(2\pi i/2!)\cdot1=\pi i$。</div></div>
+<div class="es">$n=2$，$f=e^z$，$f''(0)=1$：$=(2\pi i/2)\cdot1=\boxed{\pi i}$</div></div>
 <div class="errb">分母 $z^4$ → $n+1=4$ → 取<em>三</em>階導（$n=3$），勿少一階。</div>
 </div></div>
 
@@ -348,76 +357,29 @@ $f'=e^z(\sin z+\cos z)$，$f''=2e^z\cos z$，$f'''=2e^z(\cos z-\sin z)$，$f'''(
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">G</div><div class="mtit">留數定理（多個奇點）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <div class="fml"><div class="flbl">定理</div>
-\[\oint_C f\,dz=2\pi i\sum_k\operatorname{Res}(f,z_k)\quad(\text{對 }C\text{ 內所有奇點})\]
+\[\oint_C f\,dz=2\pi i\sum_k\operatorname{Res}(f,z_k)\quad(\text{對 }C\text{ 內所有奇點加總})\]
 </div>
 <div class="ex"><div class="elbl">例</div>
 <div class="es">$\oint_{|z|=2}(5z-2)/(z(z-1))\,dz$：$\operatorname{Res}(z=0)=2$，$\operatorname{Res}(z=1)=3$ → $2\pi i\cdot5=10\pi i$。</div></div>
+<div class="errb">最常犯的錯誤：只找到一個奇點，漏掉另一個。積分號前先清點 $C$ 內所有奇點！</div>
 </div></div>
 
 <div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">H</div><div class="mtit">CIF/複積分推導實數積分公式</div><div class="mchv">▾</div></div>
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">H</div><div class="mtit">CIF 推導實數積分公式</div><div class="mchv">▾</div></div>
 <div class="mbdy">
-<div class="fml"><div class="flbl">方法</div>
-選適當複積分，CIF 求值；以 $z=e^{i\theta}$ 或 $z=x$ 參數化，分離實部/虛部得實數結果。
-</div>
-<div class="ex"><div class="elbl">HW2 Q5 — $\int e^x\cos x\,dx$ 與 $\int e^x\sin x\,dx$</div>
-<div class="es">$\int_0^\pi e^{(1+i)x}\,dx=[e^{(1+i)x}/(1+i)]_0^\pi=(e^{(1+i)\pi}-1)/(1+i)=(-e^\pi-1)/(1+i)$：
-比較實部：$\int_0^\pi e^x\cos x\,dx=-(1+e^\pi)/2$；比較虛部：$\int_0^\pi e^x\sin x\,dx=(1+e^\pi)/2$。</div></div>
-<div class="ex"><div class="elbl">HW3 Q5 — $\oint e^{az}/z=2\pi i$ → 實積分公式</div>
-<div class="es">CIF 給出 $\oint_{|z|=1}e^{az}/z\,dz=2\pi i$（$f=e^{az}$，$z_0=0$）。
-令 $z=e^{i\theta}$：$i\int_0^{2\pi}e^{ae^{i\theta}}\,d\theta=2\pi i$，分離虛部：
+<div class="ex"><div class="elbl">HW3 Q5 — $\oint e^{az}/z=2\pi i$ → 實積分</div>
+<div class="es">令 $z=e^{i\theta}$：$i\int_0^{2\pi}e^{ae^{i\theta}}\,d\theta=2\pi i$，取實部：
 \[\int_0^{2\pi}e^{a\cos\theta}\cos(a\sin\theta)\,d\theta=2\pi\]</div></div>
-<div class="ex"><div class="elbl">HW4 Q2 — 等比級數推導 $\sum r^n\cos n\theta$</div>
-<div class="es">令 $w=re^{i\theta}$，取 $\sum_{n=1}^\infty w^n=w/(1-w)$ 的實部：
-\[\sum_{n=1}^\infty r^n\cos n\theta=\operatorname{Re}\!\left[\frac{re^{i\theta}}{1-re^{i\theta}}\right]=\frac{r\cos\theta-r^2}{1-2r\cos\theta+r^2}\]</div></div>
-</div></div>
-
-<div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">I</div><div class="mtit">$\oint\bar{z}\,dz$ 與 Green 公式（面積）</div><div class="mchv">▾</div></div>
-<div class="mbdy">
-<div class="fml"><div class="flbl">HW2 Q7</div>
-$I=\oint\bar{z}\,dz=\oint(x\,dx+y\,dy)+i\oint(x\,dy-y\,dx)$。<br>
-由 Green 公式：$\oint(x\,dy-y\,dx)=\iint2\,dA=2\cdot\text{Area}(D)$，故 <strong>$\operatorname{Im}I=2\cdot\text{Area}$</strong>，即面積 $=(\operatorname{Im}I)/2$。<br>
-$\operatorname{Re}I=\oint(x\,dx+y\,dy)=\oint d(x^2+y^2)/2=0$（閉合路徑上全微分）。
-</div>
-</div></div>
-
-<div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">J</div><div class="mtit">論證積分恒等式（$\oint f'/(z-z_0)=\oint f/(z-z_0)^2$）</div><div class="mchv">▾</div></div>
-<div class="mbdy">
-<div class="fml"><div class="flbl">HW3 Q6</div>
-設 $f$ 在 $C$ 及其內部解析，$z_0\notin C$，證明
-\[\oint_C\frac{f'(z)}{z-z_0}\,dz=\oint_C\frac{f(z)}{(z-z_0)^2}\,dz\]
-</div>
-<div class="ex"><div class="elbl">論證</div>
-<div class="es">左式用分部積分（複數版）：令 $u=1/(z-z_0)$，$dv=d(f(z))$：
-\[\oint u\,dv=[uf]_C-\oint f\,d\!\left(\frac{1}{z-z_0}\right)=0-\oint f\cdot\frac{-1}{(z-z_0)^2}\,dz=\oint\frac{f}{(z-z_0)^2}\,dz\;\checkmark\]
-（$[uf]_C=0$ 因閉合路徑）</div></div>
-</div></div>
-
-<div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">K</div><div class="mtit">正交性（複指數）</div><div class="mchv">▾</div></div>
-<div class="mbdy">
-<div class="fml"><div class="flbl">HW2 Q4</div>
-\[\int_0^{2\pi}e^{im\theta}e^{-in\theta}\,d\theta=\begin{cases}2\pi&m=n\\0&m\ne n\end{cases}\]
-</div>
-<div class="ex"><div class="elbl">論證</div>
-<div class="es">$m=n$：$\int_0^{2\pi}1\,d\theta=2\pi$。
-$m\ne n$：$\int_0^{2\pi}e^{i(m-n)\theta}\,d\theta=[e^{i(m-n)\theta}/(i(m-n))]_0^{2\pi}=0$（$e^{2\pi i(m-n)}=1$）。 ∎</div></div>
-<div class="tipb">這與 Laurent 係數公式 $c_n=(1/2\pi i)\oint f(z)/(z-z_0)^{n+1}\,dz$ 是同一件事，令 $z=e^{i\theta}$ 即得。</div>
 </div></div>
 
 </div><!-- /t2 -->
 
-
 <!-- ═══════ TAB 3 ═══════ -->
 <div id="t3" class="section">
-<div class="sec-intro">
-  涵蓋：Taylor/Maclaurin 展開（幾何級數法）、非零中心展開與收斂半徑、Laurent 展開（不同環域）、Euler 數、利用冪級數推導實數結果。
-</div>
+<div class="sec-intro">涵蓋：Taylor/Maclaurin 展開（幾何級數法）、非零中心展開與收斂半徑、Laurent 展開（不同環域）、Euler 數。</div>
 
 <div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">A</div><div class="mtit">基本 Maclaurin 展開（幾何級數法）</div><div class="mchv">▾</div></div>
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">A</div><div class="mtit">基本 Maclaurin 展開（必背）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <div class="fml"><div class="flbl">必記公式</div>
 \[e^z=\sum_{n=0}^\infty\frac{z^n}{n!},\;\sin z=\sum_{n=0}^\infty\frac{(-1)^n z^{2n+1}}{(2n+1)!},\;\cos z=\sum_{n=0}^\infty\frac{(-1)^n z^{2n}}{(2n)!}\]
@@ -425,67 +387,45 @@ $m\ne n$：$\int_0^{2\pi}e^{i(m-n)\theta}\,d\theta=[e^{i(m-n)\theta}/(i(m-n))]_0
 </div>
 <div class="ex"><div class="elbl">HW4 Q3 — $z/(z^4+9)$</div>
 <div class="es">\[\frac{z}{z^4+9}=\frac{z}{9}\cdot\frac{1}{1+(z^4/9)}=\sum_{n=0}^\infty\frac{(-1)^n}{9^{n+1}}z^{4n+1},\quad|z|&lt;9^{1/4}=\sqrt{3}\]</div></div>
-<div class="ex"><div class="elbl">HW4 Q6(a) — $1/(1+z^2)$ 的 Taylor 展開，$|z|&lt;1$</div>
-<div class="es">\[\frac{1}{1+z^2}=\sum_{n=0}^\infty(-1)^n z^{2n}=1-z^2+z^4-\cdots\quad(|z|{&lt;}1)\]</div></div>
-<div class="ex"><div class="elbl">HW4 Q5 — Euler 數（$1/\cosh z = \sum E_n/n!\,z^n$）</div>
-<div class="es">奇點：$\cosh z=0\iff z=i\pi(2n+1)/2$，最近的是 $\pm i\pi/2$，故 $R=\pi/2$。
-$1/\cosh z=\operatorname{sech}z$ 是偶函數，故奇次 Euler 數為 $0$：$E_0=1$，$E_2=-1$，$E_4=5$（其餘奇數次 $=0$）。
-（驗算：$\operatorname{sech}z\approx1-z^2/2+5z^4/24-\cdots$，$E_2/2!=-1/2\to E_2=-1$ ✓，$E_4/4!=5/24\to E_4=5$ ✓）</div></div>
 </div></div>
 
 <div class="mth">
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">B</div><div class="mtit">Taylor 展開（非零中心）＋收斂半徑</div><div class="mchv">▾</div></div>
 <div class="mbdy">
-<div class="fml"><div class="flbl">方法</div>
-令 $w=z-z_0$，化成關於 $w$ 的等比級數；收斂半徑 $R=z_0$ 到最近奇點的距離。
-</div>
-<div class="ex"><div class="elbl">HW4 Q4 — $1/(1-z)$ 在 $z_0=i$ 的展開</div>
-<div class="es">$1-z=(1-i)-(z-i)=(1-i)(1-(z-i)/(1-i))$：
-\[\frac{1}{1-z}=\sum_{n=0}^\infty\frac{(z-i)^n}{(1-i)^{n+1}},\quad R=|1-i|=\sqrt{2}\]
-（$1/(1-z)$ 的奇點在 $z=1$，$|1-i|=\sqrt{2}$ ✓）</div></div>
-<div class="tipb">收斂半徑=中心到最近奇點的距離。等比級數 $\sum(w/\alpha)^n$ 收斂當 $|w|&lt;|\alpha|$，故 $R=|\alpha|$。</div>
+<div class="fml"><div class="flbl">方法</div>令 $w=z-z_0$，化成等比；收斂半徑 $R=z_0$ 到最近奇點的距離。</div>
+<div class="ex"><div class="elbl">HW4 Q4 — $1/(1-z)$ 在 $z_0=i$</div>
+<div class="es">\[\frac{1}{1-z}=\sum_{n=0}^\infty\frac{(z-i)^n}{(1-i)^{n+1}},\quad R=|1-i|=\sqrt{2}\]</div></div>
+<div class="tipb">收斂半徑 = 中心到最近奇點的距離。</div>
 </div></div>
 
 <div class="mth">
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">C</div><div class="mtit">Laurent 展開（環域）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
-<div class="fml"><div class="flbl">定理</div>
-$f$ 在 $R_1&lt;|z-z_0|&lt;R_2$ 上解析 $\Rightarrow f(z)=\sum a_n(z-z_0)^n$（$n=-\infty$ 到 $\infty$）。
-</div>
+<div class="fml"><div class="flbl">定理</div>$f$ 在 $R_1&lt;|z-z_0|&lt;R_2$ 上解析 $\Rightarrow f(z)=\sum_{n=-\infty}^{\infty} a_n(z-z_0)^n$。</div>
 <div class="ex"><div class="elbl">HW4 Q6(b) — $1/(1+z^2)$，$|z|&gt;1$</div>
-<div class="es">\[\frac{1}{1+z^2}=\frac{1}{z^2}\cdot\frac{1}{1+1/z^2}=\sum_{n=0}^\infty\frac{(-1)^n}{z^{2n+2}}=\frac{1}{z^2}-\frac{1}{z^4}+\frac{1}{z^6}-\cdots\quad(|z|{&gt;}1)\]</div></div>
-<div class="ex"><div class="elbl">標準例：$\sin z/z^3$（$|z|&gt;0$）</div>
-<div class="es">\[\frac{\sin z}{z^3}=\frac{1}{z^2}-\frac{1}{6}+\frac{z^2}{120}-\cdots\quad(\text{無 }1/z\text{ 項，}\operatorname{Res}=0)\]</div></div>
-<div class="ex"><div class="elbl">★HW4 Q7(b) — $1/(z^2\sin z)$</div>
+<div class="es">\[\frac{1}{1+z^2}=\frac{1}{z^2}\cdot\frac{1}{1+1/z^2}=\sum_{n=0}^\infty\frac{(-1)^n}{z^{2n+2}}=\frac{1}{z^2}-\frac{1}{z^4}+\cdots\]</div></div>
+<div class="ex"><div class="elbl">★ HW4 Q7(b) — $1/(z^2\sin z)$</div>
 <div class="es">$\sin z=z-z^3/6+\cdots$，$z^2\sin z=z^3(1-z^2/6+\cdots)$：
-\[\frac{1}{z^2\sin z}=\frac{1}{z^3}\cdot\frac{1}{1-z^2/6+\cdots}=\frac{1}{z^3}\left(1+\frac{z^2}{6}+\cdots\right)=\frac{1}{z^3}+\frac{1}{6z}+\cdots\]
-$\operatorname{Res}=1/6$，$\oint_{|z|=1}=\pi i/3$。</div></div>
+\[\frac{1}{z^2\sin z}=\frac{1}{z^3}+\frac{1}{6z}+\cdots\quad\Rightarrow\operatorname{Res}=\frac{1}{6}\]</div></div>
+<div class="tipb">兩個環域的展開係數不同，尤其是 $1/z$ 的係數（留數）——須在各自環域中分別計算。</div>
 </div></div>
 
 <div class="mth">
 <div class="mhdr" onclick="tg(this)"><div class="mbdg">D</div><div class="mtit">同一函數在不同域展開（Taylor vs Laurent）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
-<div class="fml"><div class="flbl">關鍵思路</div>
-$|z|&lt;r$：直接等比（Taylor）；$|z|&gt;r$：先提出 $1/z^n$，再對 $1/z^{\text{something}}$ 展開（Laurent）。
-</div>
 <div class="ex"><div class="elbl">HW4 Q6 — $1/(1+z^2)$ 的兩個展開</div>
-<div class="es">$|z|&lt;1$（Taylor）：$\sum(-1)^n z^{2n}$（奇點 $\pm i$ 距原點 $=1$）<br>
-$|z|&gt;1$（Laurent）：$\sum(-1)^n/z^{2n+2}$（環域 $1&lt;|z|&lt;\infty$）<br>
-兩個展開覆蓋 $\mathbb{C}\setminus\{\pm i\}$，不同環域對應不同展開式。</div></div>
-<div class="tipb">兩個不同展開是不同的 Laurent 級數（在不同域成立），它們的係數不同，尤其是 $1/z$ 的係數（即留數）可能不同——須在各自環域中分別計算。</div>
+<div class="es">$|z|&lt;1$（Taylor）：$\sum(-1)^n z^{2n}$<br>
+$|z|&gt;1$（Laurent）：$\sum(-1)^n/z^{2n+2}$</div></div>
 </div></div>
 
 </div><!-- /t3 -->
 
-
 <!-- ═══════ TAB 4 ═══════ -->
 <div id="t4" class="section">
-<div class="sec-intro">
-  留數=Laurent 展開 $(z-z_0)^{-1}$ 的係數 $b_1$。先判斷奇點類型，再選公式。
-</div>
+<div class="sec-intro">留數 $=$ Laurent 展開 $(z-z_0)^{-1}$ 的係數 $b_1$。先判斷奇點類型，再選公式。</div>
 
 <div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">A</div><div class="mtit">奇異點分類速查表</div><div class="mchv">▾</div></div>
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">A</div><div class="mtit">奇異點分類速查</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <table class="rt">
 <tr><th>類型</th><th>判別</th><th>主要部分</th><th>Res</th></tr>
@@ -495,67 +435,208 @@ $|z|&gt;1$（Laurent）：$\sum(-1)^n/z^{2n+2}$（環域 $1&lt;|z|&lt;\infty$）
 </table>
 <div class="ex"><div class="elbl">速判例子（★易錯）</div>
 <div class="es">
-$\sin z/z$ → 可去（極限 $=1$，$\operatorname{Res}=0$）✓<br>
-$\sin z/z^2$ → 一階極點（$1/z$ 項係數 $=1$，$\operatorname{Res}=1$）✓<br>
-$\sin z/z^3$ → 二階極點（最低次 $z^{-2}$，$\operatorname{Res}=0$）✓<br>
-$1/(z^2\sin z)$ → $z=0$ 是<strong>三階</strong>極點（$z^2\cdot(z-\cdots)=z^3$），$\operatorname{Res}=1/6$ ✓<br>
-$e^{1/z}$ → 本質奇點，$\operatorname{Res}=1$ ✓<br>
-$1/\sin z$ 在 $z=k\pi$ → 一階極點（$\sin'(k\pi)=\cos(k\pi)\ne0$）
+$\sin z/z$ → 可去（極限 $=1$，$\operatorname{Res}=0$）<br>
+$\sin z/z^2$ → 一階極點（$\operatorname{Res}=1$）<br>
+$\sin z/z^3$ → 二階極點（最低次 $z^{-2}$，$\operatorname{Res}=0$）<br>
+$1/(z^2\sin z)$ → $z=0$ 是<strong>三階</strong>極點（$z^2\cdot z=z^3$），$\operatorname{Res}=1/6$<br>
+$e^{1/z}$ → 本質奇點，$\operatorname{Res}=1$
 </div></div>
 </div></div>
 
 <div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">B</div><div class="mtit">一階極點的留數（兩種公式）</div><div class="mchv">▾</div></div>
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">B</div><div class="mtit">公式來源：從 Laurent 係數推導</div><div class="mchv">▾</div></div>
+<div class="mbdy">
+<div class="fml"><div class="flbl">核心思路</div>
+留數 $b_1$ 是 $(z-z_0)^{-1}$ 的係數。要「讀出」它，就要讓 $b_1$ 移到常數項的位置，再取極限。
+</div>
+<div class="ex"><div class="elbl">一階極點（$m=1$）的推導</div>
+<div class="es">Laurent 展開：$f(z) = \dfrac{b_1}{z-z_0} + a_0 + a_1(z-z_0)+\cdots$<br>
+兩邊乘 $(z-z_0)$：
+\[(z-z_0)f(z) = b_1 + a_0(z-z_0)+\cdots\]
+右邊除 $b_1$ 外都含 $(z-z_0)$ 因子，取 $z\to z_0$：
+\[\boxed{\operatorname{Res}(f,z_0)=\lim_{z\to z_0}(z-z_0)\,f(z)}\]</div></div>
+<div class="ex"><div class="elbl">$m$ 階極點的推導</div>
+<div class="es">展開：$f(z)=\dfrac{b_m}{(z-z_0)^m}+\cdots+\dfrac{b_1}{z-z_0}+a_0+\cdots$<br>
+<strong>Step 1</strong>：乘 $(z-z_0)^m$，消掉所有負冪次：
+\[(z-z_0)^m f(z) = b_m + \cdots + b_1(z-z_0)^{m-1} + a_0(z-z_0)^m+\cdots\]
+現在 $b_1$ 在 $(z-z_0)^{m-1}$ 的位置。<br>
+<strong>Step 2</strong>：求 $m-1$ 次導，將 $(z-z_0)^{m-1}$ 以下的項全部消掉：
+\[\frac{d^{m-1}}{dz^{m-1}}[(z-z_0)^m f] = (m-1)!\,b_1 + (\text{含}(z-z_0)\text{的項})\]
+<strong>Step 3</strong>：取 $z\to z_0$，除以 $(m-1)!$：
+\[\boxed{\operatorname{Res}(f,z_0)=\frac{1}{(m-1)!}\lim_{z\to z_0}\frac{d^{m-1}}{dz^{m-1}}\bigl[(z-z_0)^m f(z)\bigr]}\]</div></div>
+<div class="tipb">一句話：乘掉分母 → $b_1$ 升到某冪次 → 求 $m-1$ 次導把它「翻」到常數項 → 除以 $(m-1)!$。</div>
+</div></div>
+
+<div class="mth">
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">C</div><div class="mtit">一階極點的留數（兩種公式）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <div class="fml"><div class="flbl">極限法</div>\[\operatorname{Res}(f,z_0)=\lim_{z\to z_0}(z-z_0)\,f(z)\]</div>
 <div class="fml"><div class="flbl">$p/q'$ 公式（$f=p/q$，$q(z_0)=0$，$q'(z_0)\ne0$）</div>
 \[\operatorname{Res}(f,z_0)=\frac{p(z_0)}{q'(z_0)}\]
 </div>
 <div class="ex"><div class="elbl">例</div>
-<div class="es">$\operatorname{Res}(e^z/(z^2+1),\,i)$：$q=z^2+1$，$q'=2z$，$q'(i)=2i$，$\operatorname{Res}=e^i/(2i)$。<br>
-$\operatorname{Res}((5z-2)/(z(z-1)),\,0)$：$q=z^2-z$，$q'(0)=-1$，$\operatorname{Res}=(-2)/(-1)=2$。<br>
-$\operatorname{Res}((5z-2)/(z(z-1)),\,1)$：$q'(1)=1$，$\operatorname{Res}=3/1=3$。</div></div>
-<div class="errb">先確認 $q'(z_0)\ne0$；若 $q'(z_0)=0$ 可能是高階極點，此公式失效。</div>
+<div class="es">$\operatorname{Res}(e^z/(z^2+1),\,i)$：$q'=2z$，$q'(i)=2i$，$=e^i/(2i)$。<br>
+$\operatorname{Res}((5z-2)/(z(z-1)),\,0)$：$q'(0)=-1$，$=(-2)/(-1)=2$。<br>
+$\operatorname{Res}((5z-2)/(z(z-1)),\,1)$：$q'(1)=1$，$=3/1=3$。</div></div>
+<div class="errb">先確認 $q'(z_0)\ne0$；若 $=0$ 則是高階極點，此公式失效。</div>
 </div></div>
 
 <div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">C</div><div class="mtit">$m$ 階極點的留數</div><div class="mchv">▾</div></div>
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">D</div><div class="mtit">$m$ 階極點的留數（導數公式）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <div class="fml"><div class="flbl">公式</div>
 \[\operatorname{Res}(f,z_0)=\frac{1}{(m-1)!}\lim_{z\to z_0}\frac{d^{m-1}}{dz^{m-1}}\bigl[(z-z_0)^m f(z)\bigr]\]
 </div>
 <div class="ex"><div class="elbl">HW4 Q7(a) — $e^z/z^3$（$z=0$ 為三階極點）</div>
-<div class="es">$g(z)=z^3\cdot e^z/z^3=e^z$，$(m-1)=2$：$g''(0)=1$，$\operatorname{Res}=1/2!\cdot1=1/2$。
+<div class="es">$g(z)=(z-0)^3\cdot e^z/z^3=e^z$，$(m-1)=2$：$g''(0)=1$，$\operatorname{Res}=1/2!\cdot1=\boxed{1/2}$。<br>
 $\oint e^z/z^3\,dz=2\pi i\cdot(1/2)=\pi i$。</div></div>
-<div class="ex"><div class="elbl">HW3 Q4(c) — $e^z\sin z/z^4$（$z=0$ 為四階極點）</div>
-<div class="es">$g=e^z\sin z$，$g'''(0)=2$（前面算過），$\operatorname{Res}=1/3!\cdot2=1/3$。$\oint=2\pi i/3$。</div></div>
-<div class="errb">計算 $(m-1)$ 次導數時乘積法則勿漏項。</div>
+<div class="ex"><div class="elbl">★ 期中 Q8(b) 完整修正（原解有兩處錯誤）</div>
+<div class="es">$\oint_{|z|=2}e^z/(z(z+1)^3)\,dz$ — 圓內有<strong>兩個</strong>奇點：$z=0$（一階）和 $z=-1$（三階）。<br><br>
+<strong>原解錯誤</strong>：只看 $(z+1)^3$，漏掉 $z=0$ 且代入點算錯成 $f''(0)$。<br><br>
+<strong>Res$(f,0)$</strong>：$\lim_{z\to0}z\cdot e^z/(z(z+1)^3)=e^0/1^3=\boxed{1}$<br><br>
+<strong>Res$(f,-1)$</strong>：$g(z)=(z+1)^3\cdot e^z/(z(z+1)^3)=e^z/z$，求 $g''(-1)$：
+\[g'' = \frac{e^z(z^2-2z+2)}{z^3}\bigg|_{z=-1} = \frac{e^{-1}\cdot5}{-1}=-\frac{5}{e}\]
+$\operatorname{Res}(f,-1)=\frac{1}{2!}\cdot\left(-\frac{5}{e}\right)=\boxed{-\dfrac{5}{2e}}$<br><br>
+<strong>正確答案</strong>：$2\pi i\!\left(1-\dfrac{5}{2e}\right)$，不是 $\pi i$。</div></div>
+<div class="errb">計算 $(m-1)$ 次導時乘積法則勿漏項；積分前必須清點 $C$ 內的全部奇點。</div>
 </div></div>
 
 <div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">D</div><div class="mtit">Laurent 展開直接讀 $b_1$（本質奇點必用）</div><div class="mchv">▾</div></div>
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">E</div><div class="mtit">Laurent 展開直接讀 $b_1$（本質奇點必用）</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <div class="ex"><div class="elbl">HW4 Q7(d) — $e^{1/z}$（本質奇點）</div>
-<div class="es">$e^{1/z}=1+1/z+1/(2!z^2)+\cdots$，$b_1=1$，$\oint_{|z|=1}=2\pi i\cdot1=2\pi i$。</div></div>
-<div class="ex"><div class="elbl">HW4 Q7(b) — $1/(z^2\sin z)$（三階極點）</div>
-<div class="es">展開得 $1/z^3+1/(6z)+\cdots$，$b_1=1/6$，$\oint_{|z|=1}=2\pi i/6=\pi i/3$。</div></div>
-<div class="ex"><div class="elbl">HW4 Q7(c) — $\tanh z$（解析函數，結果 $=0$）</div>
-<div class="es">$\tanh z=\sinh z/\cosh z$，$\cosh z=0$ 在 $z=\pm i\pi/2$，$|i\pi/2|=\pi/2\approx1.57&gt;1$ 在圓外 → 無奇點在內 → Cauchy 定理 → 積分 $=0$。</div></div>
+<div class="es">$e^{1/z}=1+1/z+1/(2!z^2)+\cdots$，$b_1=1$，$\oint_{|z|=1}=2\pi i$。</div></div>
+<div class="ex"><div class="elbl">HW4 Q7(b) — $1/(z^2\sin z)$（三階極點，展開更快）</div>
+<div class="es">$1/(z^2\sin z)=1/z^3+1/(6z)+\cdots$，$b_1=1/6$，$\oint=\pi i/3$。</div></div>
+<div class="ex"><div class="elbl">★ 期中 Q12 — $\oint_{|z|=1}\sin(1/z)\,dz$（本質奇點）</div>
+<div class="es">\[\sin\frac{1}{z}=\frac{1}{z}-\frac{1}{3!\,z^3}+\frac{1}{5!\,z^5}-\cdots\]
+$b_1=1$（$z^{-1}$ 的係數），故 $\oint=2\pi i\cdot1=\boxed{2\pi i}$。</div></div>
+<div class="tipb">本質奇點只有一條路：展開找 $z^{-1}$ 的係數，沒有捷徑。</div>
 </div></div>
 
 <div class="mth">
-<div class="mhdr" onclick="tg(this)"><div class="mbdg">E</div><div class="mtit">四大積分計算一覽（HW4 Q7 全解）</div><div class="mchv">▾</div></div>
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">F</div><div class="mtit">HW4 Q7 四大積分一覽</div><div class="mchv">▾</div></div>
 <div class="mbdy">
 <table class="rt">
 <tr><th>被積函數</th><th>奇點類型</th><th>方法</th><th>結果</th></tr>
-<tr><td>$\displaystyle\frac{e^z}{z^3}$</td><td>$z=0$，三階極點</td><td>高階 CIF，$n=2$</td><td>$\pi i$</td></tr>
-<tr><td>$\displaystyle\frac{1}{z^2\sin z}$</td><td>$z=0$，三階極點</td><td>Laurent 展開讀 $b_1$</td><td>$\pi i/3$</td></tr>
-<tr><td>$\tanh z$</td><td>在 $|z|=1$ 內無奇點</td><td>Cauchy 定理</td><td>$0$</td></tr>
-<tr><td>$e^{1/z}$</td><td>$z=0$，本質奇點</td><td>Laurent 展開讀 $b_1$</td><td>$2\pi i$</td></tr>
+<tr><td>$e^z/z^3$</td><td>$z=0$，三階極點</td><td>高階 CIF，$n=2$</td><td>$\pi i$</td></tr>
+<tr><td>$1/(z^2\sin z)$</td><td>$z=0$，三階極點</td><td>Laurent 讀 $b_1$</td><td>$\pi i/3$</td></tr>
+<tr><td>$\tanh z$</td><td>$|z|=1$ 內無奇點</td><td>Cauchy 定理</td><td>$0$</td></tr>
+<tr><td>$e^{1/z}$</td><td>$z=0$，本質奇點</td><td>Laurent 讀 $b_1$</td><td>$2\pi i$</td></tr>
 </table>
 </div></div>
 
 </div><!-- /t4 -->
+
+<!-- ═══════ TAB 5 ═══════ -->
+<div id="t5" class="section">
+<div class="sec-intro"><strong>考前速查</strong>：積分方法決策表、留數計算選法、四個已知弱點、常用展開。</div>
+
+<div class="mth">
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">A</div><div class="mtit">積分方法決策表</div><div class="mchv">▾</div></div>
+<div class="mbdy">
+<div class="dec">
+<div class="dec-row root">
+  <div class="dec-cond">∮<sub>C</sub> f(z) dz — 先問：<em>C 內及其內部全解析？</em></div>
+  <div class="dec-arr"></div><div class="dec-method"></div>
+</div>
+<div class="dec-row">
+  <div class="dec-cond">✓ 是（無奇點）</div>
+  <div class="dec-arr">→</div>
+  <div class="dec-method">Cauchy–Goursat：= 0</div>
+</div>
+<div class="dec-row">
+  <div class="dec-cond">含 $\bar{z}$，或路徑不閉合</div>
+  <div class="dec-arr">→</div>
+  <div class="dec-method">參數化 / 反導函數</div>
+</div>
+<div class="dec-row">
+  <div class="dec-cond">分母是 $(z-z_0)^1$，$z_0$ 在 $C$ 內</div>
+  <div class="dec-arr">→</div>
+  <div class="dec-method">CIF 一階：$2\pi i\,f(z_0)$</div>
+</div>
+<div class="dec-row">
+  <div class="dec-cond">分母是 $(z-z_0)^{n+1}$，$n\ge1$</div>
+  <div class="dec-arr">→</div>
+  <div class="dec-method">CIF 高階：$(2\pi i/n!)\,f^{(n)}(z_0)$</div>
+</div>
+<div class="dec-row">
+  <div class="dec-cond">多奇點 / 本質奇點</div>
+  <div class="dec-arr">→</div>
+  <div class="dec-method">留數定理：$2\pi i\sum\operatorname{Res}$</div>
+</div>
+</div>
+<div class="errb">每次都要先清點 $C$ 內有哪些奇點，再決定方法。漏掉一個奇點就全錯。</div>
+</div></div>
+
+<div class="mth">
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">B</div><div class="mtit">留數計算選法</div><div class="mchv">▾</div></div>
+<div class="mbdy">
+<table class="rt">
+<tr><th>情況</th><th>公式</th><th>本質</th></tr>
+<tr><td>一階極點</td><td>$\lim_{z\to z_0}(z-z_0)f(z)$<br>或 $p(z_0)/q'(z_0)$</td><td>乘掉分母 → 直接讀 $b_1$</td></tr>
+<tr><td>$m$ 階極點</td><td>$\frac{1}{(m-1)!}\lim\frac{d^{m-1}}{dz^{m-1}}[(z-z_0)^m f]$</td><td>乘掉 → 求 $m-1$ 次導 → 讀 $b_1$</td></tr>
+<tr><td>本質奇點</td><td>Laurent 展開，讀 $z^{-1}$ 係數</td><td>只此一法</td></tr>
+</table>
+<div class="tipb">高階極點若 $g(z)=(z-z_0)^m f(z)$ 求導複雜，換 Laurent 展開往往更快。</div>
+</div></div>
+
+<div class="mth">
+<div class="mhdr" onclick="tg(this)"><div class="mbdg">C</div><div class="mtit">常用 Laurent 展開速查</div><div class="mchv">▾</div></div>
+<div class="mbdy">
+<table class="rt">
+<tr><th>函數</th><th>展開（$|z|&gt;0$）</th><th>$b_1$</th></tr>
+<tr><td>$\sin(1/z)$</td><td>$1/z - 1/(3!z^3) + \cdots$</td><td>$1$</td></tr>
+<tr><td>$\cos(1/z)$</td><td>$1 - 1/(2!z^2) + \cdots$</td><td>$0$</td></tr>
+<tr><td>$e^{1/z}$</td><td>$1 + 1/z + 1/(2!z^2)+\cdots$</td><td>$1$</td></tr>
+<tr><td>$(\sin z)/z^3$</td><td>$1/z^2 - 1/6 + z^2/120-\cdots$</td><td>$0$</td></tr>
+<tr><td>$1/(z^2\sin z)$</td><td>$1/z^3 + 1/(6z)+\cdots$</td><td>$1/6$</td></tr>
+</table>
+<div class="tipb">代入法：把 $z$ 換成 $1/z$，直接得奇點附近的展開。</div>
+</div></div>
+
+<div class="wk">
+<div class="wk-hdr"><div class="wk-num">1</div><div class="wk-ttl">多奇點：找全部在 $C$ 內的奇點</div></div>
+<div class="wk-bdy">
+<strong>症狀（期中 Q8b）</strong>：只看到 $(z+1)^3$，漏掉了 $z=0$。<br><br>
+<strong>正確做法</strong>：先列出被積函數所有的奇點，再逐一比較是否在 $C$ 內，全部在內的才計入 $\sum\operatorname{Res}$。<br><br>
+$e^z/(z(z+1)^3)$ 在 $|z|=2$：$z=0$（$|0|&lt;2$ ✓）和 $z=-1$（$|-1|=1&lt;2$ ✓）兩者都要算。
+</div></div>
+
+<div class="wk">
+<div class="wk-hdr"><div class="wk-num">2</div><div class="wk-ttl">Laurent 展開直接求積分（期中 Q12）</div></div>
+<div class="wk-bdy">
+<strong>方法</strong>：展開 $f(z)$ 在奇點附近的 Laurent 級數 → 讀 $(z-z_0)^{-1}$ 的係數 $b_1$ → 積分 $= 2\pi i\cdot b_1$。<br><br>
+$\oint_{|z|=1}\sin(1/z)\,dz$：展開 $\sin(1/z)=1/z-1/(3!z^3)+\cdots$，$b_1=1$，積分 $=2\pi i$。<br><br>
+<strong>不需要</strong>算任何極限或導數；展開完直接讀係數。
+</div></div>
+
+<div class="wk">
+<div class="wk-hdr"><div class="wk-num">3</div><div class="wk-ttl">Liouville + Cauchy 不等式（期中 Q10）</div></div>
+<div class="wk-bdy">
+<strong>題目</strong>：$f$ 整函數，$|f(z)|\le\sqrt{|z|}+1$ → 證明 $f$ 為常數。<br><br>
+<strong>Cauchy 不等式</strong>：對任意 $z_0$，取圓 $|z-z_0|=R$：
+\[|f'(z_0)|\le\frac{M_R}{R},\quad M_R=\max_{|z-z_0|=R}|f(z)|\]
+由三角不等式：$|z|\le|z-z_0|+|z_0|=R+|z_0|$，故
+\[M_R\le\sqrt{R+|z_0|}+1\]
+代入：
+\[|f'(z_0)|\le\frac{\sqrt{R+|z_0|}+1}{R}=\frac{1}{\sqrt{R+|z_0|}-1}\cdot\frac{\sqrt{R+|z_0|}^{\,2}-1}{R}\xrightarrow{R\to\infty}0\]
+（更直接：$(\sqrt{R+|z_0|}+1)/R \sim 1/\sqrt{R}\to0$）<br><br>
+故對所有 $z_0$ 有 $f'(z_0)=0$ → $f$ 為常數（Liouville）。 ∎
+</div></div>
+
+<div class="wk">
+<div class="wk-hdr"><div class="wk-num">4</div><div class="wk-ttl">分支函數積分（期中 Q7b）</div></div>
+<div class="wk-bdy">
+<strong>步驟</strong>：<br>
+① 確定分支（通常選主值分支 $\log z$，切線在正實軸或負實軸）。<br>
+② 確認路徑全程在同一分支的定義域內，不穿越切線。<br>
+③ 若路徑是圓弧 $z=e^{i\theta}$，直接代入參數式計算。<br><br>
+<strong>Q7b</strong>：$\int_C z^{-1+i}\,dz$，$C$ 為單位圓，$0&lt;\arg z&lt;2\pi$（切線在正實軸）。<br>
+路徑 $z=e^{i\theta}$，$\theta\in(0,2\pi)$（端點可去掉），直接代入即可。
+</div></div>
+
+</div><!-- /t5 -->
 </div><!-- /content -->
 
 <script>
