@@ -50,5 +50,14 @@
   --font-xs: .8rem;
   --font-sm: 1rem;
   --font-md: 1.125rem;
+  --font-h3: 1.25rem;
   --font-lg: 1.563rem;
+  /* Page titles (hero, 教材/文章/其他, course and article titles): grows
+     with the viewport from 32px on a phone to 49px (1.25^5) on a desktop. */
+  --font-display: clamp(2rem, 1.45rem + 2.2vw, 3.052rem);
+
+  /* Line heights by role — tight for large display type, looser for running
+     text. */
+  --leading-display: 1.15;
+  --leading-title: 1.35;
 }

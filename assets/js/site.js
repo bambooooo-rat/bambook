@@ -353,10 +353,12 @@ function buildMaterialMenu() {
 }
 
 // Each footer column is capped at 4 items (with a "查看全部" link to the
-// hub page once truncated) and each label is clipped to 6 characters so a
-// long title can't blow out the column width.
+// hub page once truncated). Long labels are clipped by CSS
+// (.footer-sitemap-col a: text-overflow: ellipsis) at the column's actual
+// width instead of a fixed character count — a count clipped short English
+// names like "GeoMaster" even when the column had room for them. The full
+// label stays in the title attribute.
 const FOOTER_SITEMAP_ITEM_LIMIT = 4;
-const FOOTER_SITEMAP_LABEL_LIMIT = 6;
 
 function buildFooterSitemap() {
   const sitemap = document.querySelector("[data-footer-sitemap]");
@@ -384,19 +386,12 @@ function buildFooterSitemap() {
 function footerSitemapColumn({ title, items, moreHref }) {
   const shown = items.slice(0, FOOTER_SITEMAP_ITEM_LIMIT);
   const rows = shown.length
-    ? shown.map(item => `<li><a href="${safeURL(item.href)}" title="${escapeHTML(item.label)}">${escapeHTML(truncateLabel(item.label))}</a></li>`).join("")
+    ? shown.map(item => `<li><a href="${safeURL(item.href)}" title="${escapeHTML(item.label)}">${escapeHTML(item.label)}</a></li>`).join("")
     : `<li class="menu-message">尚無資料</li>`;
   const more = items.length > FOOTER_SITEMAP_ITEM_LIMIT
     ? `<li><a class="footer-sitemap-more" href="${safeURL(moreHref)}">${ICONS.chevron}<span>查看全部</span></a></li>`
     : "";
   return `<div class="footer-sitemap-col"><h3>${escapeHTML(title)}</h3><ul>${rows}${more}</ul></div>`;
-}
-
-// Truncates by Unicode code point so multi-byte CJK characters each count
-// as one character.
-function truncateLabel(label, limit = FOOTER_SITEMAP_LABEL_LIMIT) {
-  const characters = Array.from(String(label || ""));
-  return characters.length > limit ? `${characters.slice(0, limit).join("")}...` : characters.join("");
 }
 
 async function loadSiteManifest() {
@@ -658,7 +653,13 @@ function renderCourse(name) {
 
   setActiveNav("materials");
   document.title = `${name} | Bambook`;
-  const courseLinks = courseNames().map(courseName => `<a class="${courseName === name ? "is-active" : ""}" href="#materials=${encodeURIComponent(courseName)}">${escapeHTML(courseName)}</a>`).join("");
+  const names = courseNames();
+  const courseLinks = names.map(courseName => `<a class="${courseName === name ? "is-active" : ""}" href="#materials=${encodeURIComponent(courseName)}"${courseName === name ? ' aria-current="page"' : ""}>${escapeHTML(courseName)}</a>`).join("");
+  // 寬版的教材切換在右側欄（.course-sidebar）；窄版（< 1024px）側欄會排到
+  // 整頁最下面、等於找不到，所以另外在標題下方放一排可橫向滑動的按鈕
+  // （.course-switcher）。兩者由 CSS 依寬度只顯示其中一個（另一個是
+  // display: none，不會被螢幕報讀器重複唸到）。只有一門教材時不需要切換。
+  const courseSwitcher = names.length > 1 ? `<nav class="course-switcher" aria-label="切換教材">${courseLinks}</nav>` : "";
 
   app.innerHTML = `
     <div class="course-layout">
@@ -669,6 +670,7 @@ function renderCourse(name) {
           <h1>${escapeHTML(name)}</h1>
           <p>課本、講義、投影片及歷屆練習均由此頁統一整理；點選檔案即可在新分頁開啟。</p>
         </header>
+        ${courseSwitcher}
         <div id="schedule-slot"></div>
         <div id="syllabus-slot"></div>
         ${resourceSection("課本", textbookItems(course.textbooks), ICONS.book)}
@@ -676,7 +678,7 @@ function renderCourse(name) {
         ${practiceSection(course.practice)}
         ${relatedArticlesSection(name)}
       </div>
-      <aside class="course-sidebar"><h2>教材</h2>${courseLinks}</aside>
+      <aside class="course-sidebar" aria-label="教材"><h2>教材</h2>${courseLinks}</aside>
     </div>`;
 
   renderSchedule(course.schedule, course.handouts, course.quizzes);
@@ -685,16 +687,26 @@ function renderCourse(name) {
 
 // Articles opt into a course page by adding a tag that matches the course
 // name exactly (e.g. tag "微積分乙" shows the article on that course's page).
+// Only the newest RELATED_ARTICLES_LIMIT are shown here (state.articles is
+// already newest-first, see build-index.py) — with dozens of tagged articles
+// the list used to take up more than half the course page and push the
+// textbooks/slides out of view. The rest are one click away on the tag page
+// (#articles=tag:<course>), which already lists every article with that tag.
+const RELATED_ARTICLES_LIMIT = 6;
+
 function relatedArticlesSection(courseName) {
   const related = state.articles.filter(article => article.tags.includes(courseName));
   if (!related.length) return "";
-  const content = `<div class="row-list">${related.map(article => row({
+  const rows = related.slice(0, RELATED_ARTICLES_LIMIT).map(article => row({
     href: `#article=${encodeURIComponent(article.path)}`,
     title: article.title,
     desc: article.summary || "閱讀這篇文章。",
     meta: formatDate(article.date),
-  })).join("")}</div>`;
-  return resourceSection("延伸文章", content, ICONS.book);
+  })).join("");
+  const more = related.length > RELATED_ARTICLES_LIMIT
+    ? `<a class="section-more" href="#articles=tag:${encodeURIComponent(courseName)}">${ICONS.chevron}<span>查看全部 ${related.length} 篇延伸文章</span></a>`
+    : "";
+  return resourceSection("延伸文章", `<div class="row-list">${rows}</div>${more}`, ICONS.book);
 }
 
 function renderSyllabus(path) {
