@@ -90,6 +90,11 @@ async function initialise() {
 function bindEvents() {
   window.addEventListener("hashchange", handleHashChange);
   bindThemeToggle();
+  // iOS Safari 預設不會在觸控時套用 :active（除非頁面上有 touchstart 監聽），
+  // 按下去的回饋就只剩放開後才出現的點擊結果——加一個什麼都不做的 passive
+  // 監聽，手指一碰到研討時間軸、檔案連結這些元素，:active 的按壓狀態就會
+  // 立刻出現。passive 代表它不會延遲捲動。
+  document.addEventListener("touchstart", () => {}, { passive: true });
 
   document.addEventListener("click", event => {
     const target = event.target instanceof Element ? event.target : event.target?.parentElement;
@@ -198,7 +203,7 @@ function toggleAnimatedDetails(details, forceOpen) {
 
 // 研討時間時間軸（.schedule-panel）的開合走的是自己的動畫，跟上面的
 // toggleAnimatedDetails() 不一樣：那個是「summary 本身高度不變、下方長出
-// 一段新內容」的單向 accordion；這裡「下一次研討」那一站固定在中間，過去
+// 一段新內容」的單向 accordion；這裡「目前主題」那一站固定在中間，過去
 // 場次的軌道（.schedule-track--past）要往上展開、未來場次（--future）要往
 // 下展開，等於同時有兩段各自獨立的 0↔auto 高度動畫，因此不能只對整個
 // <details> 的 blockSize 做單一動畫（那樣會把中間固定不動的那一站也一起
@@ -207,60 +212,103 @@ function toggleAnimatedDetails(details, forceOpen) {
 const scheduleTrackAnimations = new WeakMap();
 const scheduleTargetState = new WeakMap();
 
+// 展開／收合時，被點的那一站（summary）要一直停在手指／游標底下：過去的主題
+// 在它「上方」長出來，如果不處理，整個 summary 會被往下推走一大段（手機上
+// 過去的主題一多，常常直接被推出畫面），使用者剛點的東西憑空消失。這裡讓
+// 「過去往上展開」真的是往上長：每一格畫面都量一次 summary 跟起點的偏移，
+// 用 scrollBy 抵消回去。動畫期間暫時關掉瀏覽器內建的 scroll anchoring
+// （overflow-anchor），避免它跟這裡各自修正、互相疊加。
+function holdScheduleAnchor(summary, anchorTop, isActive) {
+  if (!summary || anchorTop == null) return () => {};
+  const root = document.documentElement;
+  root.style.overflowAnchor = "none";
+  let frame = 0;
+  const correct = () => {
+    const drift = summary.getBoundingClientRect().top - anchorTop;
+    if (Math.abs(drift) >= 0.5) window.scrollBy({ top: drift, left: 0, behavior: "instant" });
+  };
+  const step = () => {
+    correct();
+    frame = isActive() ? requestAnimationFrame(step) : 0;
+  };
+  frame = requestAnimationFrame(step);
+  return () => {
+    cancelAnimationFrame(frame);
+    correct();
+    // 不還原「呼叫前的值」而是直接移除：半路被打斷時，舊的那次不會呼叫這個
+    // 收尾函式（由新的那次接手），若記住呼叫前的值，新的那次記到的會是舊的
+    // 那次設下的 "none"，最後就永遠還原不回來。
+    root.style.removeProperty("overflow-anchor");
+  };
+}
+
 function toggleSchedulePanel(details) {
-  // 過去場次的軌道刻意放在 <details> 外面（見 scheduleContent()／site.css
+  // 過去主題的軌道刻意放在 <details> 外面（見 scheduleContent()／site.css
   // 的說明），所以兩段軌道要從共同的外層 wrapper（.schedule-timeline）找，
   // 不能只在 details 底下找。
   const wrapper = details.closest(".schedule-timeline") || details;
+  const summary = details.querySelector(":scope > summary");
   const currentlyOpen = scheduleTargetState.has(details) ? scheduleTargetState.get(details) : details.open;
   const opening = !currentlyOpen;
   scheduleTargetState.set(details, opening);
+
+  // 動畫進行到一半又被點一次時，要從「畫面上此刻的高度」接著往回走，而不是
+  // 從 0 或全開重新開始（那樣會先跳一下再動）——所以先量出每一段軌道現在的
+  // 實際高度，量完才取消舊動畫。
+  const tracks = Array.from(wrapper.querySelectorAll(".schedule-track--past, .schedule-track--future"));
+  const startSizes = tracks.map(track => track.getBoundingClientRect().height);
+  const anchorTop = summary?.getBoundingClientRect().top;
   scheduleTrackAnimations.get(details)?.forEach(animation => animation.cancel());
 
-  // 過去場次軌道能不能展開完全是靠 .schedule-timeline 的 is-open class（見
+  // 過去主題軌道能不能展開完全是靠 .schedule-timeline 的 is-open class（見
   // site.css），這個 class 只有這個函式會動它——不像其他 .resource-details
   // 那樣，reduced-motion 時可以整個放手交給瀏覽器原生的 <details> 開合，這裡
   // 就算不做動畫，也一定要親自把 is-open 跟 details.open 同步設好，不然過去
-  // 場次的軌道會永遠展不開。
+  // 主題的軌道會永遠展不開。不做動畫時一樣要把 summary 留在原位。
   if (prefersReducedMotion()) {
     details.open = opening;
     wrapper.classList.toggle("is-open", opening);
     scheduleTrackAnimations.delete(details);
     scheduleTargetState.delete(details);
+    holdScheduleAnchor(summary, anchorTop, () => false)();
     return;
   }
 
   // is-open 跟 details.open 一起在「開始展開」的當下就打開：兩段軌道展開
   // 後的 block-size: auto 都是靠 .schedule-timeline.is-open 這個 class 生效
-  // （見 site.css），要先打開才能量到過去場次軌道展開後的真實高度
-  // （scrollHeight），也才能在動畫結束、WAAPI 交還控制權的瞬間讓 CSS 已經
-  // 是正確的最終值，不會又彈回 0 高度。
+  // （見 site.css），要先打開才能量到展開後的真實高度（scrollHeight），也才
+  // 能在動畫結束、WAAPI 交還控制權的瞬間讓 CSS 已經是正確的最終值，不會又
+  // 彈回 0 高度。
   if (opening) {
     details.open = true;
     wrapper.classList.add("is-open");
   }
 
-  const tracks = Array.from(wrapper.querySelectorAll(".schedule-track--past, .schedule-track--future"));
-  const animations = tracks.map(track => {
-    const openSize = track.scrollHeight;
-    const keyframes = opening
-      ? [{ blockSize: "0px" }, { blockSize: `${openSize}px` }]
-      : [{ blockSize: `${openSize}px` }, { blockSize: "0px" }];
-    return track.animate(keyframes, { duration: DETAILS_ANIMATION_MS, easing: easeOutValue() });
+  // 半路折返時剩下的距離比較短，時間也跟著按比例縮短（但不短於一半），
+  // 不會出現「只差一點點卻還是慢慢走完整段時間」的拖泥帶水感。
+  const animations = tracks.map((track, index) => {
+    const fullSize = track.scrollHeight;
+    const from = startSizes[index];
+    const to = opening ? fullSize : 0;
+    const remaining = fullSize ? Math.abs(to - from) / fullSize : 1;
+    const duration = DETAILS_ANIMATION_MS * Math.min(1, Math.max(0.5, remaining));
+    return track.animate([{ blockSize: `${from}px` }, { blockSize: `${to}px` }], { duration, easing: easeOutValue() });
   });
   scheduleTrackAnimations.set(details, animations);
+  const releaseAnchor = holdScheduleAnchor(summary, anchorTop, () => scheduleTrackAnimations.get(details) === animations);
 
   Promise.allSettled(animations.map(animation => animation.finished)).then(() => {
     // 如果動畫進行到一半又被下一次點擊打斷，取消（cancel）會讓這裡的
     // Promise 稍後才 settle；這時 scheduleTrackAnimations 已經被新的一次
     // toggleSchedulePanel() 呼叫覆寫成新的動畫陣列，用參照比對確認自己還是
     // 最新的一次，不是的話就不要動 details.open/is-open，讓新的那次自己
-    // 收尾。
+    // 收尾（新的那次也已經接手 summary 的定位）。
     if (scheduleTrackAnimations.get(details) !== animations) return;
     details.open = opening;
     if (!opening) wrapper.classList.remove("is-open");
     scheduleTrackAnimations.delete(details);
     scheduleTargetState.delete(details);
+    releaseAnchor();
   });
 }
 
@@ -631,7 +679,7 @@ function renderCourse(name) {
       <aside class="course-sidebar"><h2>教材</h2>${courseLinks}</aside>
     </div>`;
 
-  renderSchedule(course.schedule, course.handouts);
+  renderSchedule(course.schedule, course.handouts, course.quizzes);
   renderSyllabus(course.syllabus);
 }
 
@@ -667,15 +715,15 @@ function renderSyllabus(path) {
     });
 }
 
-// 課業輔導社群的研討時間表：materials/<course>/schedule.json，格式與
-// syllabus.json 相同（manifest 只存路徑，實際內容在此以 fetch 惰性載入）。
-// 預設只顯示「下一次最近的研討」卡片本身即為 <summary>，點選它會沿用既有的
-// details/summary 收合元件展開成地鐵路線圖式的完整期程（一直線搭配圓點），
-// 過去／下一次／未來的研討以不同顏色的圓點與文字區分；若所有場次都已結束，
-// 改以「最近一次已結束的場次」作為預設顯示的卡片。時間軸每一站若在
-// schedule.json 標註了對應的 handout（與講義檔名去掉填空／解答後的
-// 標題相同，例如 "handout1"），會直接顯示該講義的下載連結。
-function renderSchedule(path, handouts = []) {
+// 課業輔導社群的研討時間表：materials/<course>/schedule.json（manifest 只存
+// 路徑，實際內容在此以 fetch 惰性載入）。時間軸的每一站是一個「主題」，站內
+// 依 sessions 列出這個主題實際的每一次研討——目前的步調是一個主題佔兩週：
+// 一週「進度」（發講義）、下一週「測驗」（發 quiz），兩次研討共用同一個主題
+// 與說明，合併成同一站，站內各自列出日期／時段／地點與對應的檔案。預設只
+// 顯示目前的主題（本身即為 <summary>），點選後往上展開過去的主題、往下展開
+// 未來的主題，過去／目前／未來以不同顏色的圓點與文字區分；若所有主題都已
+// 結束，改以最近一個已結束的主題作為預設顯示的一站。
+function renderSchedule(path, handouts = [], quizzes = []) {
   const slot = document.querySelector("#schedule-slot");
   if (!slot || !path) return;
   slot.innerHTML = resourceSection("研討時間", `<p class="notice">正在載入研討時間…</p>`, ICONS.calendar);
@@ -686,15 +734,15 @@ function renderSchedule(path, handouts = []) {
     })
     .then(items => {
       if (!Array.isArray(items)) throw new Error("資料格式不正確");
-      slot.innerHTML = resourceSection("研討時間", scheduleContent(items, handouts), ICONS.calendar);
+      slot.innerHTML = resourceSection("研討時間", scheduleContent(items, handouts, quizzes), ICONS.calendar);
     })
     .catch(() => {
       slot.innerHTML = resourceSection("研討時間", `<p class="notice">研討時間檔暫時無法讀取。</p>`, ICONS.calendar);
     });
 }
 
-// schedule.json 每筆的 date 欄位為統一格式 "YYYY-MM-DD HH:MM"（用於排序與
-// 判斷是否已結束），time 欄位則是給人看的顯示用時段（例如 "19:00–21:00"）。
+// 每次研討的 date 欄位為統一格式 "YYYY-MM-DD HH:MM"（用於排序與判斷是否已
+// 結束），time 欄位則是給人看的顯示用時段（例如 "19:00–21:00"）。
 function parseScheduleDate(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})$/.exec(String(value ?? "").trim());
   if (!match) return null;
@@ -707,61 +755,125 @@ function formatScheduleDate(date) {
   return date.toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "short" });
 }
 
-// 判斷一場研討是否已經「結束」，用的不是研討的開始時間，而是研討當天的
+// 判斷一次研討是否已經「結束」，用的不是研討的開始時間，而是研討當天的
 // 21:00——如果直接拿開始時間跟現在比較，學生在研討進行中（已經過了開始
-// 時間，但研討根本還沒結束）打開頁面時，看到的會是「下一次研討」而不是
-// 當次研討，但這時候學生需要下載的其實是當次的教材，不是下一次的。研討
-// 時段通常在晚上，用當天 21:00 當作「視覺上」的結束時間，研討進行中打開
-// 頁面時仍然會看到當次研討，才符合實際需求。
+// 時間，但研討根本還沒結束）打開頁面時，看到的會是下一次研討而不是當次
+// 研討，但這時候學生需要下載的其實是當次的教材，不是下一次的。研討時段
+// 通常在晚上，用當天 21:00 當作「視覺上」的結束時間，研討進行中打開頁面
+// 時仍然會看到當次研討，才符合實際需求。
 function scheduleIsPast(date, now) {
   const cutoff = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 21, 0, 0, 0);
   return cutoff < now;
 }
 
-function scheduleContent(rawItems, handouts = []) {
+// Quiz 解答要等「這次研討」真正下課以後才能開放下載——跟 scheduleIsPast()
+// 刻意用 21:00 當「視覺上」過去／未來分界不同（那是為了研討進行中打開頁面
+// 仍顯示當次研討），這裡要的是確切的下課時間，所以直接拆 time 欄位（例如
+// "18:30–20:30"）取結束那一半的時刻，跟 date 的日期部分組出真正的 Date。
+// time 欄位缺漏或格式不如預期時，退回跟 scheduleIsPast() 一樣的當天 21:00
+// 當保底，寧可晚一點開放，也不要因為格式問題提早洩漏解答。
+function scheduleSessionEndDate(date, time) {
+  const match = /^\s*\d{1,2}:\d{2}\s*[-–—~]\s*(\d{1,2}):(\d{2})\s*$/.exec(String(time ?? ""));
+  if (match) {
+    const [, hour, minute] = match;
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), Number(hour), Number(minute), 0, 0);
+  }
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 21, 0, 0, 0);
+}
+
+// schedule.json 每一筆是一個主題：
+//   { "topic", "description", "sessions": [{ "date", "time", "location",
+//     "handout" 或 "quiz", "label"（選填） }, ...] }
+// 舊格式（沒有 sessions，date／time／location／handout／quiz 直接寫在主題
+// 本身）視為只有一次研討的主題，照樣能顯示，不用回頭改舊檔案。
+function scheduleTopicSessions(item) {
+  if (Array.isArray(item?.sessions)) return item.sessions;
+  return item?.date ? [item] : [];
+}
+
+// 每次研討前面的小標籤：有填 label 就照填的顯示，否則依這次發的檔案推斷——
+// 發 quiz 的是「測驗」、發講義的是「進度」，兩者都沒有就單純標「研討」。
+function scheduleSessionKind(session) {
+  const custom = String(session?.label ?? "").trim();
+  if (custom) return custom;
+  if (session?.handout && session?.quiz) return "進度・測驗";
+  if (session?.quiz) return "測驗";
+  if (session?.handout) return "進度";
+  return "研討";
+}
+
+function scheduleContent(rawItems, handouts = [], quizzes = []) {
   const now = new Date();
-  const parsed = rawItems
+  const topics = rawItems
     .map(item => {
-      const date = parseScheduleDate(item?.date);
-      return date ? { ...item, parsedDate: date, displayDate: formatScheduleDate(date), isPast: scheduleIsPast(date, now) } : null;
+      const sessions = scheduleTopicSessions(item)
+        .map(session => {
+          const date = parseScheduleDate(session?.date);
+          if (!date) return null;
+          return {
+            ...session,
+            kind: scheduleSessionKind(session),
+            parsedDate: date,
+            displayDate: formatScheduleDate(date),
+            isPast: scheduleIsPast(date, now),
+            quizSolutionUnlocked: scheduleSessionEndDate(date, session.time) <= now,
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.parsedDate - b.parsedDate);
+      if (!sessions.length) return null;
+      // 主題要等裡面每一次研討都結束才算結束——進度那週結束、測驗那週還沒
+      // 到的時候，這個主題仍然是「進行中」，不能被歸到過去。
+      return {
+        topic: item.topic,
+        description: item.description,
+        sessions,
+        parsedDate: sessions[0].parsedDate,
+        isPast: sessions.every(session => session.isPast),
+        hasStarted: sessions.some(session => session.isPast),
+      };
     })
     .filter(Boolean)
     .sort((a, b) => a.parsedDate - b.parsedDate);
 
-  if (!parsed.length) return emptyState("尚無研討時間資料。");
+  if (!topics.length) return emptyState("尚無研討時間資料。");
 
-  const hasUpcoming = parsed.some(item => !item.isPast);
-  const upcomingIndex = parsed.findIndex(item => !item.isPast);
-  const featuredIndex = upcomingIndex === -1 ? parsed.length - 1 : upcomingIndex;
-  const featured = parsed[featuredIndex];
-  // 過去場次留在上面（往上展開）、未來場次留在下面（往下展開），兩段都不
+  // 全部研討裡最近的下一次：在站內另外標出來，進行中的主題才看得出「上週
+  // 的進度已經結束、這週要考試」，而不是兩次研討看起來一模一樣。
+  const nextSession = topics.flatMap(topic => topic.sessions).filter(session => !session.isPast).sort((a, b) => a.parsedDate - b.parsedDate)[0];
+  if (nextSession) nextSession.isNext = true;
+
+  const hasUpcoming = topics.some(topic => !topic.isPast);
+  const upcomingIndex = topics.findIndex(topic => !topic.isPast);
+  const featuredIndex = upcomingIndex === -1 ? topics.length - 1 : upcomingIndex;
+  const featured = topics[featuredIndex];
+  // 過去主題留在上面（往上展開）、未來主題留在下面（往下展開），兩段都不
   // 含 featured 自己，才不會跟固定顯示的那一站重複出現。兩段本來就已經是
   // 由舊到新排序，直接切片就是各自要的上下順序，不用再反轉。
-  const pastItems = parsed.slice(0, featuredIndex);
-  const futureItems = parsed.slice(featuredIndex + 1);
+  const pastTopics = topics.slice(0, featuredIndex);
+  const futureTopics = topics.slice(featuredIndex + 1);
 
-  // 只有一場研討時，沒有其餘期程可展開，直接顯示這一站即可，不需要
+  // 只有一個主題時，沒有其餘期程可展開，直接顯示這一站即可，不需要
   // details/summary 的收合外殼、也不需要展開圖示。
-  if (parsed.length < 2) {
-    return `<ol class="schedule-track schedule-track--solo">${scheduleStop(featured, handouts, { featured: true, hasUpcoming })}</ol>`;
+  if (topics.length < 2) {
+    return `<ol class="schedule-track schedule-track--solo">${scheduleStop(featured, handouts, quizzes, { featured: true, hasUpcoming })}</ol>`;
   }
 
-  const pastTrack = pastItems.length
-    ? `<ol class="schedule-track schedule-track--past">${pastItems.map(item => scheduleStop(item, handouts)).join("")}</ol>`
+  const pastTrack = pastTopics.length
+    ? `<ol class="schedule-track schedule-track--past">${pastTopics.map(topic => scheduleStop(topic, handouts, quizzes)).join("")}</ol>`
     : "";
-  const futureTrack = futureItems.length
-    ? `<ol class="schedule-track schedule-track--future">${futureItems.map(item => scheduleStop(item, handouts)).join("")}</ol>`
+  const futureTrack = futureTopics.length
+    ? `<ol class="schedule-track schedule-track--future">${futureTopics.map(topic => scheduleStop(topic, handouts, quizzes)).join("")}</ol>`
     : "";
 
-  // 展開圖示不再是貼右側的單一箭頭（那樣會讓 summary 多一段右側留白，跟其他
-  // 站的 .schedule-stop-body 對不齊，講義連結也就跟著沒對齊）：改成貼在線上、
-  // 圓點正上方／正下方各一個小箭頭，收合時分別指向上／下（呼應「往上/往下
-  // 展開」的方向），展開後轉個方向指向圓點（呼應「收回這一點」）。哪一段有
-  // 內容才畫哪個箭頭，全部都是過去或全部都是未來場次時不會出現多餘的方向。
-  const upArrow = pastItems.length ? `<span class="schedule-expand-arrow schedule-expand-arrow--up" aria-hidden="true">${ICONS.chevron}</span>` : "";
-  const downArrow = futureItems.length ? `<span class="schedule-expand-arrow schedule-expand-arrow--down" aria-hidden="true">${ICONS.chevron}</span>` : "";
+  // 展開圖示貼在線上、圓點正上方／正下方各一個小箭頭，收合時分別指向上／下
+  // （呼應「往上/往下展開」的方向），展開後轉個方向指向圓點（呼應「收回這
+  // 一點」）。哪一段有內容才畫哪個箭頭，全部都是過去或全部都是未來的主題時
+  // 不會出現多餘的方向。
+  const upArrow = pastTopics.length ? `<span class="schedule-expand-arrow schedule-expand-arrow--up" aria-hidden="true">${ICONS.chevron}</span>` : "";
+  const downArrow = futureTopics.length ? `<span class="schedule-expand-arrow schedule-expand-arrow--down" aria-hidden="true">${ICONS.chevron}</span>` : "";
 
-  // 過去場次刻意放在 <details> 之外（見 site.css 的說明：<details> 內建的
+  // 過去主題刻意放在 <details> 之外（見 site.css 的說明：<details> 內建的
   // ::details-content 匿名容器會讓 summary 以外的子元素全部併成同一個 flex
   // item，CSS order 排不到 summary 上面），交給 .schedule-timeline 這個
   // wrapper 統一排出「過去在上、summary 固定在中間、未來在下」的視覺順序。
@@ -770,7 +882,7 @@ function scheduleContent(rawItems, handouts = []) {
       ${pastTrack}
       <details class="schedule-panel">
         <summary class="schedule-summary ${scheduleStopClasses(featured, { featured: true, hasUpcoming }).join(" ")}">
-          ${scheduleStopInner(featured, handouts, { featured: true })}
+          ${scheduleStopInner(featured, handouts, quizzes, { featured: true })}
           ${upArrow}${downArrow}
         </summary>
         ${futureTrack}
@@ -778,58 +890,99 @@ function scheduleContent(rawItems, handouts = []) {
     </div>`;
 }
 
-// schedule.json 的 handout 欄位對照 course.handouts 裡的 title（講義檔名
-// 去掉「_填空」「_解答」後的字串，例如 "handout1"），找到就直接輸出
-// 講義的下載連結（沿用 handoutLink()，跟課本／投影片／練習與資源同一套安靜
-// 的檔名＋圖示樣式）。
+// handout 欄位對照 course.handouts 裡的 title（講義檔名去掉「_填空」「_解答」
+// 後的字串，例如 "handout1"），找到就輸出講義的下載連結（沿用 handoutLink()，
+// 跟課本／投影片／練習與資源同一套安靜的檔名＋圖示樣式）。
 function scheduleHandoutLinks(handouts, handoutTitle) {
   if (!handoutTitle) return "";
   const match = (Array.isArray(handouts) ? handouts : []).find(item => item && String(item.title || "").trim() === String(handoutTitle).trim());
   if (!match) return "";
-  const links = `${handoutLink(match.blank, "填空", ICONS.fileOutline)}${handoutLink(match.sol, "解答", ICONS.fileText)}`;
-  if (!links) return "";
-  return `
-    <div class="schedule-stop-handouts">
-      <p class="schedule-stop-handouts-label">Handout</p>
-      <div class="schedule-stop-handouts-links">${links}</div>
-    </div>`;
+  return `${handoutLink(match.blank, "填空", ICONS.fileOutline)}${handoutLink(match.sol, "解答", ICONS.fileText)}`;
 }
 
-// 每一站（過去／下一次／未來）共用同一套結構與樣式，差別只在 state 決定的
-// 顏色與 featured 決定的放大強調——收合時只露出 featured 那一站，看起來就
+// quiz 欄位對照 course.quizzes 裡的 title（quiz 檔名去掉「_題目」「_解答」後
+// 的字串，例如 "quiz4"），一樣「有檔案才顯示」，差別只在解答：題目有檔案就
+// 能看，但解答要等 session.quizSolutionUnlocked（這次研討真正下課以後，見
+// scheduleSessionEndDate()）才會顯示連結——即使檔案已經放在資料夾裡，時間
+// 到之前也只當作不存在，避免學生在研討當場就先把答案抄走，失去小考練習
+// 的意義。
+function scheduleQuizLinks(quizzes, session) {
+  const quizTitle = session?.quiz;
+  if (!quizTitle) return "";
+  const match = (Array.isArray(quizzes) ? quizzes : []).find(entry => entry && String(entry.title || "").trim() === String(quizTitle).trim());
+  if (!match) return "";
+  const solutionPath = session.quizSolutionUnlocked ? match.solution : null;
+  return `${handoutLink(match.problem, "題目", ICONS.fileOutline, "小考")}${handoutLink(solutionPath, "解答", ICONS.fileText, "小考")}`;
+}
+
+// 一次研討的檔案連結。每次研討前面已經有「進度／測驗」標籤，平常不用再重複
+// 寫「Handout／Quiz」；只有同一次研討同時有講義和 quiz 時（兩組都有「解答」），
+// 才加上小標籤把兩組分開。
+function scheduleSessionFiles(session, handouts, quizzes) {
+  const groups = [
+    { label: "Handout", links: scheduleHandoutLinks(handouts, session.handout) },
+    { label: "Quiz", links: scheduleQuizLinks(quizzes, session) },
+  ].filter(group => group.links);
+  const showLabels = groups.length > 1;
+  return groups.map(group => `
+    <div class="schedule-stop-handouts">
+      ${showLabels ? `<p class="schedule-stop-handouts-label">${group.label}</p>` : ""}
+      <div class="schedule-stop-handouts-links">${group.links}</div>
+    </div>`).join("");
+}
+
+// 站內的一次研討：標籤（進度／測驗）＋日期時段地點，再用連接線
+// （.schedule-stop-leader）接到這次研討的檔案。最近的下一次研討另外加上
+// aria-current="step"，螢幕報讀器才唸得出「這是目前這一步」，不只靠顏色。
+function scheduleSession(session, handouts, quizzes) {
+  const state = session.isNext ? "is-next" : (session.isPast ? "is-past" : "is-future");
+  // 日期、時段、地點各自不准從中間斷行（窄版之前會斷成「科工學／院」），
+  // 只允許在「·」後面換行；「·」跟前一段黏在一起，不會落到下一行開頭。
+  const metaParts = [session.displayDate, session.time, session.location].filter(Boolean);
+  const meta = metaParts.map((part, index) => `<span class="schedule-session-meta-part">${escapeHTML(part)}${index < metaParts.length - 1 ? "\u00a0·" : ""}</span>`).join(" ");
+  return `
+    <li class="schedule-session ${state}"${session.isNext ? ` aria-current="step"` : ""}>
+      <span class="schedule-session-kind">${escapeHTML(session.kind)}</span>
+      <span class="schedule-session-meta">${meta}</span>
+      <span class="schedule-stop-leader" aria-hidden="true"></span>
+      ${scheduleSessionFiles(session, handouts, quizzes)}
+    </li>`;
+}
+
+// 每一站（過去／目前／未來的主題）共用同一套結構與樣式，差別只在 state 決定
+// 的顏色與 featured 決定的放大強調——收合時只露出 featured 那一站，看起來就
 // 只是同一條時間軸的一小段，而不是另一種獨立的卡片元件。
-function scheduleStopClasses(item, { featured = false, hasUpcoming = true } = {}) {
-  const state = featured ? (hasUpcoming ? "is-next" : "is-past") : (item.isPast ? "is-past" : "is-future");
+function scheduleStopClasses(topic, { featured = false, hasUpcoming = true } = {}) {
+  const state = featured ? (hasUpcoming ? "is-next" : "is-past") : (topic.isPast ? "is-past" : "is-future");
   const classes = ["schedule-stop", state];
   if (featured) classes.push("schedule-stop--featured");
   return classes;
 }
 
-// 圓點＋內文（標題／日期地點／說明＋講義連結）；featured 時額外加上
-// 「下一次研討」／「最近一次研討（已結束）」的小標籤。
-function scheduleStopInner(item, handouts, { featured = false } = {}) {
-  const metaParts = [item.displayDate, item.time, item.location].filter(Boolean);
-  const description = item.description ? `<p class="schedule-stop-description">${escapeHTML(item.description)}</p>` : "";
-  const label = featured
-    ? `<p class="schedule-stop-label">${escapeHTML(item.isPast ? "最近一次研討（已結束）" : "下一次研討")}</p>`
-    : "";
+// featured 那一站上方的小標籤：主題裡已經有研討結束、但還沒全部結束（例如
+// 進度週過了、測驗週還沒到）是「進行中的主題」；一次都還沒開始是「下一個
+// 主題」；全部都結束了（整份期程都已經跑完）是「最近主題（已結束）」。
+function scheduleFeaturedLabel(topic) {
+  if (topic.isPast) return "最近主題（已結束）";
+  return topic.hasStarted ? "進行中的主題" : "下一個主題";
+}
+
+// 圓點＋主題標題，標題正下方是研討內容說明，再往下依序列出這個主題的每一次
+// 研討；featured 時額外在最上面加上 scheduleFeaturedLabel() 的小標籤。
+function scheduleStopInner(topic, handouts, quizzes, { featured = false } = {}) {
+  const label = featured ? `<p class="schedule-stop-label">${escapeHTML(scheduleFeaturedLabel(topic))}</p>` : "";
+  const description = topic.description ? `<p class="schedule-stop-description">${escapeHTML(topic.description)}</p>` : "";
   return `
     <div class="schedule-stop-body">
-      <div class="schedule-stop-text">
-        ${label}
-        <div class="schedule-stop-topic-row">
-          <p class="schedule-stop-topic"><span class="schedule-dot" aria-hidden="true"></span>${escapeHTML(item.topic || "未命名研討")}</p>
-          <span class="schedule-stop-leader" aria-hidden="true"></span>
-          ${scheduleHandoutLinks(handouts, item.handout)}
-        </div>
-        <p class="schedule-stop-meta">${escapeHTML(metaParts.join(" · "))}</p>
-      </div>
+      ${label}
+      <p class="schedule-stop-topic"><span class="schedule-dot" aria-hidden="true"></span>${escapeHTML(topic.topic || "未命名研討")}</p>
       ${description}
+      <ul class="schedule-sessions">${topic.sessions.map(session => scheduleSession(session, handouts, quizzes)).join("")}</ul>
     </div>`;
 }
 
-function scheduleStop(item, handouts, options = {}) {
-  return `<li class="${scheduleStopClasses(item, options).join(" ")}">${scheduleStopInner(item, handouts, options)}</li>`;
+function scheduleStop(topic, handouts, quizzes, options = {}) {
+  return `<li class="${scheduleStopClasses(topic, options).join(" ")}">${scheduleStopInner(topic, handouts, quizzes, options)}</li>`;
 }
 
 function textbookItems(items = []) {
@@ -893,16 +1046,18 @@ function externalResourceLink(url, label) {
 
 // 沿用課本／投影片／練習與資源同一套安靜的「檔名＋圖示」樣式
 // （.resource-document-link），跟其他文件連結的資訊分級一致，不再用突兀的
-// 填色按鈕；圖示改用 icon 參數傳入的填空／解答專用圖示（見 ICONS.fileOutline／
-// ICONS.fileText），讓「這是講義」這件事光看圖示就認得出來，不用在文字裡
-// 重複寫一次「講義」。onclick="event.stopPropagation()"：研討時間「下一次
-// 研討」那一站本身是可點展開的 <summary>，若不擋住冒泡，點講義連結會被
-// document 上收合 details 的委派事件攔截、變成只是展開/收合而不會真的開啟
-// PDF。時間軸裡的講義連結不在 summary 內、不受影響，但一併加上這個保險不
-// 影響行為。
-function handoutLink(path, label, icon) {
+// 填色按鈕；圖示改用 icon 參數傳入的填空／解答（或 quiz 的題目／解答）專用
+// 圖示（見 ICONS.fileOutline／ICONS.fileText），讓「這是講義還是 quiz」這
+// 件事光看圖示就認得出來，不用在文字裡重複寫一次。noun 參數決定 aria-label
+// 要接在 label 後面的名詞（預設「講義」；scheduleQuizLinks() 會傳「小考」），
+// 讓螢幕報讀器唸出的是「填空講義」或「題目小考」，不會把 quiz 唸成講義。
+// onclick="event.stopPropagation()"：研討時間「目前主題」那一站本身是可
+// 點展開的 <summary>，若不擋住冒泡，點連結會被 document 上收合 details 的
+// 委派事件攔截、變成只是展開/收合而不會真的開啟 PDF。時間軸裡的連結不在
+// summary 內、不受影響，但一併加上這個保險不影響行為。
+function handoutLink(path, label, icon, noun = "講義") {
   if (!path) return "";
-  return `<a class="resource-document-link" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="開啟 PDF：${escapeHTML(label)}講義" title="開啟 PDF" onclick="event.stopPropagation()">${escapeHTML(label)}${icon}</a>`;
+  return `<a class="resource-document-link" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="開啟 PDF：${escapeHTML(label)}${escapeHTML(noun)}" title="開啟 PDF" onclick="event.stopPropagation()">${escapeHTML(label)}${icon}</a>`;
 }
 
 function normaliseArticleReaderShell() {

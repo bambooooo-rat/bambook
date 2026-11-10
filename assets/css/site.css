@@ -309,7 +309,15 @@ a.tag:hover, a.tag:focus-visible { background: var(--accent-soft); color: var(--
 .resource-link:hover { border-color: var(--accent); background: var(--accent-soft); }
 .resource-link .ui-icon { width: .95rem; height: .95rem; }
 .resource-document-link { display: inline-flex; align-items: center; gap: .45rem; margin: -.35rem; padding: .35rem; border-radius: 7px; color: var(--text); font: inherit; text-decoration: none; transition: background .18s ease, color .18s ease; }
-.resource-document-link:hover { background: var(--accent-soft); color: var(--accent-strong); }
+/* hover 只給真正有游標的裝置：觸控裝置點一下就會觸發 :hover，而且放開後
+   還會一直黏著，看起來像連結卡在選取狀態。觸控改由 :active 給按壓回饋——
+   手指一碰到就立刻變色（transition-duration: 0s，不等淡入），放開才用原本
+   .18s 淡回去。 */
+@media (hover: hover) and (pointer: fine) {
+  .resource-document-link:hover { background: var(--accent-soft); color: var(--accent-strong); }
+}
+.resource-document-link:active { background: var(--accent-soft); color: var(--accent-strong); transition-duration: 0s; }
+.resource-document-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .resource-document-link .ui-icon { width: 1.3rem; height: 1.3rem; flex: 0 0 auto; color: var(--accent-strong); }
 details.resource-details { border-top: 1px solid var(--border); }
 details.resource-details:first-of-type { border-top: 0; }
@@ -325,7 +333,7 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 
 /* 研討時間 schedule 區塊（course page 最上方）：不是獨立卡片，而是同一條
    地鐵路線圖式時間軸（一直線搭配圓點）目前只露出的一小段——預設只顯示
-   「下一次研討」這一站本身（.schedule-summary，同時也是放大版的
+   「目前主題」這一站本身（.schedule-summary，同時也是放大版的
    .schedule-stop），過去場次收在它上方、未來場次收在它下方，先被裁成 0
    高度（.schedule-track--past/--future）藏起來。點下去不是「卡片長出新
    內容」，而是把上下兩段軌道從 0 展開回原本的高度，感覺像是本來就存在、
@@ -341,9 +349,10 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
    排版，就不會踩到這個限制；展開/收合的動畫也統一交給 site.js 的
    toggleSchedulePanel()（同步切換 .schedule-timeline 的 is-open class 與
    <details> 的 open 屬性，各自的軌道再各自用 WAAPI 對 block-size 做動畫）。
-   若某場研討對應到講義，講義連結沿用課本／投影片／練習與資源那套安靜的
-   .resource-document-link 樣式（見 handoutLink()），排在標題／日期／說明
-   那一欄的右側、同一列並排，而不是疊在下方。 */
+   時間軸的每一站是一個主題（一個主題底下可以有好幾次研討，目前是進度、
+   測驗各一週），講義／quiz 連結沿用課本／投影片／練習與資源那套安靜的
+   .resource-document-link 樣式（見 handoutLink()），接在各次研討那一列的
+   右側。 */
 /* 線的 left 刻意寫成 5px、不是 6px：.schedule-dot／.schedule-expand-arrow
    都是「left: 6px 再 translate(-50%, ...)」置中，置中後的視覺中心是 6px 那
    個點本身；但這條線沒有用 translate 置中，它的視覺中心是 left + width/2。
@@ -369,8 +378,8 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
    段落的第一項是真正的頂端、未來段落的最後一項是真正的底端，這兩個保留
    歸零。原本用同一條規則（.schedule-track > .schedule-stop）連過去段落
    的「最後一項」、未來段落的「第一項」也一起歸零了，但它們後面／前面
-   接的其實是「下一次研討」（summary，在 <details> 裡，不是同一個
-   .schedule-track 的小孩，不是時間軸的真正邊界）——這讓「下一次研討」跟
+   接的其實是「目前主題」（summary，在 <details> 裡，不是同一個
+   .schedule-track 的小孩，不是時間軸的真正邊界）——這讓「目前主題」跟
    前後場次的間距只剩一般場次間距的一半，看起來特別擠、跟其他場次之間的
    間距不一致。改成分別只認過去段落的第一項、未來段落的最後一項。summary
    本身也比照：只有在沒有未來場次時它才是真正的底端，才歸零對應側的
@@ -384,7 +393,7 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
    高度變高，圓點就會偏離標題、飄到整段內容的正中間），改成以
    .schedule-stop-topic（標題本身）當作定位基準，圓點是標題這個 <p> 底下
    的子元素、position 相對它計算，top: 50% 對到的就只是標題那一行的高度，
-   跟下面有沒有說明文字、上面有沒有「下一次研討」標籤都無關。標題原本從
+   跟下面有沒有說明文字、上面有沒有 featured 小標籤都無關。標題原本從
    .schedule-stop 左側 padding（var(--space-6)）算起，圓點要維持在時間軸
    線那個 x 座標（原本的 left: 6px），所以 left 改成 6px 再扣掉這段
    padding；z-index: 1 讓圓點蓋在 ::before 那條線上面（線本身沒有設
@@ -393,11 +402,11 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .schedule-stop.is-past .schedule-dot { background: var(--border); }
 .schedule-stop.is-future .schedule-dot { background: var(--accent); }
 .schedule-stop.is-next .schedule-dot { background: var(--accent-strong); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); }
-/* 「下一次研討」這一站是整條時間軸目前的焦點：圓點放大、加光暈、標題加粗
+/* 「目前主題」這一站是整條時間軸目前的焦點：圓點放大、加光暈、標題加粗
    來強調，但圓點置中用 transform: translate(-50%, -50%) 固定在同一個
    x 座標，所以放大不會跟其他站的圓點對不齊。
-   featured 項目上方多一行「下一次研討」／「最近一次研討（已結束）」的
-   標籤（.schedule-stop-label），這行字本身的高度（含它自己的
+   featured 項目上方多一行「進行中的主題」／「下一個主題」／「最近主題
+   （已結束）」的標籤（.schedule-stop-label），這行字本身的高度（含它自己的
    margin-bottom）已經足夠撐出視覺間距，如果再疊加一般場次用的
    padding-top（var(--space-5)），上方看起來就會比下方、也比一般場次之間
    多出一截，跟其他場次的間距不一致。乾脆把 featured 項目的 padding-top
@@ -409,42 +418,46 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .schedule-stop--featured.is-next .schedule-dot { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent); }
 .schedule-stop--featured.is-past .schedule-dot { box-shadow: 0 0 0 5px color-mix(in srgb, var(--muted) 22%, transparent); }
 .schedule-stop--featured .schedule-stop-topic { font-size: var(--font-lg); font-weight: 700; }
-.schedule-stop-label { margin: 0 0 var(--space-1); color: var(--accent-strong); font-size: var(--font-xs); font-weight: 700; letter-spacing: .02em; }
+.schedule-stop-label { margin: 0; color: var(--accent-strong); font-size: var(--font-xs); font-weight: 700; letter-spacing: .02em; }
 .schedule-stop.is-past .schedule-stop-label { color: var(--muted); }
-/* .schedule-stop-body 分成上下兩區：上區（.schedule-stop-text）是標題／
-   時空資訊，下區是說明文字，刻意獨立成 .schedule-stop-body 的直接子元素、
-   不再塞在文字欄位裡——這樣說明才能撐滿整個 .schedule-stop-body 的寬度，
-   文字一多也是照整站寬度換行。標題／時空資訊彼此的間距刻意壓得很緊
-   （同一個資訊群組），拉開的是 .schedule-stop 本身上下的 padding（見上方，
-   一站與一站之間），研討場次一多的時候才能一眼看出「這是一組」、
-   「那是另一組」，而不是整段文字糊在一起。 */
-.schedule-stop-body { display: flex; flex-direction: column; gap: var(--space-2); }
-.schedule-stop-text { flex: 1; min-width: 0; container-type: inline-size; }
+/* 每一站是一個主題：最上面是主題標題，標題正下方緊接著研討內容說明，再往下
+   才是這個主題實際的每一次研討（.schedule-sessions，目前是「進度」一週、
+   「測驗」一週）。標題／說明／各次研討彼此的間距刻意壓得很緊（同一個資訊
+   群組），拉開的是 .schedule-stop 本身上下的 padding（見上方，一站與一站
+   之間），主題一多的時候才能一眼看出「這是一組」、「那是另一組」，而不是
+   整段文字糊在一起；說明跟各次研討之間另外多留一點（.schedule-sessions 的
+   margin-top），讓「這個主題在講什麼」跟「這個主題哪幾天上課」分得開。
+   container-type: inline-size 設在這裡，是為了讓下方 @container 依這一站
+   實際的寬度決定檔案連結要不要換行。 */
+.schedule-stop-body { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; container-type: inline-size; }
 .schedule-stop-topic { position: relative; margin: 0; font-size: var(--font-md); font-weight: 650; }
-.schedule-stop-meta { margin: var(--space-1) 0 0; color: var(--muted); font-size: var(--font-xs); }
 .schedule-stop-description { margin: 0; color: var(--text); font-size: var(--font-xs); line-height: 1.6; }
-.schedule-stop.is-past .schedule-stop-topic, .schedule-stop.is-past .schedule-stop-meta, .schedule-stop.is-past .schedule-stop-description { color: var(--muted); }
+.schedule-stop.is-past .schedule-stop-topic, .schedule-stop.is-past .schedule-stop-description { color: var(--muted); }
 .schedule-stop.is-past .schedule-stop-topic { font-weight: 500; }
 .schedule-stop.is-next .schedule-stop-topic { color: var(--accent-strong); }
-/* 講義不再放右側獨立欄位，改成直接接在研討主題後面、中間用一條連接線
-   （.schedule-stop-leader）連起來，讓「這份講義屬於這個主題」的關係一眼
-   就看得出來，而不是隔著一大段空白各自獨立。這條線不管這一站有沒有講義
-   都會畫出來（見 site.js 的 scheduleStopInner()）：有講義時線會停在講義
-   容器前面，沒有講義、或講義有指定但找不到對應檔案時，線改成靠 flex:1
-   一路撐到這一列最右側，而不是主題後面就什麼都沒有、憑空斷掉。線用
-   實線＋淡色，稍微加粗到 2px 讓它在撐滿整行時還是看得清楚，但顏色維持
-   淺淡不搶主題的風頭。
-   .schedule-stop-topic-row 設 container-type: inline-size（在上層
-   .schedule-stop-text）是為了在版面窄到放不下時（見下方 @container），
-   讓講義自動換到主題下一行、連接線跟著一起消失，而不是硬擠成一行或
-   孤伶伶地留在原地。「Handout」標籤維持跟 .course-sidebar h2 一樣安靜的
-   灰階小標籤（不用 .eyebrow 那種搶眼的 --accent-strong），但字重加粗、
-   顏色再淡一階（color-mix 把 --muted 往透明調淡，沿用 .toc-empty 同樣的
-   調淡手法），在小字級、緊湊的版面裡才不會糊成一片，同時仍然明顯比研討
-   主題安靜，主題才是這裡最主要的資訊。 */
-.schedule-stop-topic-row { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-2); row-gap: var(--space-1); }
-.schedule-stop-topic-row .schedule-stop-topic { flex: 0 1 auto; }
+/* 主題底下的每一次研討各佔一列：「進度／測驗」小標籤＋日期時段地點，再用
+   連接線（.schedule-stop-leader）接到這次研討的檔案，讓「這份講義／quiz 是
+   哪一天發的」一眼就看得出來，而不是隔著一大段空白各自獨立。這條線不管這
+   一次有沒有檔案都會畫出來：有檔案時線會停在檔案前面，沒有檔案（例如測驗
+   的 quiz 還沒放上來）時線靠 flex:1 一路撐到這一列最右側，而不是日期後面
+   憑空斷掉。線用實線＋淡色，稍微加粗到 2px 讓它在撐滿整行時還是看得清楚，
+   但顏色維持淺淡不搶主題的風頭。
+   小標籤平常是安靜的灰底灰字；最近的下一次研討（.is-next）改用主題色淡底，
+   進行中的主題才看得出「上週進度已經結束、這週輪到測驗」；已結束的那次
+   字再淡一階。 */
+.schedule-sessions { display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-2) 0 0; padding: 0; list-style: none; }
+.schedule-session { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-2); row-gap: var(--space-1); }
+.schedule-session-kind { flex: 0 0 auto; padding: .1rem .5rem; border-radius: 999px; background: var(--surface-soft); color: var(--muted); font-size: var(--font-2xs); font-weight: 700; letter-spacing: .04em; line-height: 1.5; }
+.schedule-session-meta { flex: 0 1 auto; min-width: 0; color: var(--muted); font-size: var(--font-xs); }
+.schedule-session.is-next .schedule-session-kind { background: var(--accent-soft); color: var(--accent-strong); }
+.schedule-session.is-next .schedule-session-meta { color: var(--text); }
+.schedule-session.is-past .schedule-session-kind { color: color-mix(in srgb, var(--muted) 70%, transparent); }
 .schedule-stop-leader { flex: 1 1 auto; min-width: var(--space-4); border-bottom: 2px solid color-mix(in srgb, var(--border) 80%, transparent); }
+/* 「Handout／Quiz」小標籤平常不顯示（前面已經有「進度／測驗」標籤），只有
+   同一次研討同時有講義和 quiz 時才會出現（見 site.js 的
+   scheduleSessionFiles()）。維持跟 .course-sidebar h2 一樣安靜的灰階小標籤
+   （不用 .eyebrow 那種搶眼的 --accent-strong），字重加粗、顏色再淡一階
+   （color-mix 把 --muted 往透明調淡，沿用 .toc-empty 同樣的調淡手法）。 */
 .schedule-stop-handouts { display: flex; flex: 0 0 auto; align-items: center; gap: var(--space-2); white-space: nowrap; }
 .schedule-stop-handouts-label { margin: 0; color: color-mix(in srgb, var(--muted) 70%, transparent); font-size: var(--font-2xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 /* font-weight: 650 跟 .resource-name／.resource-document-link 在其他區塊
@@ -452,22 +465,48 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
    的 font-weight 繼承來的，這裡沒有那層外殼，直接寫在連結本身上。 */
 .schedule-stop-handouts-links { display: flex; gap: var(--space-1) var(--space-3); }
 .schedule-stop-handouts-links a { font-weight: 650; }
-/* 版面窄到主題＋虛線＋講義擠不下一行時（例如手機），虛線直接藏起來、講義
-   整個掉到主題下一行單獨一行，而不是留下斷斷續續的虛線或把講義擠得很窄。
-   用 container query（容器是 .schedule-stop-text）而不是 viewport media
-   query，是因為決定放不放得下的是這一站文字欄位的實際寬度，不是整個
-   視窗寬度（例如有沒有側欄會影響欄位寬度，但不影響視窗寬度）。 */
+/* 版面窄到標籤＋日期地點＋連接線＋檔案擠不下一行時（例如手機），連接線直接
+   藏起來、檔案整個掉到下一行單獨一行，而不是留下斷斷續續的線或把檔案擠得
+   很窄。用 container query（容器是 .schedule-stop-body）而不是 viewport
+   media query，是因為決定放不放得下的是這一站實際的寬度，不是整個視窗
+   寬度（例如有沒有側欄會影響欄位寬度，但不影響視窗寬度）。 */
+/* 窄版改成兩欄 grid：左欄只放「進度／測驗」標籤，右欄依序是日期地點、檔案
+   連結——標籤變成一條固定的左側欄位，日期地點換行、檔案掉到下一列時都還是
+   對齊同一條左緣，而不是檔案退回最左邊、跟標籤擠在同一條線上。標籤對齊
+   第一行文字的基線，不會跑到兩行文字的正中間。 */
 @container (max-width: 420px) {
+  .schedule-session { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; }
   .schedule-stop-leader { display: none; }
-  .schedule-stop-handouts { flex-basis: 100%; }
+  .schedule-stop-handouts { grid-column: 2; }
+}
+/* 日期、時段、地點各自是一個不斷行的片段（見 site.js 的 scheduleSession()），
+   只會在「·」之後換行。 */
+.schedule-session-meta-part { white-space: nowrap; }
+/* 觸控裝置上，檔案連結的可點範圍往上下各撐到約 44px 高（Apple 建議的最小
+   觸控尺寸），用等量的負 margin 抵消，版面位置完全不變——只是手指不用瞄得
+   那麼準。只撐上下、不撐左右，「填空」「解答」之間才不會重疊。 */
+@media (pointer: coarse) {
+  .schedule-stop-handouts-links .resource-document-link { padding-block: .6rem; margin-block: -.6rem; }
 }
 
 /* summary 本身沿用 .schedule-stop 的 padding/圓點定位；hover/focus 時的淡底
    提示是唯一允許出現的「有邊界的底色」，只在互動當下短暫出現，不是常駐的
    卡片外觀。 */
-.schedule-summary { position: relative; border-radius: 8px; list-style: none; cursor: pointer; transition: background-color .16s ease; }
+.schedule-summary { position: relative; border-radius: 8px; list-style: none; cursor: pointer; transition: background-color .16s ease; -webkit-tap-highlight-color: transparent; }
 .schedule-summary::-webkit-details-marker { display: none; }
-.schedule-summary:hover, .schedule-summary:focus-visible { background: var(--accent-soft); outline: none; }
+/* 淡底提示分三種情況：有游標的裝置 hover 時出現（觸控裝置不給 hover，
+   否則點一下之後淡底會一直黏著）；鍵盤 focus 時出現；按下去的當下
+   （:active）立刻出現、顏色再深一階，作為「有收到這一下」的回饋——
+   transition-duration: 0s 讓它在手指碰到的那一刻就到位，放開才淡回去。
+   按的是 summary 裡面的檔案連結時不算（:has(a:active)），那一下是要開
+   PDF，不是要展開時間軸。iOS 預設的灰色點擊閃光一併關掉，改由這裡的
+   :active 負責。 */
+@media (hover: hover) and (pointer: fine) {
+  .schedule-summary:hover { background: var(--accent-soft); }
+  .schedule-summary:hover .schedule-expand-arrow { color: var(--accent-strong); }
+}
+.schedule-summary:focus-visible { background: var(--accent-soft); outline: none; }
+.schedule-summary:active:not(:has(a:active)) { background: color-mix(in srgb, var(--accent) 14%, var(--accent-soft)); transition-duration: 0s; }
 /* 展開圖示改成貼在線上、圓點正上方／正下方的兩個小箭頭，不再貼在 summary
    右側——原本貼右側的做法會讓 summary 多一段留白，跟其他站的
    .schedule-stop-body 沒對齊，講義連結也就跟著沒對齊。left: 6px 跟
@@ -489,7 +528,13 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .schedule-panel[open] .schedule-expand-arrow--up { transform: translate(-50%, -50%) rotate(90deg); }
 .schedule-panel[open] .schedule-expand-arrow--down { transform: translate(-50%, 50%) rotate(-90deg); }
 .schedule-panel[open] .schedule-expand-arrow { color: var(--accent-strong); }
-.schedule-summary:hover .schedule-expand-arrow, .schedule-summary:focus-visible .schedule-expand-arrow { color: var(--accent-strong); }
+.schedule-summary:focus-visible .schedule-expand-arrow { color: var(--accent-strong); }
+/* 研討時間載入完成、取代「正在載入研討時間…」那一行時淡入，而不是整塊
+   瞬間跳出來。只動 opacity，不位移。 */
+.schedule-timeline, .schedule-track--solo { transition: opacity .2s var(--ease-out); }
+@starting-style {
+  .schedule-timeline, .schedule-track--solo { opacity: 0; }
+}
 
 /* .resource-section:last-child 原本是要去掉整個頁面最後一個 resource-section
    多餘的留白；但這個 section 是透過 renderSchedule() 動態塞進這個包裝用的

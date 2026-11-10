@@ -61,6 +61,7 @@
           "sol": "materials/工程數學/handout/handout8_解答.pdf"
         }
       ],
+      "quizzes": [],
       "slides": [
         {
           "category": "師大工教114學年上課講義",
@@ -204,6 +205,13 @@
           "title": "handout6",
           "blank": "materials/微積分乙/handout/handout6_填空.pdf",
           "sol": "materials/微積分乙/handout/handout6_解答.pdf"
+        }
+      ],
+      "quizzes": [
+        {
+          "title": "quiz4",
+          "problem": "materials/微積分乙/handout/quiz4_題目.pdf",
+          "solution": "materials/微積分乙/handout/quiz4_解答.pdf"
         }
       ],
       "slides": [

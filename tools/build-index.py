@@ -52,15 +52,47 @@ def parse_textbook(file_path: Path) -> dict[str, str]:
     }
 
 
+# "quiz" 開頭的檔名（quiz4_題目.pdf／quiz4_解答.pdf）是小考題目／解答，跟
+# 講義放在同一個 handout/ 資料夾裡，但走獨立的 parse_quizzes() 處理、有自己
+# 的檔名後綴（題目／解答，不是填空／解答）——這裡要先排除，不然會被誤判
+# 成一份「填空」版本缺失的講義。
+QUIZ_FILENAME_PREFIX = re.compile(r"(?i)^quiz")
+
+
 def parse_handouts(directory: Path) -> list[dict[str, str | None]]:
     grouped: dict[str, dict[str, str | None]] = {}
     for file_path in pdf_files(directory):
         stem = file_path.stem
+        if QUIZ_FILENAME_PREFIX.match(stem):
+            continue
         kind = "blank"
         if "解答" in stem:
             kind = "sol"
         title = re.sub(r"[_\- ]?(填空|解答)$", "", stem).strip() or stem
         item = grouped.setdefault(title, {"title": title, "blank": None, "sol": None})
+        item[kind] = web_path(file_path)
+    return [grouped[key] for key in sorted(grouped, key=str.casefold)]
+
+
+# 小考題目／解答跟講義放在同一個 handout/ 資料夾裡，檔名慣例是
+# "quiz<編號>_題目.pdf"／"quiz<編號>_解答.pdf"（例如 quiz4_題目.pdf、
+# quiz4_解答.pdf），去掉後綴、以 "quiz4" 這個字串分組、歸成同一筆資料，
+# 跟 parse_handouts() 的講義分組邏輯是同一套做法。題目／解答兩個檔案可以
+# 只存在一個——缺的那一半就留 None，網頁那邊本來就只在有檔案時才顯示按鈕。
+def parse_quizzes(directory: Path) -> list[dict[str, str | None]]:
+    grouped: dict[str, dict[str, str | None]] = {}
+    for file_path in pdf_files(directory):
+        stem = file_path.stem
+        if not QUIZ_FILENAME_PREFIX.match(stem):
+            continue
+        if "題目" in stem:
+            kind = "problem"
+        elif "解答" in stem:
+            kind = "solution"
+        else:
+            continue
+        title = re.sub(r"[_\- ]?(題目|解答)$", "", stem).strip() or stem
+        item = grouped.setdefault(title, {"title": title, "problem": None, "solution": None})
         item[kind] = web_path(file_path)
     return [grouped[key] for key in sorted(grouped, key=str.casefold)]
 
@@ -139,6 +171,7 @@ def build_materials() -> dict[str, Any]:
             "schedule": web_path(schedule) if schedule else None,
             "textbooks": [parse_textbook(file_path) for file_path in pdf_files(course_dir / "textbook")],
             "handouts": parse_handouts(course_dir / "handout"),
+            "quizzes": parse_quizzes(course_dir / "handout"),
             "slides": parse_slides(course_dir / "slide"),
             "practice": parse_practice(course_dir / "practice"),
         }
