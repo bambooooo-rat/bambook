@@ -59,7 +59,7 @@ def parse_handouts(directory: Path) -> list[dict[str, str | None]]:
         kind = "blank"
         if "解答" in stem:
             kind = "sol"
-        title = re.sub(r"[_\- ]?(填空版|解答版)$", "", stem).strip() or stem
+        title = re.sub(r"[_\- ]?(填空|解答)$", "", stem).strip() or stem
         item = grouped.setdefault(title, {"title": title, "blank": None, "sol": None})
         item[kind] = web_path(file_path)
     return [grouped[key] for key in sorted(grouped, key=str.casefold)]

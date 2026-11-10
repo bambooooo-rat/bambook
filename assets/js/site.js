@@ -52,8 +52,8 @@ const ICONS = {
   unfoldVertical: tablerIcon('<path d="M8 7l4 -4l4 4"/><path d="M16 17l-4 4l-4 -4"/><path d="M12 3l0 18"/>'),
   // Added for the course-page schedule section (research/study-group session times).
   calendar: tablerIcon('<path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1"/><path d="M12 15v3"/>'),
-  // 講義連結專用：填空版是「空白待寫」的版本，用單純的文件外框（沒有內文）；
-  // 解答版是「已經寫好內容」的版本，用外框＋內文橫線，兩者互為對照，光看
+  // 講義連結專用：填空是「空白待寫」的版本，用單純的文件外框（沒有內文）；
+  // 解答是「已經寫好內容」的版本，用外框＋內文橫線，兩者互為對照，光看
   // 圖示就能分辨，不用在文字裡重複寫「講義」。
   fileOutline: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11"/>'),
   fileText: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>'),
@@ -673,7 +673,7 @@ function renderSyllabus(path) {
 // details/summary 收合元件展開成地鐵路線圖式的完整期程（一直線搭配圓點），
 // 過去／下一次／未來的研討以不同顏色的圓點與文字區分；若所有場次都已結束，
 // 改以「最近一次已結束的場次」作為預設顯示的卡片。時間軸每一站若在
-// schedule.json 標註了對應的 handout（與講義檔名去掉填空版／解答版後的
+// schedule.json 標註了對應的 handout（與講義檔名去掉填空／解答後的
 // 標題相同，例如 "handout1"），會直接顯示該講義的下載連結。
 function renderSchedule(path, handouts = []) {
   const slot = document.querySelector("#schedule-slot");
@@ -779,7 +779,7 @@ function scheduleContent(rawItems, handouts = []) {
 }
 
 // schedule.json 的 handout 欄位對照 course.handouts 裡的 title（講義檔名
-// 去掉「_填空版」「_解答版」後的字串，例如 "handout1"），找到就直接輸出
+// 去掉「_填空」「_解答」後的字串，例如 "handout1"），找到就直接輸出
 // 講義的下載連結（沿用 handoutLink()，跟課本／投影片／練習與資源同一套安靜
 // 的檔名＋圖示樣式）。
 function scheduleHandoutLinks(handouts, handoutTitle) {

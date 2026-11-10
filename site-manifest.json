@@ -22,43 +22,43 @@
       "handouts": [
         {
           "title": "handout1",
-          "blank": "materials/工程數學/handout/handout1_填空版.pdf",
-          "sol": "materials/工程數學/handout/handout1_解答版.pdf"
+          "blank": "materials/工程數學/handout/handout1_填空.pdf",
+          "sol": "materials/工程數學/handout/handout1_解答.pdf"
         },
         {
           "title": "handout2",
-          "blank": "materials/工程數學/handout/handout2_填空版.pdf",
-          "sol": "materials/工程數學/handout/handout2_解答版.pdf"
+          "blank": "materials/工程數學/handout/handout2_填空.pdf",
+          "sol": "materials/工程數學/handout/handout2_解答.pdf"
         },
         {
           "title": "handout3",
-          "blank": "materials/工程數學/handout/handout3_填空版.pdf",
-          "sol": "materials/工程數學/handout/handout3_解答版.pdf"
+          "blank": "materials/工程數學/handout/handout3_填空.pdf",
+          "sol": "materials/工程數學/handout/handout3_解答.pdf"
         },
         {
           "title": "handout4",
-          "blank": "materials/工程數學/handout/handout4_填空版.pdf",
-          "sol": "materials/工程數學/handout/handout4_解答版.pdf"
+          "blank": "materials/工程數學/handout/handout4_填空.pdf",
+          "sol": "materials/工程數學/handout/handout4_解答.pdf"
         },
         {
           "title": "handout5",
-          "blank": "materials/工程數學/handout/handout5_填空版.pdf",
-          "sol": "materials/工程數學/handout/handout5_解答版.pdf"
+          "blank": "materials/工程數學/handout/handout5_填空.pdf",
+          "sol": "materials/工程數學/handout/handout5_解答.pdf"
         },
         {
           "title": "handout6",
-          "blank": "materials/工程數學/handout/handout6_填空版.pdf",
-          "sol": "materials/工程數學/handout/handout6_解答版.pdf"
+          "blank": "materials/工程數學/handout/handout6_填空.pdf",
+          "sol": "materials/工程數學/handout/handout6_解答.pdf"
         },
         {
           "title": "handout7",
-          "blank": "materials/工程數學/handout/handout7_填空版.pdf",
-          "sol": "materials/工程數學/handout/handout7_解答版.pdf"
+          "blank": "materials/工程數學/handout/handout7_填空.pdf",
+          "sol": "materials/工程數學/handout/handout7_解答.pdf"
         },
         {
           "title": "handout8",
-          "blank": "materials/工程數學/handout/handout8_填空版.pdf",
-          "sol": "materials/工程數學/handout/handout8_解答版.pdf"
+          "blank": "materials/工程數學/handout/handout8_填空.pdf",
+          "sol": "materials/工程數學/handout/handout8_解答.pdf"
         }
       ],
       "slides": [
@@ -172,38 +172,38 @@
       "handouts": [
         {
           "title": "handout0",
-          "blank": "materials/微積分乙/handout/handout0_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout0_解答版.pdf"
+          "blank": "materials/微積分乙/handout/handout0_填空.pdf",
+          "sol": "materials/微積分乙/handout/handout0_解答.pdf"
         },
         {
           "title": "handout1",
-          "blank": "materials/微積分乙/handout/handout1_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout1_解答版.pdf"
+          "blank": "materials/微積分乙/handout/handout1_填空.pdf",
+          "sol": "materials/微積分乙/handout/handout1_解答.pdf"
         },
         {
           "title": "handout2",
-          "blank": "materials/微積分乙/handout/handout2_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout2_解答版.pdf"
+          "blank": "materials/微積分乙/handout/handout2_填空.pdf",
+          "sol": "materials/微積分乙/handout/handout2_解答.pdf"
         },
         {
           "title": "handout3",
-          "blank": "materials/微積分乙/handout/handout3_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout3_解答版.pdf"
+          "blank": "materials/微積分乙/handout/handout3_填空.pdf",
+          "sol": "materials/微積分乙/handout/handout3_解答.pdf"
         },
         {
           "title": "handout4",
-          "blank": "materials/微積分乙/handout/handout4_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout4_解答版.pdf"
+          "blank": "materials/微積分乙/handout/handout4_填空.pdf",
+          "sol": "materials/微積分乙/handout/handout4_解答.pdf"
         },
         {
           "title": "handout5",
-          "blank": "materials/微積分乙/handout/handout5_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout5_解答版.pdf"
+          "blank": "materials/微積分乙/handout/handout5_填空.pdf",
+          "sol": "materials/微積分乙/handout/handout5_解答.pdf"
         },
         {
           "title": "handout6",
-          "blank": "materials/微積分乙/handout/handout6_填空版.pdf",
-          "sol": "materials/微積分乙/handout/handout6_解答版.pdf"
+          "blank": "materials/微積分乙/handout/handout6_填空.pdf",
+          "sol": "materials/微積分乙/handout/handout6_解答.pdf"
         }
       ],
       "slides": [
