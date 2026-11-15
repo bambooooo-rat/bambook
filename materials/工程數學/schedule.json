@@ -1,0 +1,98 @@
+[
+  {
+    "topic": "一階微分方程基礎與正合方程",
+    "description": "微分方程式之簡介、分類與解的定義、可分離變數型(Separable) 微分方程與齊次型 ODEs、偏導數與全微分(補充)、正合(Exact)微分方程及其積分因子法",
+    "sessions": [
+      {
+        "date": "2026-03-05 18:30",
+        "time": "18:30–20:30",
+        "location": "科工學院 四樓 工401",
+        "handout": "handout0"
+      }
+    ]
+  },
+  {
+    "topic": "一階線性與特殊二階微分方程",
+    "description": "一階線性微分方程與積分因子法、伯努利方程(Bernoulli Equation)的線性化處理、二階齊次線性 ODEs之降階法(Reduction of Order)、柯西-尤拉方程式(Euler-Cauchy Equation)之特徵解",
+    "sessions": [
+      {
+        "date": "2026-03-12 18:30",
+        "time": "18:30–20:30",
+        "location": "科工學院 四樓 工401",
+        "handout": "handout1"
+      }
+    ]
+  },
+  {
+    "topic": "高階常係數齊次線性微分方程",
+    "description": "n階線性 ODEs 之解的結構與線性組合性質、線性獨立性判別、Wronskian 行列式與特徵函數概念、二階與高階常係數齊次線性 ODEs之通用解法、初始值問題(IVP)與邊界值問題(BVP)",
+    "sessions": [
+      {
+        "date": "2026-03-19 18:30",
+        "time": "18:30–20:30",
+        "location": "科工學院 四樓 工401",
+        "handout": "handout2"
+      }
+    ]
+  },
+  {
+    "topic": "高階常係數非齊次線性微分方程",
+    "description": "常係數階線性非齊次微分方程式、待定係數法(Method of Undetermined Coefficients)、參數變換法(Method of Variation of Parameters)、非齊次微分方程之初始值與邊界值問題討論",
+    "sessions": [
+      {
+        "date": "2026-03-26 18:30",
+        "time": "18:30–20:30",
+        "location": "科工學院 四樓 工401",
+        "handout": "handout3"
+      }
+    ]
+  },
+  {
+    "topic": "微分方程組與狀態空間分析",
+    "description": "微分方程組之簡介與狀態空間(State-Space) 表示法、特徵值與特徵向量(補充)、齊次與非齊次微分方程組的解決方法(參數變換法)、相平面分析(Phase Plane)與二維系統之穩定性判斷",
+    "sessions": [
+      {
+        "date": "2026-04-09 18:30",
+        "time": "18:30–20:30",
+        "location": "科工學院 四樓 工401",
+        "handout": "handout4"
+      }
+    ]
+  },
+  {
+    "topic": "級數展開與傅立葉分析",
+    "description": "函數之冪級數表示法與泰勒級數(補充)、內積、正交基底與投影(補充)、傅立葉級數(Fourier Series)之定義、展開與收斂性(補充)、複數型傅立葉級數、傅立葉變換與頻譜(補充)",
+    "sessions": [
+      {
+        "date": "2026-04-23 18:30",
+        "time": "18:30–20:30",
+        "location": "科工學院 四樓 工401",
+        "handout": "handout5"
+      }
+    ]
+  },
+  {
+    "topic": "拉普拉斯變換基礎與運算性質",
+    "description": "拉普拉斯變換(Laplace Transform)之定義與收斂條件、常用訊號與運算:單位步階、脈衝函數與卷積運算、基本函數之拉氏變換與運算性質",
+    "sessions": [
+      {
+        "date": "2026-05-07 18:30",
+        "time": "18:30–20:30",
+        "location": "科工學院 四樓 工401",
+        "handout": "handout6"
+      }
+    ]
+  },
+  {
+    "topic": "拉普拉斯逆變換與微分方程應用",
+    "description": "拉普拉斯逆變換(Inverse Laplace Transform)、部分分式展開(Partial Fraction Decomposition)、利用拉普拉斯變換求解微分方程問題、極點與零點(Pole-Zero)之直觀物理意義",
+    "sessions": [
+      {
+        "date": "2026-05-14 18:30",
+        "time": "18:30–20:30",
+        "location": "科工學院 四樓 工401",
+        "handout": "handout7"
+      }
+    ]
+  }
+]

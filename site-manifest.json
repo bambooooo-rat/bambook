@@ -4,7 +4,7 @@
   "materials": {
     "工程數學": {
       "syllabus": null,
-      "schedule": null,
+      "schedule": "materials/工程數學/schedule.json",
       "textbooks": [
         {
           "title": "Advanced Engineering Mathematics",
