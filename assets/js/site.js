@@ -828,6 +828,9 @@ function scheduleContent(rawItems, handouts = [], quizzes = []) {
             parsedDate: date,
             displayDate: formatScheduleDate(date),
             isPast: scheduleIsPast(date, now),
+            // 題目在研討開始（date 欄位的時刻）之後才出現，解答在研討結束
+            // （time 欄位的結束時刻，見 scheduleSessionEndDate()）之後才出現。
+            quizProblemUnlocked: date <= now,
             quizSolutionUnlocked: scheduleSessionEndDate(date, session.time) <= now,
           };
         })
@@ -913,18 +916,20 @@ function scheduleHandoutLinks(handouts, handoutTitle) {
 }
 
 // quiz 欄位對照 course.quizzes 裡的 title（quiz 檔名去掉「_題目」「_解答」後
-// 的字串，例如 "quiz4"），一樣「有檔案才顯示」，差別只在解答：題目有檔案就
-// 能看，但解答要等 session.quizSolutionUnlocked（這次研討真正下課以後，見
-// scheduleSessionEndDate()）才會顯示連結——即使檔案已經放在資料夾裡，時間
-// 到之前也只當作不存在，避免學生在研討當場就先把答案抄走，失去小考練習
-// 的意義。
+// 的字串，例如 "quiz4"），一樣「有檔案才顯示」，但兩個按鈕都另外有時間
+// 限制：題目要等 session.quizProblemUnlocked（這次研討開始以後）才會出現，
+// 避免學生在研討前就先拿到題目準備；解答要等 session.quizSolutionUnlocked
+// （這次研討真正下課以後，見 scheduleSessionEndDate()）才會出現，避免學生
+// 在研討當場就先把答案抄走。時間到之前，就算檔案已經放在資料夾裡也只當作
+// 不存在。
 function scheduleQuizLinks(quizzes, session) {
   const quizTitle = session?.quiz;
   if (!quizTitle) return "";
   const match = (Array.isArray(quizzes) ? quizzes : []).find(entry => entry && String(entry.title || "").trim() === String(quizTitle).trim());
   if (!match) return "";
+  const problemPath = session.quizProblemUnlocked ? match.problem : null;
   const solutionPath = session.quizSolutionUnlocked ? match.solution : null;
-  return `${handoutLink(match.problem, "題目", ICONS.fileOutline, "小考")}${handoutLink(solutionPath, "解答", ICONS.fileText, "小考")}`;
+  return `${handoutLink(problemPath, "題目", ICONS.fileOutline, "小考")}${handoutLink(solutionPath, "解答", ICONS.fileText, "小考")}`;
 }
 
 // 一次研討的檔案連結。每次研討前面已經有「進度／測驗」標籤，平常不用再重複
