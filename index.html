@@ -6,13 +6,14 @@
   <meta name="description" content="Bambook：放教材的地方">
   <title>Bambook</title>
   <link rel="icon" type="image/svg+xml" href="assets/icons/bambook.svg">
-  <!-- Applies a saved dark-mode choice before first paint (avoids a flash of
-       light-then-dark) — runs before the stylesheet loads. No stored choice
-       means light; dark mode is never inferred from the OS. -->
+  <!-- 第一次繪製前決定深淺色，避免先亮後暗的閃爍：手動選過就照選擇，沒選過就跟隨系統。 -->
   <script>
-    try {
-      if (localStorage.getItem("bambook-theme") === "dark") document.documentElement.dataset.theme = "dark";
-    } catch (error) {}
+    (function () {
+      var saved = null;
+      try { saved = localStorage.getItem("bambook-theme"); } catch (error) {}
+      var dark = saved ? saved === "dark" : !!(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+      if (dark) document.documentElement.dataset.theme = "dark";
+    })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +23,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.css">
 </head>
 <body>
-  <div class="page-transition" id="page-transition" aria-hidden="true"></div>
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="#home" aria-label="Bambook 首頁">
@@ -35,7 +35,6 @@
           <div id="materials-menu" class="menu-panel" data-material-menu></div>
         </div>
         <a href="#articles" data-nav="articles">文章</a>
-        <a href="#tools" data-nav="tools">其他</a>
       </nav>
       <button type="button" class="icon-button" id="theme-toggle" aria-pressed="false" aria-label="切換為深色模式">
         <svg class="theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/></svg>
@@ -51,15 +50,18 @@
       <div class="footer-main">
         <div class="footer-contact">
           <strong>Bambook</strong>
+          <span class="footer-about">微積分乙與工程數學課輔社群的講義、小考、課本與數學筆記。</span>
           <span>© 2026 Bambook. All rights reserved.</span>
           <a href="mailto:bamboorat0528@gmail.com">bamboorat0528@gmail.com</a>
         </div>
-        <div class="legal-disclaimer">
-          <p>1. 本網站所收錄之第三方數位內容，包括但不限於教科書 PDF 檔案、各級學校歷屆試題、授課講義與簡報等，其著作權、商標權及其他智慧財產權均受著作權法保護，且絕對歸屬於原創作者、授權出版商及原所屬學術機構。本網站僅作為學術資源之彙整索引，不主張擁有、亦未受權代表上述任何第三方資料之所有權人。</p>
-          <p>2. 本網站之建置純屬非營利性質之學術交流與教育輔助目的，全站資源採無償提供。嚴禁任何實體或個人針對本站內容進行商業營利、未經授權之散布、重製或轉售。使用者存取資源時，必須確保其行為嚴格符合著作權法第 44 條至第 65 條關於「合理使用（Fair Use）」之範疇。任何逾越法定合理使用範圍之侵權行為，相關法律責任須由存取者自行承擔，概與本站無涉。</p>
-          <p>3. 本站恪遵著作權保護原則。若權利人或其合法代理人認為本站寄存之內容或連結侵害其法定權益，請即刻檢具相關證明聯絡本站管理端。經初步核實權利歸屬與侵權事實後，本站將遵循「通知與取下（Notice and Takedown）」原則，優先移除爭議內容或斷開相關連結，以保障權利人權益。</p>
-          <p>4. 本網站所有資訊與數位資源均依「現狀（As Is）」與「現有（As Available）」基礎提供，不附帶任何明示或暗示之法定擔保。本網站不保證全站資料之絕對準確性、完整性、時效性或特定目的之適用性。對於任何因存取、使用、或無法存取本站內容而導致之直接、間接、偶發或衍生性損害（包括但不限於學業成績影響、資料遺失、設備損壞或法律訴訟），本網站概不負擔任何賠償或法律責任。</p>
-        </div>
+        <details class="legal-disclaimer">
+          <summary>使用聲明</summary>
+          <p>Bambook 是非營利的課業輔導資料站，給師大微積分乙、工程數學課輔社群使用，也歡迎任何正在學習的人參考。</p>
+          <p>網站上的教科書、上課簡報與歷屆試題，著作權屬於原作者、出版社與授課老師，本站只是整理起來方便學習。請只用在個人學習，不要轉售或拿去做商業用途。</p>
+          <p>講義、小考與筆記文章由本站整理撰寫，歡迎分享連結。</p>
+          <p>如果你是權利人，認為某份資料不該放在這裡，請寫信到 <a href="mailto:bamboorat0528@gmail.com">bamboorat0528@gmail.com</a>，確認後會盡快移除。</p>
+          <p>內容盡力保持正確，但難免有錯；發現錯誤也歡迎來信告訴我。</p>
+        </details>
       </div>
       <nav class="footer-sitemap" aria-label="網站地圖" data-footer-sitemap></nav>
     </div>

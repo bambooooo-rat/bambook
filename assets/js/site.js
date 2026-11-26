@@ -45,25 +45,18 @@ const ICONS = {
   book: tablerIcon('<path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/>'),
   math: tablerIcon('<path d="M19 5h-7l-4 14l-3 -6h-2"/><path d="M14 13l6 6"/><path d="M14 19l6 -6"/>'),
   pdf: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"/><path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"/><path d="M17 18h2"/><path d="M20 15h-3v6"/><path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1"/>'),
-  link: tablerIcon('<path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/>'),
   presentation: tablerIcon('<path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/><path d="M12 16l0 4"/><path d="M9 20l6 0"/><path d="M8 12l3 -3l2 2l3 -3"/>'),
-  article: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>'),
-  tool: tablerIcon('<path d="M7 10h3v-3l-3.5 -3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1 -3 3l-6 -6a6 6 0 0 1 -8 -8l3.5 3.5"/>'),
   chevron: tablerIcon('<path d="M9 6l6 6l-6 6"/>'),
   unfoldVertical: tablerIcon('<path d="M8 7l4 -4l4 4"/><path d="M16 17l-4 4l-4 -4"/><path d="M12 3l0 18"/>'),
-  // Added for the course-page schedule section (research/study-group session times).
-  calendar: tablerIcon('<path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1"/><path d="M12 15v3"/>'),
-  // 講義連結專用：填空是「空白待寫」的版本，用單純的文件外框（沒有內文）；
-  // 解答是「已經寫好內容」的版本，用外框＋內文橫線，兩者互為對照，光看
-  // 圖示就能分辨，不用在文字裡重複寫「講義」。
-  fileOutline: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11"/>'),
-  fileText: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>'),
+  // 講義／小考的 PDF 圖示：沿用 pdf 圖示的上半部（折角的文件），下半部的「PDF」字樣換成
+  // 填空線（題目、填空版）或打勾（解答），跟站上其他 PDF 連結同一家族。
+  pdfBlank: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"/><path d="M5 19h3"/><path d="M10.5 19h3"/><path d="M16 19h3"/><path d="M5 15.5h8"/>'),
+  pdfAnswer: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"/><path d="M7.5 17.5l3 3l6 -6.5"/>'),
 };
 
 const SITE_BASE_URL = new URL("../../", import.meta.url);
 const app = document.querySelector("#app");
 const materialMenu = document.querySelector("[data-material-menu]");
-const pageTransition = document.querySelector("#page-transition");
 const state = {
   courses: {},
   articles: [],
@@ -71,7 +64,6 @@ const state = {
   articleBodies: new Map(),
   tocScrollHandler: null,
   tocScrollRoot: null,
-  pageTransitionTimer: null,
   forwardClickPending: false,
   forwardClickResetTimer: null,
   manifestError: "",
@@ -119,18 +111,7 @@ function bindEvents() {
     }
 
     const summary = target.closest("summary");
-    // 研討時間這個 details/summary 不像其他 .resource-details 可以在
-    // prefers-reduced-motion 時整個放手交給瀏覽器原生開合：過去場次的軌道是
-    // 外層 .schedule-timeline 的另一個子元素、不受 <details> 原生開合影響
-    // （見 toggleSchedulePanel() 的說明），一定要交給它自己同步狀態，動畫與
-    // 否則由它內部依 prefersReducedMotion() 判斷。
-    const scheduleDetails = summary?.closest(".schedule-panel");
-    if (summary && scheduleDetails) {
-      event.preventDefault();
-      toggleSchedulePanel(scheduleDetails);
-      return;
-    }
-    const details = summary?.closest(".resource-details");
+    const details = summary?.closest(".resource-details, .tl-fold");
     if (summary && details && !prefersReducedMotion()) {
       event.preventDefault();
       toggleAnimatedDetails(details);
@@ -202,117 +183,6 @@ function toggleAnimatedDetails(details, forceOpen) {
     });
 }
 
-// 研討時間時間軸（.schedule-panel）的開合走的是自己的動畫，跟上面的
-// toggleAnimatedDetails() 不一樣：那個是「summary 本身高度不變、下方長出
-// 一段新內容」的單向 accordion；這裡「目前主題」那一站固定在中間，過去
-// 場次的軌道（.schedule-track--past）要往上展開、未來場次（--future）要往
-// 下展開，等於同時有兩段各自獨立的 0↔auto 高度動畫，因此不能只對整個
-// <details> 的 blockSize 做單一動畫（那樣會把中間固定不動的那一站也一起
-// 拉伸/裁切掉）。這裡分別對兩段軌道各自的 blockSize 做動畫，讓「收合」讀起
-// 來像是把原本就存在的線段重新蓋上遮罩、「展開」則是把遮罩往外移除。
-const scheduleTrackAnimations = new WeakMap();
-const scheduleTargetState = new WeakMap();
-
-// 展開／收合時，被點的那一站（summary）要一直停在手指／游標底下：過去的主題
-// 在它「上方」長出來，如果不處理，整個 summary 會被往下推走一大段（手機上
-// 過去的主題一多，常常直接被推出畫面），使用者剛點的東西憑空消失。這裡讓
-// 「過去往上展開」真的是往上長：每一格畫面都量一次 summary 跟起點的偏移，
-// 用 scrollBy 抵消回去。動畫期間暫時關掉瀏覽器內建的 scroll anchoring
-// （overflow-anchor），避免它跟這裡各自修正、互相疊加。
-function holdScheduleAnchor(summary, anchorTop, isActive) {
-  if (!summary || anchorTop == null) return () => {};
-  const root = document.documentElement;
-  root.style.overflowAnchor = "none";
-  let frame = 0;
-  const correct = () => {
-    const drift = summary.getBoundingClientRect().top - anchorTop;
-    if (Math.abs(drift) >= 0.5) window.scrollBy({ top: drift, left: 0, behavior: "instant" });
-  };
-  const step = () => {
-    correct();
-    frame = isActive() ? requestAnimationFrame(step) : 0;
-  };
-  frame = requestAnimationFrame(step);
-  return () => {
-    cancelAnimationFrame(frame);
-    correct();
-    // 不還原「呼叫前的值」而是直接移除：半路被打斷時，舊的那次不會呼叫這個
-    // 收尾函式（由新的那次接手），若記住呼叫前的值，新的那次記到的會是舊的
-    // 那次設下的 "none"，最後就永遠還原不回來。
-    root.style.removeProperty("overflow-anchor");
-  };
-}
-
-function toggleSchedulePanel(details) {
-  // 過去主題的軌道刻意放在 <details> 外面（見 scheduleContent()／site.css
-  // 的說明），所以兩段軌道要從共同的外層 wrapper（.schedule-timeline）找，
-  // 不能只在 details 底下找。
-  const wrapper = details.closest(".schedule-timeline") || details;
-  const summary = details.querySelector(":scope > summary");
-  const currentlyOpen = scheduleTargetState.has(details) ? scheduleTargetState.get(details) : details.open;
-  const opening = !currentlyOpen;
-  scheduleTargetState.set(details, opening);
-
-  // 動畫進行到一半又被點一次時，要從「畫面上此刻的高度」接著往回走，而不是
-  // 從 0 或全開重新開始（那樣會先跳一下再動）——所以先量出每一段軌道現在的
-  // 實際高度，量完才取消舊動畫。
-  const tracks = Array.from(wrapper.querySelectorAll(".schedule-track--past, .schedule-track--future"));
-  const startSizes = tracks.map(track => track.getBoundingClientRect().height);
-  const anchorTop = summary?.getBoundingClientRect().top;
-  scheduleTrackAnimations.get(details)?.forEach(animation => animation.cancel());
-
-  // 過去主題軌道能不能展開完全是靠 .schedule-timeline 的 is-open class（見
-  // site.css），這個 class 只有這個函式會動它——不像其他 .resource-details
-  // 那樣，reduced-motion 時可以整個放手交給瀏覽器原生的 <details> 開合，這裡
-  // 就算不做動畫，也一定要親自把 is-open 跟 details.open 同步設好，不然過去
-  // 主題的軌道會永遠展不開。不做動畫時一樣要把 summary 留在原位。
-  if (prefersReducedMotion()) {
-    details.open = opening;
-    wrapper.classList.toggle("is-open", opening);
-    scheduleTrackAnimations.delete(details);
-    scheduleTargetState.delete(details);
-    holdScheduleAnchor(summary, anchorTop, () => false)();
-    return;
-  }
-
-  // is-open 跟 details.open 一起在「開始展開」的當下就打開：兩段軌道展開
-  // 後的 block-size: auto 都是靠 .schedule-timeline.is-open 這個 class 生效
-  // （見 site.css），要先打開才能量到展開後的真實高度（scrollHeight），也才
-  // 能在動畫結束、WAAPI 交還控制權的瞬間讓 CSS 已經是正確的最終值，不會又
-  // 彈回 0 高度。
-  if (opening) {
-    details.open = true;
-    wrapper.classList.add("is-open");
-  }
-
-  // 半路折返時剩下的距離比較短，時間也跟著按比例縮短（但不短於一半），
-  // 不會出現「只差一點點卻還是慢慢走完整段時間」的拖泥帶水感。
-  const animations = tracks.map((track, index) => {
-    const fullSize = track.scrollHeight;
-    const from = startSizes[index];
-    const to = opening ? fullSize : 0;
-    const remaining = fullSize ? Math.abs(to - from) / fullSize : 1;
-    const duration = DETAILS_ANIMATION_MS * Math.min(1, Math.max(0.5, remaining));
-    return track.animate([{ blockSize: `${from}px` }, { blockSize: `${to}px` }], { duration, easing: easeOutValue() });
-  });
-  scheduleTrackAnimations.set(details, animations);
-  const releaseAnchor = holdScheduleAnchor(summary, anchorTop, () => scheduleTrackAnimations.get(details) === animations);
-
-  Promise.allSettled(animations.map(animation => animation.finished)).then(() => {
-    // 如果動畫進行到一半又被下一次點擊打斷，取消（cancel）會讓這裡的
-    // Promise 稍後才 settle；這時 scheduleTrackAnimations 已經被新的一次
-    // toggleSchedulePanel() 呼叫覆寫成新的動畫陣列，用參照比對確認自己還是
-    // 最新的一次，不是的話就不要動 details.open/is-open，讓新的那次自己
-    // 收尾（新的那次也已經接手 summary 的定位）。
-    if (scheduleTrackAnimations.get(details) !== animations) return;
-    details.open = opening;
-    if (!opening) wrapper.classList.remove("is-open");
-    scheduleTrackAnimations.delete(details);
-    scheduleTargetState.delete(details);
-    releaseAnchor();
-  });
-}
-
 function easeOutValue() {
   return getComputedStyle(document.documentElement).getPropertyValue("--ease-out").trim() || "ease-out";
 }
@@ -322,19 +192,34 @@ function easeOutValue() {
 // <head>; this wires up the button and keeps it in sync.
 const THEME_STORAGE_KEY = "bambook-theme";
 
+// 深色模式（第 2 階段）：沒有手動選過時跟隨系統，系統切換時即時跟著變；按過切換鈕就記住選擇。
+// 第一次繪製前的判斷在 index.html 開頭的 inline script，這裡負責之後的變化。
+function storedTheme() {
+  try { return localStorage.getItem(THEME_STORAGE_KEY); } catch { return null; }
+}
+
+function applyTheme(dark) {
+  if (dark) document.documentElement.dataset.theme = "dark";
+  else delete document.documentElement.dataset.theme;
+}
+
 function bindThemeToggle() {
   const button = document.querySelector("#theme-toggle");
+  const media = window.matchMedia?.("(prefers-color-scheme: dark)");
+  media?.addEventListener?.("change", event => {
+    if (storedTheme()) return;           // 手動選過就不跟系統
+    applyTheme(event.matches);
+    if (button) syncThemeToggle(button);
+  });
   if (!button) return;
   syncThemeToggle(button);
   button.addEventListener("click", () => {
     const goingDark = document.documentElement.dataset.theme !== "dark";
-    if (goingDark) document.documentElement.dataset.theme = "dark";
-    else delete document.documentElement.dataset.theme;
+    applyTheme(goingDark);
     try {
       localStorage.setItem(THEME_STORAGE_KEY, goingDark ? "dark" : "light");
     } catch (error) {
-      // Private browsing / storage disabled — the toggle still works for
-      // this page load, it just won't be remembered next visit.
+      // 無痕模式等不能存：這次照樣切換，下次開啟回到跟隨系統
     }
     syncThemeToggle(button);
   });
@@ -376,7 +261,7 @@ function buildFooterSitemap() {
       items: state.articles.map(article => ({ label: article.title, href: articleHref(article) })),
     },
     {
-      title: "其他",
+      title: "其他工具",
       moreHref: "#tools",
       items: toolCards().map(tool => ({ label: tool.title, href: tool.href })),
     },
@@ -420,20 +305,10 @@ async function loadSiteManifest() {
   }
 }
 
-// .page-transition's keyframes cover the screen by 45% of .48s (216ms);
-// this fires just after, once the curtain is certainly fully closed.
-const PAGE_TRANSITION_COVER_DELAY = 230;
-
-// Browsers fire "popstate" for every fragment navigation — a plain forward
-// link click included, not just back/forward — so it can't tell the two
-// apart. Only clicking one of our own href="#..." links can, so bindEvents()
-// marks that directly; this fires just before the hashchange it causes (if
-// any — a click that doesn't actually change the hash never gets one, which
-// is what the reset timer cleans up). Anything else that changes the hash
-// (the browser's back/forward button, iOS Safari's edge-swipe-back gesture)
-// arrives with no click to mark, so it skips the curtain — those already
-// play their own transition, and stacking ours on top reads as double
-// motion.
+// 換頁（第 2 階段）：拿掉原本 0.48 秒的「布幕」。布幕是用來遮住換頁時畫面跳動的；
+// 現在改成先把新頁面畫好再淡入——支援 View Transitions 的瀏覽器（iOS 18 以上的 Safari、Chrome）
+// 由瀏覽器拍下前後兩張畫面做 0.12 秒交叉淡入；不支援時，新頁面以 0.12 秒淡入。
+// 系統設了「減少動態效果」就直接換。上一頁／下一頁與 iOS 的滑動返回不加動畫（系統已有自己的轉場）。
 function markForwardClick() {
   state.forwardClickPending = true;
   clearTimeout(state.forwardClickResetTimer);
@@ -453,24 +328,18 @@ function handleHashChange() {
 }
 
 function navigate() {
-  if (!pageTransition || prefersReducedMotion()) {
+  if (prefersReducedMotion()) {
     route();
     return;
   }
-  if (state.pageTransitionTimer) clearTimeout(state.pageTransitionTimer);
-  pageTransition.classList.remove("is-active");
-  void pageTransition.offsetWidth; // force reflow so the animation restarts
-  pageTransition.classList.add("is-active");
-  state.pageTransitionTimer = setTimeout(() => {
-    state.pageTransitionTimer = null;
-    route();
-  }, PAGE_TRANSITION_COVER_DELAY);
+  if (document.startViewTransition) {
+    document.startViewTransition(() => route());
+    return;
+  }
+  route();
+  app.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 120, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
 }
 
-// Route changes triggered by hashchange play the page-transition curtain
-// (navigate() above) and defer this call until the curtain fully covers the
-// screen, so neither the DOM swap nor the scroll reset below is ever
-// visible. The initial page load calls route() directly, unanimated.
 function route() {
   clearArticleTocScroll();
   clearArticleOverviewPager();
@@ -505,58 +374,114 @@ function clearArticleOverviewPager() {
   state.articleOverviewObserver = null;
 }
 
+// 首頁（DESIGN.md「首頁」）：最上面是「焦點研討」（進行中或下一場，全站最大的字），
+// 接著是其他近期研討 → 課程 → 最新文章。都沒有研討時，焦點改顯示網站名稱與介紹。
+// 研討要讀各課程的 schedule.json，所以先畫骨架、讀完再填進 #hero-slot／#week-slot。
+const HOME_ARTICLE_LIMIT = 4;
+const SITE_INTRO = "微積分乙與工程數學課輔社群的講義、小考、課本與數學筆記。";
+
 function renderHome() {
   setActiveNav("");
   document.title = "Bambook";
   const names = courseNames();
-  const materialRows = names.length
-    ? names.map(name => row({
-        href: `#materials=${encodeURIComponent(name)}`,
-        title: name,
-        desc: `${name}的課本、講義、投影片與練習資源。`,
-        meta: materialMeta(state.courses[name]),
-      })).join("")
-    : emptyState("教材資料尚未載入。請先執行 tools/build-index.py。");
-  const articleRows = state.manifestError
+  const articles = state.manifestError
     ? emptyState(state.manifestError)
     : state.articles.length
-      ? state.articles.slice(0, 3).map(article => row({
-          href: articleHref(article),
-          title: article.title,
-          desc: article.summary || "閱讀這篇文章。",
-          meta: formatDate(article.date),
+      ? state.articles.slice(0, HOME_ARTICLE_LIMIT).map(article => plainRow({
+          href: articleHref(article), title: article.title, desc: article.summary || article.excerpt || "",
         })).join("")
       : emptyState("尚未有文章。");
-  const toolRows = toolCards().slice(0, 3).map(tool => row({
-    href: tool.href,
-    title: tool.title,
-    desc: tool.description,
-    tags: tool.tags,
-  })).join("") || emptyState("尚未找到工具資料夾。");
 
   app.innerHTML = `
     <div class="home-view">
-      ${homeIntroShell()}
-      <section class="block" id="home-materials">
-        ${blockHead(ICONS.book, "教材", "#materials", "全部教材")}
-        <div class="row-list">${materialRows}</div>
+      <section class="home-hero is-loading" id="hero-slot" aria-live="polite"></section>
+      <section class="home-section" id="week-slot" aria-label="其他近期研討" hidden></section>
+      <section class="home-section" aria-labelledby="home-courses-h">
+        <div class="section-label"><h2 id="home-courses-h">課程</h2></div>
+        <div class="plain-list" id="home-courses">${names.map(name => plainRow({
+          href: `#materials=${encodeURIComponent(name)}`, title: name, desc: "　",
+        })).join("") || emptyState("教材資料尚未載入。")}</div>
       </section>
-      <section class="block" id="home-articles">
-        ${blockHead(ICONS.article, "文章", "#articles", "全部文章")}
-        <div class="row-list">${articleRows}</div>
-      </section>
-      <section class="block" id="home-tools">
-        ${blockHead(ICONS.tool, "其他工具", "#tools", "全部工具")}
-        <div class="row-list">${toolRows}</div>
+      <section class="home-section" aria-labelledby="home-articles-h">
+        <div class="section-label"><h2 id="home-articles-h">最新文章</h2><a href="#articles">全部文章 ›</a></div>
+        <div class="plain-list">${articles}</div>
       </section>
     </div>`;
+  fillHomeSchedules();
 }
 
-function blockHead(icon, title, href, linkLabel) {
-  return `<div class="block-head">
-    <div class="block-head-title"><span class="block-head-icon">${icon}</span><h2>${escapeHTML(title)}</h2></div>
-    <a class="all-link" href="${safeURL(href)}">${ICONS.chevron}<span>${escapeHTML(linkLabel)}</span></a>
-  </div>`;
+async function fillHomeSchedules() {
+  const courses = await loadAllSchedules();
+  const hero = document.querySelector("#hero-slot");
+  const slot = document.querySelector("#week-slot");
+  if (!hero || !slot) return;  // 使用者已經換頁
+  const focus = focusSession(courses);
+  hero.innerHTML = focus ? heroHTML(focus) : `<h1 class="hero-title">Bambook</h1><p class="hero-intro">${SITE_INTRO}</p>`;
+  hero.classList.remove("is-loading");
+  const others = weekActivities(courses).filter(session => session !== focus);
+  if (others.length) {
+    slot.hidden = false;
+    slot.innerHTML = `<div class="section-label"><h2>其他近期研討</h2></div>
+      <ol class="week-list">${others.map(weekItem).join("")}</ol>`;
+  }
+  const list = document.querySelector("#home-courses");
+  if (list) {
+    list.innerHTML = courses.map(course => {
+      const next = course.sessions.find(session => !session.ended);
+      return plainRow({
+        href: `#materials=${encodeURIComponent(course.name)}`,
+        title: course.name,
+        desc: next ? `下次：${shortDate(next.start)} ${weekday(next.start)}・${next.topic}` : (course.sessions.length ? "本學期研討已結束" : ""),
+      });
+    }).join("");
+  }
+}
+
+// 焦點研討：正在進行的；沒有的話是下一場還沒開始的（不限 7 天內）。
+function focusSession(courses, current = now()) {
+  const all = courses.flatMap(course => course.sessions).sort((a, b) => a.start - b.start);
+  return all.find(session => session.start <= current && session.end >= current)
+    || all.find(session => session.start > current) || null;
+}
+
+// 「進行中」「今天 18:30」「明天 18:30」「還有 6 天」
+function relativeWhen(session) {
+  if (session.started && !session.ended) return `進行中・到 ${clockTime(session.end)}`;
+  const day = date => new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  const days = Math.round((day(session.start) - day(session.now)) / DAY_MS);
+  if (days === 0) return `今天 ${clockTime(session.start)}`;
+  if (days === 1) return `明天 ${clockTime(session.start)}`;
+  return `還有 ${days} 天`;
+}
+
+function heroHTML(session) {
+  const live = session.started && !session.ended;
+  return `
+    <p class="hero-eyebrow${live ? " is-live" : ""}">${live ? "" : "下一場研討・"}${escapeHTML(relativeWhen(session))}</p>
+    <h1 class="hero-topic">${escapeHTML(session.topic || "未命名研討")}</h1>
+    <p class="hero-when">${shortDate(session.start)} ${weekday(session.start)}${session.time ? `・${escapeHTML(session.time)}` : ""}</p>
+    <p class="hero-meta"><a href="#materials=${encodeURIComponent(session.course)}">${escapeHTML(session.course)}</a><span class="dot-sep"></span>${kindLabel(session)}${session.location ? `<span class="dot-sep"></span>${escapeHTML(session.location)}` : ""}</p>
+    ${sessionFileLinks(session)}`;
+}
+
+function weekItem(session) {
+  const state = session.ended ? "is-past" : (session.started ? "is-now" : "is-future");
+  const status = session.started && !session.ended ? `<span class="dot-sep"></span><span class="kind-now">進行中</span>` : "";
+  return `
+    <li class="week-item ${state}">
+      <div class="date-col"><b>${shortDate(session.start)}</b><span>${weekday(session.start)}</span></div>
+      <div class="week-body">
+        <p class="week-head"><a href="#materials=${encodeURIComponent(session.course)}">${escapeHTML(session.course)}</a><span class="dot-sep"></span>${kindLabel(session)}${status}</p>
+        <p class="week-topic">${escapeHTML(session.topic || "未命名研討")}</p>
+        <p class="week-where">${escapeHTML([session.time, session.location].filter(Boolean).join("・"))}</p>
+        ${sessionFileLinks(session)}
+      </div>
+    </li>`;
+}
+
+// 沒有外框的清單列：標題＋一行說明。
+function plainRow({ href, title, desc = "" }) {
+  return `<a class="plain-row" href="${safeURL(href)}"><span class="plain-title">${escapeHTML(title)}</span>${desc ? `<span class="plain-desc">${escapeHTML(desc)}</span>` : ""}</a>`;
 }
 
 // Row-count summary shown next to a course's row-desc (e.g. "3 課本 · 6
@@ -582,38 +507,6 @@ function row({ href, title, desc = "", meta = "", tags = [] }) {
       ${tags.length ? `<div class="row-tags">${tags.map(tag => `<span>${escapeHTML(tag)}</span>`).join("")}</div>` : ""}
     </div>` : ""}
   </a>`;
-}
-
-// Static, hand-written hero — deliberately not sourced from a Markdown
-// file, since the home page's job is to hand people off to real content
-// fast rather than explain itself.
-function homeIntroShell() {
-  return `
-    <section class="hero" aria-label="網站首頁">
-      <p class="eyebrow">Bambook</p>
-      <h1>放教材的地方</h1>
-      <p>涵蓋教材、文章與幾個小工具。</p>
-      <div class="hero-features">
-        <a class="hero-feature" href="#materials">
-          <span class="hero-feature-icon">${ICONS.book}</span>
-          <span class="hero-feature-title">教材</span>
-          <span class="hero-feature-desc">課本、講義與練習整理</span>
-          <span class="hero-feature-more">${ICONS.chevron}<span>全部教材</span></span>
-        </a>
-        <a class="hero-feature" href="#articles">
-          <span class="hero-feature-icon">${ICONS.article}</span>
-          <span class="hero-feature-title">文章</span>
-          <span class="hero-feature-desc">數學筆記與說明</span>
-          <span class="hero-feature-more">${ICONS.chevron}<span>全部文章</span></span>
-        </a>
-        <a class="hero-feature" href="#tools">
-          <span class="hero-feature-icon">${ICONS.tool}</span>
-          <span class="hero-feature-title">其他工具</span>
-          <span class="hero-feature-desc">獨立的小工具</span>
-          <span class="hero-feature-more">${ICONS.chevron}<span>全部工具</span></span>
-        </a>
-      </div>
-    </section>`;
 }
 
 // items: [{ label, href? }]. Items without an `href`, or the last item,
@@ -660,35 +553,199 @@ function renderCourse(name) {
   setActiveNav("materials");
   document.title = `${name} | Bambook`;
   const names = courseNames();
-  const courseLinks = names.map(courseName => `<a class="${courseName === name ? "is-active" : ""}" href="#materials=${encodeURIComponent(courseName)}"${courseName === name ? ' aria-current="page"' : ""}>${escapeHTML(courseName)}</a>`).join("");
-  // 寬版的教材切換在右側欄（.course-sidebar）；窄版（< 1024px）側欄會排到
-  // 整頁最下面、等於找不到，所以另外在標題下方放一排可橫向滑動的按鈕
-  // （.course-switcher）。兩者由 CSS 依寬度只顯示其中一個（另一個是
-  // display: none，不會被螢幕報讀器重複唸到）。只有一門教材時不需要切換。
-  const courseSwitcher = names.length > 1 ? `<nav class="course-switcher" aria-label="切換教材">${courseLinks}</nav>` : "";
+  const tabs = names.length > 1
+    ? `<nav class="course-tabs" aria-label="切換教材">${names.map(courseName => `<a class="${courseName === name ? "is-active" : ""}" href="#materials=${encodeURIComponent(courseName)}"${courseName === name ? ' aria-current="page"' : ""}>${escapeHTML(courseName)}</a>`).join("")}</nav>`
+    : "";
 
   app.innerHTML = `
-    <div class="course-layout">
-      <div class="course-content">
-        ${breadcrumb([{ label: "首頁", href: "#home" }, { label: "教材", href: "#materials" }, { label: name }])}
-        <header class="page-heading">
-          <p class="eyebrow">Course materials</p>
-          <h1>${escapeHTML(name)}</h1>
-          <p>課本、講義、投影片及歷屆練習均由此頁統一整理；點選檔案即可在新分頁開啟。</p>
-        </header>
-        ${courseSwitcher}
-        <div id="schedule-slot"></div>
-        <div id="syllabus-slot"></div>
-        ${resourceSection("課本", textbookItems(course.textbooks), ICONS.book)}
-        ${slidesSection(course.slides)}
-        ${practiceSection(course.practice)}
-        ${relatedArticlesSection(name)}
-      </div>
-      <aside class="course-sidebar" aria-label="教材"><h2>教材</h2>${courseLinks}</aside>
+    <div class="course-view">
+      ${breadcrumb([{ label: "首頁", href: "#home" }, { label: "教材", href: "#materials" }, { label: name }])}
+      <header class="course-heading"><h1>${escapeHTML(name)}</h1>${tabs}</header>
+      <div id="schedule-slot"></div>
+      <div id="syllabus-slot"></div>
+      ${resourceSection("課本", textbookItems(course.textbooks), ICONS.book)}
+      ${slidesSection(course.slides)}
+      ${practiceSection(course.practice)}
+      ${relatedArticlesSection(name)}
     </div>`;
 
-  renderSchedule(course.schedule, course.handouts, course.quizzes);
+  renderCourseTimeline(name);
   renderSyllabus(course.syllabus);
+}
+
+// 課程頁的研討（DESIGN.md「課程頁」）：時間軸，畫法見 timelineHTML()。
+async function renderCourseTimeline(name) {
+  const slot = document.querySelector("#schedule-slot");
+  if (!slot || !state.courses[name]?.schedule) return;
+  slot.innerHTML = `<section class="resource-section"><div class="section-label"><h2>研討與講義</h2></div><p class="notice">正在載入研討時間…</p></section>`;
+  const course = (await loadAllSchedules()).find(item => item.name === name);
+  if (document.querySelector("#schedule-slot") !== slot) return;
+  if (!course || course.error) {
+    slot.innerHTML = `<section class="resource-section"><div class="section-label"><h2>研討與講義</h2></div><p class="notice">研討時間檔暫時無法讀取。</p></section>`;
+    return;
+  }
+  slot.innerHTML = `<section class="resource-section"><div class="section-label"><h2>研討與講義</h2></div>${timelineHTML(course.sessions)}</section>`;
+}
+
+// 時間軸（DESIGN.md「課程頁」2.3）：一次研討一個點，主題標在左側、跨它底下連續的研討。
+// 平常只露出「目前」（進行中或下一場）與再下一次；之前的收在最上面「已結束」、之後的收在最下面「之後」，
+// 各只有一層。整門課都結束時露出最後兩次。
+function timelineHTML(sessions) {
+  if (!sessions.length) return emptyState("尚無研討時間資料。");
+  const next = sessions.find(session => !session.ended) || null;
+  const from = next ? sessions.indexOf(next) : Math.max(0, sessions.length - 2);
+  const to = Math.min(sessions.length, from + 2);
+  const past = sessions.slice(0, from), shown = sessions.slice(from, to), later = sessions.slice(to);
+  const currentTopic = next ? next.topicIndex : null;
+  const list = items => `<ol class="tl">${groupRuns(items).map(run => topicRunHTML(run, run[0].topicIndex === currentTopic, next)).join("")}</ol>`;
+  const fold = (name, items, extra = "") => `
+    <details class="tl-fold ${extra}">
+      <summary>
+        <span class="tl-fold-name">${name}</span>
+        <span class="tl-dot" aria-hidden="true"></span>
+        <span class="tl-fold-label">${items.length} 次研討<small>${shortDate(items[0].start)}${items.length > 1 ? ` – ${shortDate(items.at(-1).start)}` : ""}</small></span>
+        <span class="tl-fold-chevron" aria-hidden="true">${ICONS.chevron}</span>
+      </summary>
+      ${list(items)}
+    </details>`;
+  return `<div class="tl-wrap">
+    ${past.length ? fold("已結束", past, "is-before") : ""}
+    ${list(shown)}
+    ${later.length ? fold("之後", later, "is-after") : ""}
+  </div>`;
+}
+
+// 把連續、同一個主題的研討併成一段（左側的主題名稱只寫一次）。
+function groupRuns(items) {
+  const runs = [];
+  items.forEach(session => {
+    const last = runs.at(-1);
+    if (last && last[0].topicIndex === session.topicIndex) last.push(session);
+    else runs.push([session]);
+  });
+  return runs;
+}
+
+function topicRunHTML(run, isCurrent, next) {
+  const state = isCurrent ? "is-current" : (run.every(session => session.ended) ? "is-past" : "is-future");
+  return `
+    <li class="tl-topic ${state}">
+      <div class="tl-topic-name">${escapeHTML(run[0].topic || "未命名研討")}</div>
+      <ol class="tl-sessions">${run.map(session => {
+        const isNext = session === next;
+        const live = session.started && !session.ended;
+        const cls = session.ended ? "is-past" : (isNext ? "is-next" : "is-future");
+        // 時段地點只在還沒結束的研討顯示；主題說明只在目前那一次顯示
+        const where = session.ended ? "" : [session.time, session.location].filter(Boolean).join("・");
+        return `
+          <li class="tl-session ${cls}"${isNext ? ' aria-current="step"' : ""}>
+            <span class="tl-dot" aria-hidden="true"></span>
+            <div>
+              <p class="tl-head"><b>${shortDate(session.start)} ${weekday(session.start)}</b>${kindLabel(session)}${live ? `<span class="kind-now">進行中</span>` : ""}</p>
+              ${where ? `<p class="tl-where">${escapeHTML(where)}</p>` : ""}
+              ${isNext && session.description ? `<p class="tl-desc">${escapeHTML(session.description)}</p>` : ""}
+              ${sessionFileLinks(session)}
+            </div>
+          </li>`;
+      }).join("")}</ol>
+    </li>`;
+}
+
+// ---------------------------------------------------------------------------
+// 研討資料（首頁本週活動與課程頁共用）
+// ---------------------------------------------------------------------------
+// 測試或預覽時可以在網址加 ?now=2026-12-09T19:00 模擬時間（放在 # 前面）。
+function now() {
+  const override = new URLSearchParams(location.search).get("now");
+  const date = override ? new Date(override) : null;
+  return date && !Number.isNaN(date.valueOf()) ? date : new Date();
+}
+
+const WEEKDAYS = "日一二三四五六";
+const shortDate = date => `${date.getMonth() + 1}/${date.getDate()}`;
+const weekday = date => `週${WEEKDAYS[date.getDay()]}`;
+const clockTime = date => `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+
+// 讀所有課程的 schedule.json（同一次瀏覽只讀一次），整理成每次研討一筆、依時間排序。
+function loadAllSchedules() {
+  if (!state.schedulesPromise) {
+    state.schedulesPromise = Promise.all(courseNames().map(async name => {
+      const course = state.courses[name] || {};
+      if (!course.schedule) return { name, sessions: [] };
+      try {
+        const response = await fetch(assetURL(course.schedule), { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const items = await response.json();
+        if (!Array.isArray(items)) throw new Error("資料格式不正確");
+        return { name, sessions: normaliseSessions(name, items, course) };
+      } catch (error) {
+        return { name, sessions: [], error: String(error) };
+      }
+    }));
+  }
+  return state.schedulesPromise;
+}
+
+function normaliseSessions(courseName, items, course, current = now()) {
+  const handouts = Array.isArray(course.handouts) ? course.handouts : [];
+  const quizzes = Array.isArray(course.quizzes) ? course.quizzes : [];
+  return items.flatMap((item, topicIndex) => scheduleTopicSessions(item).map(session => {
+    const start = parseScheduleDate(session?.date);
+    if (!start) return null;
+    const end = scheduleSessionEndDate(start, session.time);
+    const handout = session.handout ? handouts.find(h => String(h?.title || "").trim() === String(session.handout).trim()) : null;
+    const quiz = session.quiz ? quizzes.find(q => String(q?.title || "").trim() === String(session.quiz).trim()) : null;
+    const files = [];
+    if (handout?.blank) files.push({ noun: "講義", label: "填空", answer: false, path: handout.blank });
+    if (handout?.sol) files.push({ noun: "講義", label: "解答", answer: true, path: handout.sol });
+    // 小考題目在研討開始後才出現、解答在時段結束後才出現（時間到之前網頁上沒有按鈕）
+    if (quiz?.problem) files.push({ noun: "小考", label: "題目", answer: false, path: quiz.problem, opensAt: start });
+    if (quiz?.solution) files.push({ noun: "小考", label: "解答", answer: true, path: quiz.solution, opensAt: end });
+    return {
+      course: courseName, topicIndex, topic: item.topic, description: item.description || "",
+      time: session.time || "", location: session.location || "", kind: scheduleSessionKind(session),
+      start, end, started: start <= current, ended: end < current,
+      files, quizMissing: Boolean(session.quiz && !quiz), now: current,
+    };
+  })).filter(Boolean).sort((a, b) => a.start - b.start);
+}
+
+// 本週活動：7 天內要開始的，以及 3 天內剛結束的（方便學生拿解答）。
+const DAY_MS = 86400000;
+function weekActivities(courses, current = now()) {
+  const from = current.getTime() - 3 * DAY_MS;
+  const to = current.getTime() + 7 * DAY_MS;
+  return courses.flatMap(course => course.sessions)
+    .filter(session => session.end.getTime() >= from && session.start.getTime() <= to)
+    .sort((a, b) => a.start - b.start);
+}
+
+function kindLabel(session) {
+  return `<span class="kind">${escapeHTML(session.kind)}</span>`;
+}
+
+// 檔案連結（DESIGN.md「檔案連結」）：Handout、Quiz 各是一組，組名是淡色小標，
+// 組內再分「填空」（講義）或「題目」（小考）與「解答」，跟課本同一種 PDF 連結（文字＋accent 圖示）。
+// 還沒開放的顯示開放時間，不是按鈕；schedule 有寫小考但檔案還沒放上時顯示「尚未放上」。
+const FILE_GROUPS = [{ noun: "講義", label: "Handout" }, { noun: "小考", label: "Quiz" }];
+
+function sessionFileLinks(session) {
+  const groups = FILE_GROUPS.map(({ noun, label }) => {
+    const files = session.files.filter(file => file.noun === noun);
+    const items = files.map(file => {
+      const name = file.answer ? "解答" : (noun === "講義" ? "填空" : "題目");
+      if (file.opensAt && file.opensAt > session.now) {
+        const sameDay = file.opensAt.toDateString() === session.start.toDateString();
+        const when = `${sameDay ? "" : shortDate(file.opensAt) + " "}${clockTime(file.opensAt)}`;
+        // 還沒開放：淡色文字、不能點，旁邊小字是開放時間
+        return `<span class="file-pending" role="note" aria-label="${label} ${name}：${when} 開放" title="${when} 開放">${name}<small>${when}後</small></span>`;
+      }
+      return `<a class="resource-document-link" href="${safeURL(file.path)}" target="_blank" rel="noopener" aria-label="開啟 PDF：${label} ${name}" title="${label} ${name}（PDF）">${name}${file.answer ? ICONS.pdfAnswer : ICONS.pdfBlank}</a>`;
+    });
+    if (noun === "小考" && session.quizMissing) items.push(`<span class="file-locked">尚未放上</span>`);
+    return items.length ? `<div class="file-group"><span class="file-group-label">${label}</span>${items.join("")}</div>` : "";
+  }).filter(Boolean);
+  return groups.length ? `<div class="file-links">${groups.join("")}</div>` : "";
 }
 
 // Articles opt into a course page by adding a tag that matches the course
@@ -741,24 +798,6 @@ function renderSyllabus(path) {
 // 顯示目前的主題（本身即為 <summary>），點選後往上展開過去的主題、往下展開
 // 未來的主題，過去／目前／未來以不同顏色的圓點與文字區分；若所有主題都已
 // 結束，改以最近一個已結束的主題作為預設顯示的一站。
-function renderSchedule(path, handouts = [], quizzes = []) {
-  const slot = document.querySelector("#schedule-slot");
-  if (!slot || !path) return;
-  slot.innerHTML = resourceSection("研討時間", `<p class="notice">正在載入研討時間…</p>`, ICONS.calendar);
-  fetch(assetURL(path), { cache: "no-store" })
-    .then(response => {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response.json();
-    })
-    .then(items => {
-      if (!Array.isArray(items)) throw new Error("資料格式不正確");
-      slot.innerHTML = resourceSection("研討時間", scheduleContent(items, handouts, quizzes), ICONS.calendar);
-    })
-    .catch(() => {
-      slot.innerHTML = resourceSection("研討時間", `<p class="notice">研討時間檔暫時無法讀取。</p>`, ICONS.calendar);
-    });
-}
-
 // 每次研討的 date 欄位為統一格式 "YYYY-MM-DD HH:MM"（用於排序與判斷是否已
 // 結束），time 欄位則是給人看的顯示用時段（例如 "19:00–21:00"）。
 function parseScheduleDate(value) {
@@ -769,27 +808,9 @@ function parseScheduleDate(value) {
   return Number.isNaN(date.valueOf()) ? null : date;
 }
 
-function formatScheduleDate(date) {
-  return date.toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "short" });
-}
-
-// 判斷一次研討是否已經「結束」，用的不是研討的開始時間，而是研討當天的
-// 21:00——如果直接拿開始時間跟現在比較，學生在研討進行中（已經過了開始
-// 時間，但研討根本還沒結束）打開頁面時，看到的會是下一次研討而不是當次
-// 研討，但這時候學生需要下載的其實是當次的教材，不是下一次的。研討時段
-// 通常在晚上，用當天 21:00 當作「視覺上」的結束時間，研討進行中打開頁面
-// 時仍然會看到當次研討，才符合實際需求。
-function scheduleIsPast(date, now) {
-  const cutoff = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 21, 0, 0, 0);
-  return cutoff < now;
-}
-
-// Quiz 解答要等「這次研討」真正下課以後才能開放下載——跟 scheduleIsPast()
-// 刻意用 21:00 當「視覺上」過去／未來分界不同（那是為了研討進行中打開頁面
-// 仍顯示當次研討），這裡要的是確切的下課時間，所以直接拆 time 欄位（例如
-// "18:30–20:30"）取結束那一半的時刻，跟 date 的日期部分組出真正的 Date。
-// time 欄位缺漏或格式不如預期時，退回跟 scheduleIsPast() 一樣的當天 21:00
-// 當保底，寧可晚一點開放，也不要因為格式問題提早洩漏解答。
+// 一次研討的下課時間：拆 time 欄位（例如 "18:30–20:30"）取結束那一半，跟 date 的日期組成 Date。
+// 用在兩處：研討「結束」的判斷（研討進行中打開頁面仍算當次），以及小考解答的開放時間。
+// time 缺漏或格式不對時退回當天 21:00，寧可晚一點開放，也不要因為格式問題提早露出解答。
 function scheduleSessionEndDate(date, time) {
   const match = /^\s*\d{1,2}:\d{2}\s*[-–—~]\s*(\d{1,2}):(\d{2})\s*$/.exec(String(time ?? ""));
   if (match) {
@@ -818,194 +839,6 @@ function scheduleSessionKind(session) {
   if (session?.quiz) return "測驗";
   if (session?.handout) return "進度";
   return "研討";
-}
-
-function scheduleContent(rawItems, handouts = [], quizzes = []) {
-  const now = new Date();
-  const topics = rawItems
-    .map(item => {
-      const sessions = scheduleTopicSessions(item)
-        .map(session => {
-          const date = parseScheduleDate(session?.date);
-          if (!date) return null;
-          return {
-            ...session,
-            kind: scheduleSessionKind(session),
-            parsedDate: date,
-            displayDate: formatScheduleDate(date),
-            isPast: scheduleIsPast(date, now),
-            // 題目在研討開始（date 欄位的時刻）之後才出現，解答在研討結束
-            // （time 欄位的結束時刻，見 scheduleSessionEndDate()）之後才出現。
-            quizProblemUnlocked: date <= now,
-            quizSolutionUnlocked: scheduleSessionEndDate(date, session.time) <= now,
-          };
-        })
-        .filter(Boolean)
-        .sort((a, b) => a.parsedDate - b.parsedDate);
-      if (!sessions.length) return null;
-      // 主題要等裡面每一次研討都結束才算結束——進度那週結束、測驗那週還沒
-      // 到的時候，這個主題仍然是「進行中」，不能被歸到過去。
-      return {
-        topic: item.topic,
-        description: item.description,
-        sessions,
-        parsedDate: sessions[0].parsedDate,
-        isPast: sessions.every(session => session.isPast),
-        hasStarted: sessions.some(session => session.isPast),
-      };
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.parsedDate - b.parsedDate);
-
-  if (!topics.length) return emptyState("尚無研討時間資料。");
-
-  // 全部研討裡最近的下一次：在站內另外標出來，進行中的主題才看得出「上週
-  // 的進度已經結束、這週要考試」，而不是兩次研討看起來一模一樣。
-  const nextSession = topics.flatMap(topic => topic.sessions).filter(session => !session.isPast).sort((a, b) => a.parsedDate - b.parsedDate)[0];
-  if (nextSession) nextSession.isNext = true;
-
-  const hasUpcoming = topics.some(topic => !topic.isPast);
-  const upcomingIndex = topics.findIndex(topic => !topic.isPast);
-  const featuredIndex = upcomingIndex === -1 ? topics.length - 1 : upcomingIndex;
-  const featured = topics[featuredIndex];
-  // 過去主題留在上面（往上展開）、未來主題留在下面（往下展開），兩段都不
-  // 含 featured 自己，才不會跟固定顯示的那一站重複出現。兩段本來就已經是
-  // 由舊到新排序，直接切片就是各自要的上下順序，不用再反轉。
-  const pastTopics = topics.slice(0, featuredIndex);
-  const futureTopics = topics.slice(featuredIndex + 1);
-
-  // 只有一個主題時，沒有其餘期程可展開，直接顯示這一站即可，不需要
-  // details/summary 的收合外殼、也不需要展開圖示。
-  if (topics.length < 2) {
-    return `<ol class="schedule-track schedule-track--solo">${scheduleStop(featured, handouts, quizzes, { featured: true, hasUpcoming })}</ol>`;
-  }
-
-  const pastTrack = pastTopics.length
-    ? `<ol class="schedule-track schedule-track--past">${pastTopics.map(topic => scheduleStop(topic, handouts, quizzes)).join("")}</ol>`
-    : "";
-  const futureTrack = futureTopics.length
-    ? `<ol class="schedule-track schedule-track--future">${futureTopics.map(topic => scheduleStop(topic, handouts, quizzes)).join("")}</ol>`
-    : "";
-
-  // 展開圖示貼在線上、圓點正上方／正下方各一個小箭頭，收合時分別指向上／下
-  // （呼應「往上/往下展開」的方向），展開後轉個方向指向圓點（呼應「收回這
-  // 一點」）。哪一段有內容才畫哪個箭頭，全部都是過去或全部都是未來的主題時
-  // 不會出現多餘的方向。
-  const upArrow = pastTopics.length ? `<span class="schedule-expand-arrow schedule-expand-arrow--up" aria-hidden="true">${ICONS.chevron}</span>` : "";
-  const downArrow = futureTopics.length ? `<span class="schedule-expand-arrow schedule-expand-arrow--down" aria-hidden="true">${ICONS.chevron}</span>` : "";
-
-  // 過去主題刻意放在 <details> 之外（見 site.css 的說明：<details> 內建的
-  // ::details-content 匿名容器會讓 summary 以外的子元素全部併成同一個 flex
-  // item，CSS order 排不到 summary 上面），交給 .schedule-timeline 這個
-  // wrapper 統一排出「過去在上、summary 固定在中間、未來在下」的視覺順序。
-  return `
-    <div class="schedule-timeline">
-      ${pastTrack}
-      <details class="schedule-panel">
-        <summary class="schedule-summary ${scheduleStopClasses(featured, { featured: true, hasUpcoming }).join(" ")}">
-          ${scheduleStopInner(featured, handouts, quizzes, { featured: true })}
-          ${upArrow}${downArrow}
-        </summary>
-        ${futureTrack}
-      </details>
-    </div>`;
-}
-
-// handout 欄位對照 course.handouts 裡的 title（講義檔名去掉「_填空」「_解答」
-// 後的字串，例如 "handout1"），找到就輸出講義的下載連結（沿用 handoutLink()，
-// 跟課本／投影片／練習與資源同一套安靜的檔名＋圖示樣式）。
-function scheduleHandoutLinks(handouts, handoutTitle) {
-  if (!handoutTitle) return "";
-  const match = (Array.isArray(handouts) ? handouts : []).find(item => item && String(item.title || "").trim() === String(handoutTitle).trim());
-  if (!match) return "";
-  return `${handoutLink(match.blank, "填空", ICONS.fileOutline)}${handoutLink(match.sol, "解答", ICONS.fileText)}`;
-}
-
-// quiz 欄位對照 course.quizzes 裡的 title（quiz 檔名去掉「_題目」「_解答」後
-// 的字串，例如 "quiz4"），一樣「有檔案才顯示」，但兩個按鈕都另外有時間
-// 限制：題目要等 session.quizProblemUnlocked（這次研討開始以後）才會出現，
-// 避免學生在研討前就先拿到題目準備；解答要等 session.quizSolutionUnlocked
-// （這次研討真正下課以後，見 scheduleSessionEndDate()）才會出現，避免學生
-// 在研討當場就先把答案抄走。時間到之前，就算檔案已經放在資料夾裡也只當作
-// 不存在。
-function scheduleQuizLinks(quizzes, session) {
-  const quizTitle = session?.quiz;
-  if (!quizTitle) return "";
-  const match = (Array.isArray(quizzes) ? quizzes : []).find(entry => entry && String(entry.title || "").trim() === String(quizTitle).trim());
-  if (!match) return "";
-  const problemPath = session.quizProblemUnlocked ? match.problem : null;
-  const solutionPath = session.quizSolutionUnlocked ? match.solution : null;
-  return `${handoutLink(problemPath, "題目", ICONS.fileOutline, "小考")}${handoutLink(solutionPath, "解答", ICONS.fileText, "小考")}`;
-}
-
-// 一次研討的檔案連結。每次研討前面已經有「進度／測驗」標籤，平常不用再重複
-// 寫「Handout／Quiz」；只有同一次研討同時有講義和 quiz 時（兩組都有「解答」），
-// 才加上小標籤把兩組分開。
-function scheduleSessionFiles(session, handouts, quizzes) {
-  const groups = [
-    { label: "Handout", links: scheduleHandoutLinks(handouts, session.handout) },
-    { label: "Quiz", links: scheduleQuizLinks(quizzes, session) },
-  ].filter(group => group.links);
-  const showLabels = groups.length > 1;
-  return groups.map(group => `
-    <div class="schedule-stop-handouts">
-      ${showLabels ? `<p class="schedule-stop-handouts-label">${group.label}</p>` : ""}
-      <div class="schedule-stop-handouts-links">${group.links}</div>
-    </div>`).join("");
-}
-
-// 站內的一次研討：標籤（進度／測驗）＋日期時段地點，再用連接線
-// （.schedule-stop-leader）接到這次研討的檔案。最近的下一次研討另外加上
-// aria-current="step"，螢幕報讀器才唸得出「這是目前這一步」，不只靠顏色。
-function scheduleSession(session, handouts, quizzes) {
-  const state = session.isNext ? "is-next" : (session.isPast ? "is-past" : "is-future");
-  // 日期、時段、地點各自不准從中間斷行（窄版之前會斷成「科工學／院」），
-  // 只允許在「·」後面換行；「·」跟前一段黏在一起，不會落到下一行開頭。
-  const metaParts = [session.displayDate, session.time, session.location].filter(Boolean);
-  const meta = metaParts.map((part, index) => `<span class="schedule-session-meta-part">${escapeHTML(part)}${index < metaParts.length - 1 ? "\u00a0·" : ""}</span>`).join(" ");
-  return `
-    <li class="schedule-session ${state}"${session.isNext ? ` aria-current="step"` : ""}>
-      <span class="schedule-session-kind">${escapeHTML(session.kind)}</span>
-      <span class="schedule-session-meta">${meta}</span>
-      <span class="schedule-stop-leader" aria-hidden="true"></span>
-      ${scheduleSessionFiles(session, handouts, quizzes)}
-    </li>`;
-}
-
-// 每一站（過去／目前／未來的主題）共用同一套結構與樣式，差別只在 state 決定
-// 的顏色與 featured 決定的放大強調——收合時只露出 featured 那一站，看起來就
-// 只是同一條時間軸的一小段，而不是另一種獨立的卡片元件。
-function scheduleStopClasses(topic, { featured = false, hasUpcoming = true } = {}) {
-  const state = featured ? (hasUpcoming ? "is-next" : "is-past") : (topic.isPast ? "is-past" : "is-future");
-  const classes = ["schedule-stop", state];
-  if (featured) classes.push("schedule-stop--featured");
-  return classes;
-}
-
-// featured 那一站上方的小標籤：主題裡已經有研討結束、但還沒全部結束（例如
-// 進度週過了、測驗週還沒到）是「進行中的主題」；一次都還沒開始是「下一個
-// 主題」；全部都結束了（整份期程都已經跑完）是「最近主題（已結束）」。
-function scheduleFeaturedLabel(topic) {
-  if (topic.isPast) return "最近主題（已結束）";
-  return topic.hasStarted ? "進行中的主題" : "下一個主題";
-}
-
-// 圓點＋主題標題，標題正下方是研討內容說明，再往下依序列出這個主題的每一次
-// 研討；featured 時額外在最上面加上 scheduleFeaturedLabel() 的小標籤。
-function scheduleStopInner(topic, handouts, quizzes, { featured = false } = {}) {
-  const label = featured ? `<p class="schedule-stop-label">${escapeHTML(scheduleFeaturedLabel(topic))}</p>` : "";
-  const description = topic.description ? `<p class="schedule-stop-description">${escapeHTML(topic.description)}</p>` : "";
-  return `
-    <div class="schedule-stop-body">
-      ${label}
-      <p class="schedule-stop-topic"><span class="schedule-dot" aria-hidden="true"></span>${escapeHTML(topic.topic || "未命名研討")}</p>
-      ${description}
-      <ul class="schedule-sessions">${topic.sessions.map(session => scheduleSession(session, handouts, quizzes)).join("")}</ul>
-    </div>`;
-}
-
-function scheduleStop(topic, handouts, quizzes, options = {}) {
-  return `<li class="${scheduleStopClasses(topic, options).join(" ")}">${scheduleStopInner(topic, handouts, quizzes, options)}</li>`;
 }
 
 function textbookItems(items = []) {
@@ -1052,8 +885,8 @@ function syllabusItems(items) {
   }).join("")}</ol>`;
 }
 
-function resourceSection(title, content, icon = ICONS.book) {
-  return `<section class="resource-section"><h2>${icon}<span>${escapeHTML(title)}</span></h2>${content}</section>`;
+function resourceSection(title, content) {
+  return `<section class="resource-section"><div class="section-label"><h2>${escapeHTML(title)}</h2></div>${content}</section>`;
 }
 
 
@@ -1065,22 +898,6 @@ function documentResourceLink(path, label) {
 function externalResourceLink(url, label) {
   if (!url) return "";
   return `<a class="resource-document-link" href="${safeURL(url)}" target="_blank" rel="noopener" aria-label="開啟連結：${escapeHTML(label)}" title="開啟連結">${escapeHTML(label)}${ICONS.link}</a>`;
-}
-
-// 沿用課本／投影片／練習與資源同一套安靜的「檔名＋圖示」樣式
-// （.resource-document-link），跟其他文件連結的資訊分級一致，不再用突兀的
-// 填色按鈕；圖示改用 icon 參數傳入的填空／解答（或 quiz 的題目／解答）專用
-// 圖示（見 ICONS.fileOutline／ICONS.fileText），讓「這是講義還是 quiz」這
-// 件事光看圖示就認得出來，不用在文字裡重複寫一次。noun 參數決定 aria-label
-// 要接在 label 後面的名詞（預設「講義」；scheduleQuizLinks() 會傳「小考」），
-// 讓螢幕報讀器唸出的是「填空講義」或「題目小考」，不會把 quiz 唸成講義。
-// onclick="event.stopPropagation()"：研討時間「目前主題」那一站本身是可
-// 點展開的 <summary>，若不擋住冒泡，點連結會被 document 上收合 details 的
-// 委派事件攔截、變成只是展開/收合而不會真的開啟 PDF。時間軸裡的連結不在
-// summary 內、不受影響，但一併加上這個保險不影響行為。
-function handoutLink(path, label, icon, noun = "講義") {
-  if (!path) return "";
-  return `<a class="resource-document-link" href="${safeURL(path)}" target="_blank" rel="noopener" aria-label="開啟 PDF：${escapeHTML(label)}${escapeHTML(noun)}" title="開啟 PDF" onclick="event.stopPropagation()">${escapeHTML(label)}${icon}</a>`;
 }
 
 function normaliseArticleReaderShell() {

@@ -8,7 +8,7 @@
      (--container: the viewport minus a side margin on each side, at most
      --page-max wide), so their left/right edges line up on every page.
      Inside it: 4 columns on a phone, 8 on a tablet, 12 from 1024px up.
-     Lists of equal items (.row-list, .hero-features) lay out as 1/2/3 equal
+     Lists of equal items (.row-list) lay out as 1/2/3 equal
      tracks with the same gutter, so 3 items fall exactly on 4-column spans
      of the 12-column grid and 2 items on 6-column spans; the course page
      and the article reader place their columns on the 12 explicitly. */
@@ -107,27 +107,6 @@ input, textarea, select, [contenteditable="true"], [contenteditable="true"] * {
   user-select: text;
 }
 
-/* Page-transition curtain (assets/js/site.js runs this on every route
-   change): a full-viewport --accent block sweeps down to cover the screen,
-   the new page swaps in underneath while fully covered, then the block
-   sweeps on downward to reveal it. transform-origin flips from top to
-   bottom exactly at scaleY(1) (full coverage in both cases), so the flip
-   itself is invisible — only the direction of the next sweep changes. */
-.page-transition {
-  position: fixed; inset: 0; z-index: 500;
-  background: var(--accent);
-  transform: scaleY(0);
-  transform-origin: top;
-  pointer-events: none;
-}
-.page-transition.is-active { animation: page-transition-sweep .48s var(--ease-in-out) both; }
-@keyframes page-transition-sweep {
-  0%   { transform: scaleY(0); transform-origin: top; animation-timing-function: var(--ease-out); }
-  45%  { transform: scaleY(1); transform-origin: top; }
-  55%  { transform: scaleY(1); transform-origin: bottom; animation-timing-function: var(--ease-out); }
-  100% { transform: scaleY(0); transform-origin: bottom; }
-}
-
 .site-header {
   position: sticky; top: 0; z-index: 30;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
@@ -180,7 +159,7 @@ input, textarea, select, [contenteditable="true"], [contenteditable="true"] * {
   .menu-panel a:hover { background: var(--surface-soft); color: var(--accent-strong); }
 }
 .menu-panel a:active { background: var(--surface-soft); color: var(--accent-strong); }
-.menu-panel-wide { min-width: 13rem; }
+
 .icon-button {
   position: relative; display: grid; width: 2.45rem; height: 2.45rem; place-items: center;
   border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer;
@@ -206,61 +185,10 @@ html[data-theme="dark"] .theme-icon-moon { opacity: 1; transform: rotate(0deg) s
 .page-shell { width: var(--container); min-height: calc(100vh - 8rem); margin: 0 auto; padding: var(--space-7) 0 var(--space-8); }
 .eyebrow { margin: 0 0 var(--space-3); color: var(--accent-strong); font-family: var(--font-mono); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 h1, h2, h3, p { margin-top: 0; }
-/* One display style for every page title (hero, 教材/文章/其他工具, course
+/* One display style for every page title (教材/文章/其他工具, course
    pages, not-found). Letter-spacing is only slightly negative: the old
    -.055em is a Latin display value and pressed CJK strokes together. */
-.page-heading h1, .hero h1 { margin: 0 0 var(--space-3); font-size: var(--font-display); line-height: var(--leading-display); letter-spacing: -.02em; font-weight: 700; text-wrap: balance; }
-.inline-link { color: var(--accent-strong); font-size: .9rem; font-weight: 700; text-decoration: none; }
-@media (hover: hover) and (pointer: fine) {
-  .inline-link:hover { text-decoration: underline; }
-}
-
-/* ---------- home page: hero + row-list blocks ----------
-   Every margin/padding below comes from the spacing scale in :root — the
-   jump between tiers (not any single value) communicates what belongs with
-   what. */
-/* The home page uses the full container like every other page (it used to
-   be a narrower centred 60rem column, so its left edge sat 140px inside the
-   header's). Its title shares the .page-heading h1 style above. */
-.hero { padding: 0 0 var(--rhythm-section); border-bottom: 1px solid var(--border); }
-.hero > p { margin: 0; max-width: 40em; font-size: var(--font-md); line-height: 1.7; color: var(--muted); }
-
-/* Three entry cards: 3 equal tracks with the grid gutter = 4 columns each
-   of the 12-column grid; stacked on a phone. */
-.hero-features { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--grid-gutter); margin-top: var(--space-7); }
-@media (min-width: 640px) {
-  .hero-features { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-.hero-feature {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto auto;
-  column-gap: var(--space-4); row-gap: var(--space-1);
-  padding: clamp(1rem, 1vw + .75rem, 1.5rem);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
-  background: transparent;
-  text-decoration: none; color: inherit;
-  transition: border-color .16s var(--ease-out), background-color .16s var(--ease-out);
-}
-.hero-feature-icon { grid-row: 1 / 3; grid-column: 1; align-self: center; color: var(--accent); }
-.hero-feature-icon svg { width: 2rem; height: 2rem; }
-.hero-feature-title { grid-row: 1; grid-column: 2; align-self: center; font-size: 1.3125rem; font-weight: 500; letter-spacing: -.005em; color: var(--accent); white-space: nowrap; transition: color .14s ease; }
-.hero-feature-desc { grid-row: 2; grid-column: 2; font-size: var(--font-sm); font-weight: 400; color: var(--text); }
-.hero-feature-more {
-  grid-row: 3; grid-column: 1 / 3; display: flex; align-items: center; gap: .3rem;
-  margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border);
-  color: var(--muted); font-size: var(--font-xs); font-weight: 300;
-  transition: color .16s var(--ease-out);
-}
-.hero-feature-more svg { width: .85rem; height: .85rem; transition: transform .16s var(--ease-out); }
-@media (hover: hover) and (pointer: fine) {
-  .hero-feature:hover { border-color: var(--accent-strong); background: var(--surface-soft); }
-  .hero-feature:hover .hero-feature-title { color: var(--accent-strong); }
-  .hero-feature:hover .hero-feature-more { color: var(--accent-strong); }
-  .hero-feature:hover .hero-feature-more svg { transform: translateX(2px); }
-}
-.hero-feature:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-.hero-feature { -webkit-tap-highlight-color: transparent; }
-.hero-feature:active { border-color: var(--accent-strong); background: var(--surface-soft); transition-duration: 0s; }
+.page-heading h1 { margin: 0 0 var(--space-3); font-size: var(--font-display); line-height: var(--leading-display); letter-spacing: -.02em; font-weight: 700; text-wrap: balance; }
 
 .breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); margin-bottom: var(--space-5); color: var(--muted); font-size: var(--font-xs); }
 .breadcrumb a { color: var(--muted); text-decoration: none; }
@@ -270,27 +198,6 @@ h1, h2, h3, p { margin-top: 0; }
 .breadcrumb a:active { color: var(--accent-strong); }
 .breadcrumb span[aria-current] { color: var(--text); font-weight: 700; }
 .breadcrumb-sep { color: var(--border); }
-
-/* Home blocks are separated by the same --rhythm-section as every other
-   page's sections (it used to be 96px above AND below each block, so two
-   blocks sat 192px apart). No divider line here — the blue underline on
-   .block-head below already separates each section's header from its
-   content. */
-section.block { padding: var(--rhythm-section) 0 0; scroll-margin-top: var(--space-9); }
-.block-head {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
-  padding-bottom: var(--space-4); margin-bottom: var(--space-6); border-bottom: 2px solid var(--accent);
-}
-.block-head-title { display: flex; align-items: center; gap: var(--space-3); }
-.block-head-icon { display: flex; color: var(--accent); }
-.block-head-icon svg { width: 1.5rem; height: 1.5rem; }
-.block-head h2 { margin: 0; font-size: var(--font-lg); line-height: var(--leading-title); letter-spacing: 0; font-weight: 500; color: var(--accent); }
-.block-head .all-link { display: inline-flex; align-items: center; gap: .25rem; color: var(--muted); font-size: var(--font-xs); font-weight: 600; text-decoration: none; white-space: nowrap; }
-.block-head .all-link svg { width: .85rem; height: .85rem; transition: transform .16s var(--ease-out); }
-@media (hover: hover) and (pointer: fine) {
-  .block-head .all-link:hover { color: var(--accent-strong); }
-  .block-head .all-link:hover svg { transform: translateX(2px); }
-}
 
 /* Plain list — no card border/background; generous spacing between rows
    does the separating work instead. Laid out as equal tracks on the grid:
@@ -302,7 +209,7 @@ section.block { padding: var(--rhythm-section) 0 0; scroll-margin-top: var(--spa
 @media (min-width: 640px) { .row-list { --list-cols: 2; } }
 @media (min-width: 1024px) {
   .row-list { --list-cols: 3; }
-  .page-shell > .row-list, .course-content .row-list { --list-cols: 2; }
+  .page-shell > .row-list { --list-cols: 2; }
 }
 /* Chevron and title are explicit grid siblings sharing row 1 — align-items:
    center lines the icon up with the title's line box. row-body
@@ -358,51 +265,8 @@ a.tag:active { transition-duration: 0s; }
   .back-link:hover { text-decoration: underline; }
 }
 
-/* Course page on the 12-column grid: main content in columns 1–8, column
-   9 left empty as breathing room, the 教材 switcher in 10–12. Below 1024px
-   the side column is dropped and .course-switcher (under the page title)
-   takes over. */
-.course-layout { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: var(--grid-gutter); align-items: start; }
-.course-content { min-width: 0; }
-.course-sidebar { display: none; }
-@media (min-width: 1024px) {
-  .course-layout { grid-template-columns: repeat(12, minmax(0, 1fr)); }
-  .course-content { grid-column: 1 / span 8; }
-  .course-sidebar { display: block; grid-column: 10 / span 3; position: sticky; top: 6rem; padding-left: var(--space-4); border-left: 1px solid var(--border); }
-  .course-switcher { display: none !important; }
-}
-.course-sidebar h2 { margin: 0 0 var(--space-3); color: var(--muted); font-size: var(--font-xs); letter-spacing: .08em; text-transform: uppercase; }
-.course-sidebar a { display: block; padding: var(--space-2) var(--space-3); border-radius: 8px; color: var(--muted); font-size: var(--font-sm); text-decoration: none; transition: background-color .14s ease, color .14s ease; -webkit-tap-highlight-color: transparent; }
-.course-sidebar a.is-active { background: var(--accent-soft); color: var(--accent-strong); font-weight: 700; }
-.course-sidebar a:active { background: var(--accent-soft); color: var(--accent-strong); transition-duration: 0s; }
-@media (hover: hover) and (pointer: fine) {
-  .course-sidebar a:hover { background: var(--accent-soft); color: var(--accent-strong); }
-}
-/* Narrow-screen 教材 switcher: one row of pills under the page title that
-   scrolls sideways when there are more courses than fit. min-height
-   2.75rem keeps each pill at the 44px touch size. The negative inline
-   margin + matching padding lets the row scroll edge to edge without its
-   first/last pill being clipped flush against the screen; the negative top
-   margin pulls it up into the heading's bottom spacing so it reads as part
-   of the title area. */
-.course-switcher {
-  display: flex; gap: var(--space-2); margin: calc(var(--space-7) * -.5) calc(var(--page-margin) * -1) var(--space-7);
-  padding: 0 var(--page-margin); overflow-x: auto; scrollbar-width: none;
-}
-.course-switcher::-webkit-scrollbar { display: none; }
-.course-switcher a {
-  display: inline-flex; flex: 0 0 auto; align-items: center; min-height: 2.75rem; padding: 0 var(--space-4);
-  border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-weight: 650; text-decoration: none; white-space: nowrap;
-  transition: background-color .14s ease, border-color .14s ease, color .14s ease; -webkit-tap-highlight-color: transparent;
-}
-.course-switcher a.is-active { border-color: var(--accent-soft); background: var(--accent-soft); color: var(--accent-strong); }
-.course-switcher a:active { background: var(--accent-soft); color: var(--accent-strong); transition-duration: 0s; }
-@media (hover: hover) and (pointer: fine) {
-  .course-switcher a:hover { border-color: var(--accent); color: var(--accent-strong); }
-}
-
-/* Flat resource sections — no bordered/background card panel, same accent
-   divider treatment as .block-head. Icon is sized off the heading's own
+/* Flat resource sections — no bordered/background card panel, just an accent
+   divider under the heading. Icon is sized off the heading's own
    font-size (var(--font-lg)) so the two always match. */
 .resource-section { margin-bottom: var(--rhythm-section); }
 .resource-section:last-child { margin-bottom: 0; }
@@ -421,13 +285,7 @@ a.tag:active { transition-duration: 0s; }
 .resource-grid > .resource-item:first-child {border-top: 0; }
 .resource-name { min-width: 0; font-size: var(--font-sm); font-weight: 650; overflow-wrap: anywhere; }
 .resource-meta { margin-top: var(--space-1); color: var(--muted); font-size: var(--font-xs); }
-.resource-link { display: inline-flex; flex: 0 0 auto; align-items: center; gap: .35rem; padding: .4rem .6rem; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--accent-strong); font-size: .84rem; font-weight: 700; text-decoration: none; transition: border-color .16s ease, background-color .16s ease; }
-@media (hover: hover) and (pointer: fine) {
-  .resource-link:hover { border-color: var(--accent); background: var(--accent-soft); }
-}
-.resource-link { -webkit-tap-highlight-color: transparent; }
-.resource-link:active { border-color: var(--accent); background: var(--accent-soft); transition-duration: 0s; }
-.resource-link .ui-icon { width: .95rem; height: .95rem; }
+
 .resource-document-link { display: inline-flex; align-items: center; gap: .45rem; margin: -.35rem; padding: .35rem; border-radius: 7px; color: var(--text); font: inherit; text-decoration: none; transition: background .18s ease, color .18s ease; }
 /* hover 只給真正有游標的裝置：觸控裝置點一下就會觸發 :hover，而且放開後
    還會一直黏著，看起來像連結卡在選取狀態。觸控改由 :active 給按壓回饋——
@@ -450,211 +308,6 @@ details.resource-details[open] .resource-grid {
 }
 details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .syllabus-list { margin: 0; padding-left: 1.15rem; color: var(--muted); }
-
-/* 研討時間 schedule 區塊（course page 最上方）：不是獨立卡片，而是同一條
-   地鐵路線圖式時間軸（一直線搭配圓點）目前只露出的一小段——預設只顯示
-   「目前主題」這一站本身（.schedule-summary，同時也是放大版的
-   .schedule-stop），過去場次收在它上方、未來場次收在它下方，先被裁成 0
-   高度（.schedule-track--past/--future）藏起來。點下去不是「卡片長出新
-   內容」，而是把上下兩段軌道從 0 展開回原本的高度，感覺像是本來就存在、
-   只是被遮住的線段被顯示出來；貫穿全場的那條線（.schedule-timeline::before）
-   收合、展開共用同一條，收合時自然只剩下一小截跟這一站等高的線頭。
-
-   過去場次（.schedule-track--past）刻意放在 <details> 之外、當它的前一個
-   手足元素，而不是塞進 <details> 裡用 CSS order 排到 <summary> 上面——
-   Chromium／Firefox 對 <details> 有內建的 ::details-content 匿名容器，
-   summary 以外的子元素其實都會被塞進同一個容器裡，容器本身才是唯一的
-   flex item，設在容器「裡面」的 order 對 summary／容器的相對順序完全沒有
-   作用。放在 <details> 外面、交給 .schedule-timeline 這個外層 wrapper 統一
-   排版，就不會踩到這個限制；展開/收合的動畫也統一交給 site.js 的
-   toggleSchedulePanel()（同步切換 .schedule-timeline 的 is-open class 與
-   <details> 的 open 屬性，各自的軌道再各自用 WAAPI 對 block-size 做動畫）。
-   時間軸的每一站是一個主題（一個主題底下可以有好幾次研討，目前是進度、
-   測驗各一週），講義／quiz 連結沿用課本／投影片／練習與資源那套安靜的
-   .resource-document-link 樣式（見 handoutLink()），接在各次研討那一列的
-   右側。 */
-/* 線的 left 刻意寫成 5px、不是 6px：.schedule-dot／.schedule-expand-arrow
-   都是「left: 6px 再 translate(-50%, ...)」置中，置中後的視覺中心是 6px 那
-   個點本身；但這條線沒有用 translate 置中，它的視覺中心是 left + width/2。
-   線寬 2px，若也寫 left: 6px，線的中心會落在 6+1=7px，比圓點的中心整整偏右
-   1px——圓點看起來就會像「稍微偏左」。改成 left: 5px，線的中心變成
-   5+1=6px，才會跟圓點／箭頭的置中點完全對齊。 */
-.schedule-timeline { position: relative; }
-.schedule-timeline::before { content: ""; position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; background: var(--border); }
-
-.schedule-track { position: relative; margin: 0; padding: 0; list-style: none; }
-.schedule-track::before { content: ""; position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; background: var(--border); }
-/* 過去／未來兩段軌道各自的線交給 .schedule-timeline::before 那一條貫穿全場
-   的線負責，避免收合狀態與展開後的銜接處出現斷線或雙線疊在一起。0/auto 是
-   動畫沒接手時（例如 prefers-reduced-motion）的預設值；動畫本身見上方
-   說明。 */
-.schedule-track--past, .schedule-track--future { overflow: hidden; block-size: 0; }
-.schedule-track--past::before, .schedule-track--future::before { display: none; }
-.schedule-timeline.is-open .schedule-track--past,
-.schedule-timeline.is-open .schedule-track--future { block-size: auto; }
-
-.schedule-stop { position: relative; padding: var(--space-5) 0 var(--space-5) var(--space-6); }
-/* 只有真正在整條時間軸最上面／最下面的那一項，外側 padding 才歸零：過去
-   段落的第一項是真正的頂端、未來段落的最後一項是真正的底端，這兩個保留
-   歸零。原本用同一條規則（.schedule-track > .schedule-stop）連過去段落
-   的「最後一項」、未來段落的「第一項」也一起歸零了，但它們後面／前面
-   接的其實是「目前主題」（summary，在 <details> 裡，不是同一個
-   .schedule-track 的小孩，不是時間軸的真正邊界）——這讓「目前主題」跟
-   前後場次的間距只剩一般場次間距的一半，看起來特別擠、跟其他場次之間的
-   間距不一致。改成分別只認過去段落的第一項、未來段落的最後一項。summary
-   本身也比照：只有在沒有未來場次時它才是真正的底端，才歸零對應側的
-   padding（平常前後都接著場次，保留完整 padding，跟一般場次之間的間距
-   一致）。summary 的 padding-top 另外交給下面 .schedule-stop--featured
-   那條規則統一處理，不在這裡重複寫。 */
-.schedule-track--past > .schedule-stop:first-child { padding-top: 0; }
-.schedule-track--future > .schedule-stop:last-child { padding-bottom: 0; }
-.schedule-panel > .schedule-summary:last-child { padding-bottom: 0; }
-/* 圓點不再用 top: 50% 對齊整個 .schedule-stop（那樣場次一有說明文字、
-   高度變高，圓點就會偏離標題、飄到整段內容的正中間），改成以
-   .schedule-stop-topic（標題本身）當作定位基準，圓點是標題這個 <p> 底下
-   的子元素、position 相對它計算，top: 50% 對到的就只是標題那一行的高度，
-   跟下面有沒有說明文字、上面有沒有 featured 小標籤都無關。標題原本從
-   .schedule-stop 左側 padding（var(--space-6)）算起，圓點要維持在時間軸
-   線那個 x 座標（原本的 left: 6px），所以 left 改成 6px 再扣掉這段
-   padding；z-index: 1 讓圓點蓋在 ::before 那條線上面（線本身沒有設
-   z-index），視覺上像是線被圓點「打斷」，而不是線疊在圓點上面。 */
-.schedule-dot { position: absolute; z-index: 1; left: calc(6px - var(--space-6)); top: 50%; box-sizing: border-box; width: 12px; height: 12px; border: 2px solid var(--bg); border-radius: 50%; background: var(--muted); transform: translate(-50%, -50%); }
-.schedule-stop.is-past .schedule-dot { background: var(--border); }
-.schedule-stop.is-future .schedule-dot { background: var(--accent); }
-.schedule-stop.is-next .schedule-dot { background: var(--accent-strong); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); }
-/* 「目前主題」這一站是整條時間軸目前的焦點：圓點放大、加光暈、標題加粗
-   來強調，但圓點置中用 transform: translate(-50%, -50%) 固定在同一個
-   x 座標，所以放大不會跟其他站的圓點對不齊。
-   featured 項目上方多一行「進行中的主題」／「下一個主題」／「最近主題
-   （已結束）」的標籤（.schedule-stop-label），這行字本身的高度（含它自己的
-   margin-bottom）已經足夠撐出視覺間距，如果再疊加一般場次用的
-   padding-top（var(--space-5)），上方看起來就會比下方、也比一般場次之間
-   多出一截，跟其他場次的間距不一致。乾脆把 featured 項目的 padding-top
-   歸零，讓標籤自己的高度取代 padding-top 的角色（這同時也涵蓋了「沒有
-   過去場次、featured 是時間軸真正頂端」那種情況，不用再另外寫一條
-   規則）。 */
-.schedule-stop--featured { padding-top: 0; }
-.schedule-stop--featured .schedule-dot { width: 16px; height: 16px; }
-.schedule-stop--featured.is-next .schedule-dot { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent); }
-.schedule-stop--featured.is-past .schedule-dot { box-shadow: 0 0 0 5px color-mix(in srgb, var(--muted) 22%, transparent); }
-.schedule-stop--featured .schedule-stop-topic { font-size: var(--font-lg); font-weight: 700; }
-.schedule-stop-label { margin: 0; color: var(--accent-strong); font-size: var(--font-xs); font-weight: 700; letter-spacing: .02em; }
-.schedule-stop.is-past .schedule-stop-label { color: var(--muted); }
-/* 每一站是一個主題：最上面是主題標題，標題正下方緊接著研討內容說明，再往下
-   才是這個主題實際的每一次研討（.schedule-sessions，目前是「進度」一週、
-   「測驗」一週）。標題／說明／各次研討彼此的間距刻意壓得很緊（同一個資訊
-   群組），拉開的是 .schedule-stop 本身上下的 padding（見上方，一站與一站
-   之間），主題一多的時候才能一眼看出「這是一組」、「那是另一組」，而不是
-   整段文字糊在一起；說明跟各次研討之間另外多留一點（.schedule-sessions 的
-   margin-top），讓「這個主題在講什麼」跟「這個主題哪幾天上課」分得開。
-   container-type: inline-size 設在這裡，是為了讓下方 @container 依這一站
-   實際的寬度決定檔案連結要不要換行。 */
-.schedule-stop-body { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; container-type: inline-size; }
-.schedule-stop-topic { position: relative; margin: 0; font-size: var(--font-md); font-weight: 650; }
-.schedule-stop-description { margin: 0; color: var(--text); font-size: var(--font-xs); line-height: 1.6; }
-.schedule-stop.is-past .schedule-stop-topic, .schedule-stop.is-past .schedule-stop-description { color: var(--muted); }
-.schedule-stop.is-past .schedule-stop-topic { font-weight: 500; }
-.schedule-stop.is-next .schedule-stop-topic { color: var(--accent-strong); }
-/* 主題底下的每一次研討各佔一列：「進度／測驗」小標籤＋日期時段地點，再用
-   連接線（.schedule-stop-leader）接到這次研討的檔案，讓「這份講義／quiz 是
-   哪一天發的」一眼就看得出來，而不是隔著一大段空白各自獨立。這條線不管這
-   一次有沒有檔案都會畫出來：有檔案時線會停在檔案前面，沒有檔案（例如測驗
-   的 quiz 還沒放上來）時線靠 flex:1 一路撐到這一列最右側，而不是日期後面
-   憑空斷掉。線用實線＋淡色，稍微加粗到 2px 讓它在撐滿整行時還是看得清楚，
-   但顏色維持淺淡不搶主題的風頭。
-   小標籤平常是安靜的灰底灰字；最近的下一次研討（.is-next）改用主題色淡底，
-   進行中的主題才看得出「上週進度已經結束、這週輪到測驗」；已結束的那次
-   字再淡一階。 */
-.schedule-sessions { display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-2) 0 0; padding: 0; list-style: none; }
-.schedule-session { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-2); row-gap: var(--space-1); }
-.schedule-session-kind { flex: 0 0 auto; padding: .1rem .5rem; border-radius: 999px; background: var(--surface-soft); color: var(--muted); font-size: var(--font-2xs); font-weight: 700; letter-spacing: .04em; line-height: 1.5; }
-.schedule-session-meta { flex: 0 1 auto; min-width: 0; color: var(--muted); font-size: var(--font-xs); }
-.schedule-session.is-next .schedule-session-kind { background: var(--accent-soft); color: var(--accent-strong); }
-.schedule-session.is-next .schedule-session-meta { color: var(--text); }
-.schedule-session.is-past .schedule-session-kind { color: color-mix(in srgb, var(--muted) 70%, transparent); }
-.schedule-stop-leader { flex: 1 1 auto; min-width: var(--space-4); border-bottom: 2px solid color-mix(in srgb, var(--border) 80%, transparent); }
-/* 「Handout／Quiz」小標籤平常不顯示（前面已經有「進度／測驗」標籤），只有
-   同一次研討同時有講義和 quiz 時才會出現（見 site.js 的
-   scheduleSessionFiles()）。維持跟 .course-sidebar h2 一樣安靜的灰階小標籤
-   （不用 .eyebrow 那種搶眼的 --accent-strong），字重加粗、顏色再淡一階
-   （color-mix 把 --muted 往透明調淡，沿用 .toc-empty 同樣的調淡手法）。 */
-.schedule-stop-handouts { display: flex; flex: 0 0 auto; align-items: center; gap: var(--space-2); white-space: nowrap; }
-.schedule-stop-handouts-label { margin: 0; color: color-mix(in srgb, var(--muted) 70%, transparent); font-size: var(--font-2xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-/* font-weight: 650 跟 .resource-name／.resource-document-link 在其他區塊
-   （課本／投影片／練習與資源）用的字重一致——那邊的連結是靠外層 .resource-name
-   的 font-weight 繼承來的，這裡沒有那層外殼，直接寫在連結本身上。 */
-.schedule-stop-handouts-links { display: flex; gap: var(--space-1) var(--space-3); }
-.schedule-stop-handouts-links a { font-weight: 650; }
-/* 版面窄到標籤＋日期地點＋連接線＋檔案擠不下一行時（例如手機），連接線直接
-   藏起來、檔案整個掉到下一行單獨一行，而不是留下斷斷續續的線或把檔案擠得
-   很窄。用 container query（容器是 .schedule-stop-body）而不是 viewport
-   media query，是因為決定放不放得下的是這一站實際的寬度，不是整個視窗
-   寬度（例如有沒有側欄會影響欄位寬度，但不影響視窗寬度）。 */
-/* 窄版改成兩欄 grid：左欄只放「進度／測驗」標籤，右欄依序是日期地點、檔案
-   連結——標籤變成一條固定的左側欄位，日期地點換行、檔案掉到下一列時都還是
-   對齊同一條左緣，而不是檔案退回最左邊、跟標籤擠在同一條線上。標籤對齊
-   第一行文字的基線，不會跑到兩行文字的正中間。 */
-@container (max-width: 420px) {
-  .schedule-session { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; }
-  .schedule-stop-leader { display: none; }
-  .schedule-stop-handouts { grid-column: 2; }
-}
-/* 日期、時段、地點各自是一個不斷行的片段（見 site.js 的 scheduleSession()），
-   只會在「·」之後換行。 */
-.schedule-session-meta-part { white-space: nowrap; }
-/* 觸控裝置上，檔案連結的可點範圍往上下各撐到約 44px 高（Apple 建議的最小
-   觸控尺寸），用等量的負 margin 抵消，版面位置完全不變——只是手指不用瞄得
-   那麼準。只撐上下、不撐左右，「填空」「解答」之間才不會重疊。 */
-@media (pointer: coarse) {
-  .schedule-stop-handouts-links .resource-document-link { padding-block: .6rem; margin-block: -.6rem; }
-}
-
-/* summary 本身沿用 .schedule-stop 的 padding/圓點定位；hover/focus 時的淡底
-   提示是唯一允許出現的「有邊界的底色」，只在互動當下短暫出現，不是常駐的
-   卡片外觀。 */
-.schedule-summary { position: relative; border-radius: 8px; list-style: none; cursor: pointer; transition: background-color .16s ease; -webkit-tap-highlight-color: transparent; }
-.schedule-summary::-webkit-details-marker { display: none; }
-/* 淡底提示分三種情況：有游標的裝置 hover 時出現（觸控裝置不給 hover，
-   否則點一下之後淡底會一直黏著）；鍵盤 focus 時出現；按下去的當下
-   （:active）立刻出現、顏色再深一階，作為「有收到這一下」的回饋——
-   transition-duration: 0s 讓它在手指碰到的那一刻就到位，放開才淡回去。
-   按的是 summary 裡面的檔案連結時不算（:has(a:active)），那一下是要開
-   PDF，不是要展開時間軸。iOS 預設的灰色點擊閃光一併關掉，改由這裡的
-   :active 負責。 */
-@media (hover: hover) and (pointer: fine) {
-  .schedule-summary:hover { background: var(--accent-soft); }
-  .schedule-summary:hover .schedule-expand-arrow { color: var(--accent-strong); }
-}
-.schedule-summary:focus-visible { background: var(--accent-soft); outline: none; }
-.schedule-summary:active:not(:has(a:active)) { background: color-mix(in srgb, var(--accent) 14%, var(--accent-soft)); transition-duration: 0s; }
-/* 展開圖示改成貼在線上、圓點正上方／正下方的兩個小箭頭，不再貼在 summary
-   右側——原本貼右側的做法會讓 summary 多一段留白，跟其他站的
-   .schedule-stop-body 沒對齊，講義連結也就跟著沒對齊。left: 6px 跟
-   .schedule-dot 用的是同一個 x 座標，兩者的 transform 都用 translate(-50%)
-   置中，理論上完全對齊；但原本圖示只有 .85rem、顏色又是很淺的 --muted，
-   小到不容易一眼確認它真的跟線對齊，所以放大到 1.2rem、加粗
-   stroke-width，預設顏色也直接用 --accent（不用等 hover／展開才變色），讓
-   它一眼就看得出來是貼在線上的可互動元素。收合時分別指向上／下（呼應
-   「過去往上展開、未來往下展開」的方向），展開後轉個方向指向圓點（呼應
-   「收回這一點」），顏色也加深到 --accent-strong；哪一段有內容才畫哪一個
-   箭頭。基準圖示（.ui-icon）是往右的 ">"，rotate(-90deg) 轉成往上、
-   rotate(90deg) 轉成往下——from/to 兩邊的 transform 函式清單結構相同（都是
-   translate 再 rotate），瀏覽器會逐一函式插值而不是整個矩陣分解，180 度的
-   角度差才會乾脆地轉過去，不會卡住或跳一下。 */
-.schedule-expand-arrow { position: absolute; left: 6px; display: flex; align-items: center; justify-content: center; width: 1.2rem; height: 1.2rem; color: var(--accent); transition: transform .18s var(--ease-out), color .16s ease; }
-.schedule-expand-arrow .ui-icon { width: 1.2rem; height: 1.2rem; stroke-width: 2.75; }
-.schedule-expand-arrow--up { top: 0; transform: translate(-50%, -50%) rotate(-90deg); }
-.schedule-expand-arrow--down { bottom: 0; transform: translate(-50%, 50%) rotate(90deg); }
-.schedule-panel[open] .schedule-expand-arrow--up { transform: translate(-50%, -50%) rotate(90deg); }
-.schedule-panel[open] .schedule-expand-arrow--down { transform: translate(-50%, 50%) rotate(-90deg); }
-.schedule-panel[open] .schedule-expand-arrow { color: var(--accent-strong); }
-.schedule-summary:focus-visible .schedule-expand-arrow { color: var(--accent-strong); }
-/* 研討時間載入完成、取代「正在載入研討時間…」那一行時淡入，而不是整塊
-   瞬間跳出來。只動 opacity，不位移。 */
-.schedule-timeline, .schedule-track--solo { transition: opacity .2s var(--ease-out); }
-@starting-style {
-  .schedule-timeline, .schedule-track--solo { opacity: 0; }
-}
 
 /* .resource-section:last-child 原本是要去掉整個頁面最後一個 resource-section
    多餘的留白；但這個 section 是透過 renderSchedule() 動態塞進這個包裝用的
@@ -1065,8 +718,6 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
 .footer-sitemap-more { display: inline-flex !important; align-items: center; gap: .25rem; color: var(--muted) !important; }
 .footer-sitemap-more svg { width: .8rem; height: .8rem; }
 
-.resource-link--icon { width: 3.1rem; height: 3.1rem; justify-content: center; padding: 0; }
-.resource-link.resource-link--icon .ui-icon { width: 2rem; height: 2rem; }
 .article-overview-month { margin-bottom: var(--rhythm-section); }
 .article-overview-month:last-child { margin-bottom: 0; }
 .article-overview-month > h2 { margin: 0 0 var(--space-5); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border); color: var(--muted); font-size: var(--font-xs); letter-spacing: .06em; text-transform: uppercase; }
@@ -1117,7 +768,6 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   .main-nav > a, .nav-menu > a { padding-inline: .4rem; }
 }
 
-
 /* ---------- 分享連結（第 1 階段新增） ---------- */
 .copy-link { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-3); padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--muted); font: inherit; font-size: var(--font-xs); cursor: pointer; }
@@ -1132,3 +782,169 @@ details.resource-details[open] .resource-item { padding-left: var(--space-2); }
   pointer-events: none; transition: opacity .18s var(--ease-out), transform .18s var(--ease-out); }
 .copy-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) { .copy-toast { transition: none; } }
+
+/* ============================================================================
+   第 2 階段：首頁「A 通知清單」、課程頁「C 時間表」、頁尾使用聲明、換頁
+   規則見 DESIGN.md：不靠卡片分組，用間距、顏色、字級與字重建立層級。
+   ========================================================================== */
+
+/* 換頁：View Transitions 的交叉淡入縮短到 0.12 秒（不支援的瀏覽器由 site.js 用 0.12 秒淡入） */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .12s; animation-timing-function: var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }
+
+/* 區塊小標：13px、粗體、muted、字距加寬，讓位給內容 */
+.section-label { display: flex; align-items: baseline; gap: var(--space-3); margin: 0 0 var(--space-3); }
+.section-label h2, .resource-section .section-label h2 {
+  margin: 0; padding: 0; border: 0; color: var(--muted); font-size: .8125rem; font-weight: 700; letter-spacing: .06em; line-height: 1.4; }
+.section-label a { margin-left: auto; color: var(--muted); font-size: .875rem; text-decoration: none; }
+.section-label a:hover { color: var(--accent-strong); }
+.resource-section { margin-bottom: var(--space-8); }
+
+/* 說明與空狀態不再用框 */
+.notice { padding: 0; border: 0; background: none; color: var(--muted); }
+.empty-state { padding: var(--space-3) 0; border: 0; text-align: left; }
+
+/* 日期欄（首頁本週活動與課程頁時間表共用） */
+.date-col { line-height: 1.15; padding-top: 3px; }
+.date-col b { display: block; font-size: 1.375rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.date-col span { color: var(--muted); font-size: .8125rem; }
+
+/* 類型標記：文字色，不加底色 */
+.kind { color: var(--muted); font-weight: 600; }
+.kind-now { color: var(--accent-strong); font-weight: 700; }
+.dot-sep::before { content: "・"; color: var(--muted); font-weight: 400; }
+
+/* 檔案連結：accent 文字按鈕，可點範圍撐到 40px 高 */
+.file-links { display: flex; flex-wrap: wrap; column-gap: 1.25rem; margin-top: var(--space-1); }
+
+.file-locked { display: inline-flex; align-items: center; min-height: 40px; color: var(--muted); font-size: .875rem; }
+
+/* ---------- 首頁 ---------- */
+.home-view { max-width: 44rem; }
+
+.home-section { margin-bottom: var(--space-8); }
+.week-list { list-style: none; margin: 0; padding: 0; }
+.week-item { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr); gap: var(--space-4); padding: var(--space-3) 0; }
+.week-item + .week-item { margin-top: var(--space-4); }
+.week-item.is-now .date-col b, .week-item.is-future:first-child .date-col b,
+.week-item.is-past + .week-item.is-future .date-col b { color: var(--accent-strong); }
+.week-item.is-past { opacity: .62; }
+.week-item p { margin: 0; }
+.week-head { color: var(--muted); font-size: .8125rem; }
+.week-head a { color: inherit; text-decoration: none; }
+.week-topic { margin: 2px 0 !important; font-size: 1.1875rem; font-weight: 700; line-height: 1.35; letter-spacing: -.005em; }
+.week-where { color: var(--muted); font-size: .875rem; }
+
+.plain-list { display: grid; gap: var(--space-2); }
+.plain-row { display: block; padding: var(--space-2) 0; color: var(--text); text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.plain-title { display: block; font-size: 1.0625rem; font-weight: 600; }
+.plain-desc { display: -webkit-box; color: var(--muted); font-size: .875rem; line-height: 1.6; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.plain-row:hover .plain-title, .plain-row:active .plain-title { color: var(--accent-strong); }
+@media (min-width: 900px) { .plain-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-7); } }
+
+/* ---------- 課程頁 ---------- */
+.course-view { max-width: 44rem; }
+.course-heading { margin-bottom: var(--space-7); }
+.course-heading h1 { margin: 0 0 var(--space-2); font-size: var(--font-display); line-height: var(--leading-display); letter-spacing: -.02em; }
+.course-tabs { display: flex; gap: var(--space-5); overflow-x: auto; scrollbar-width: none; }
+.course-tabs::-webkit-scrollbar { display: none; }
+.course-tabs a { padding: var(--space-2) 0; color: var(--muted); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.course-tabs a.is-active { color: var(--text); box-shadow: inset 0 -2px 0 var(--text); }
+
+/* ---------- 頁尾使用聲明 ---------- */
+.legal-disclaimer { padding-top: var(--space-3); }
+.legal-disclaimer summary { display: inline-flex; min-height: 36px; align-items: center; color: var(--muted); cursor: pointer; list-style: none; text-decoration: underline; text-underline-offset: 3px; }
+.legal-disclaimer summary::-webkit-details-marker { display: none; }
+.legal-disclaimer[open] summary { color: var(--text); }
+.legal-disclaimer p { max-width: 40em; margin: 0 0 .6rem; }
+/* 課程頁的延伸文章：一欄，標題降到和研討主題同一級，不搶時間表 */
+.course-view .row-list { --list-cols: 1; gap: var(--space-5); }
+.course-view .row-title { font-size: 1.0625rem; }
+@media (min-width: 1024px) { .course-view .row-list { --list-cols: 1; } }
+/* 頁首導覽：選中的項目只用文字色區分（DESIGN.md），不加底色 */
+.main-nav > a.is-active, .nav-menu > a.is-active { background: transparent; color: var(--text); }
+@media (hover: hover) and (pointer: fine) { .main-nav > a:hover, .nav-menu > a:hover { background: transparent; color: var(--text); } }
+/* 日期欄寬一點，避免「11/25」貼到右邊文字 */
+.week-item { grid-template-columns: 3.9rem minmax(0, 1fr); }
+
+/* ============================================================================
+   第 2.1 版（SU 回饋 2026-11-26）：首頁要有「網站開頭」的最高層級；課程頁改回可收合的時間軸
+   ========================================================================== */
+
+/* ---------- 首頁焦點研討：全站最大的字，取代原本的一行介紹 ---------- */
+.home-hero { padding: var(--space-5) 0 var(--space-8); min-height: 13rem; }
+.home-hero.is-loading { visibility: hidden; }
+.home-hero:not(.is-loading) { animation: hero-in .24s var(--ease-out) both; }
+@keyframes hero-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .home-hero:not(.is-loading) { animation: none; } }
+.home-hero p { margin: 0; }
+.hero-eyebrow { color: var(--accent-strong); font-size: .9375rem; font-weight: 700; letter-spacing: .02em; }
+.hero-eyebrow.is-live::before { content: ""; display: inline-block; width: .5rem; height: .5rem; margin-right: .45rem; border-radius: 50%; background: currentColor; vertical-align: .1em; }
+.hero-topic, .hero-title { margin: var(--space-2) 0 var(--space-3); font-size: clamp(2.25rem, 9vw, 3.25rem); font-weight: 800; line-height: 1.12; letter-spacing: -.025em; }
+.hero-when { font-size: 1.1875rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hero-meta { margin-top: var(--space-1) !important; color: var(--muted); font-size: .9375rem; }
+.hero-meta a { color: inherit; text-decoration: none; }
+.home-hero .file-links { margin-top: var(--space-3); }
+.hero-intro { color: var(--muted); font-size: var(--font-md); line-height: 1.7; }
+.footer-about { flex-basis: 100%; order: -1; margin-top: .15rem; color: var(--muted); }
+.footer-contact strong { order: -2; flex-basis: 100%; }
+
+/* ---------- 課程頁：時間軸（2.2，SU 回饋：一次研討一個點，主題標在左側；只保留一層收合） ---------- */
+/* 三欄：主題｜線與圓點｜這次研討。主題跨它底下的每一次研討。 */
+.tl-wrap { --tl-topic: 5.25rem; --tl-gap: var(--space-3); position: relative; }
+@media (max-width: 379px) { .tl-wrap { --tl-topic: 4.5rem; } }
+@media (min-width: 640px) { .tl-wrap { --tl-topic: 9rem; } }
+.tl { list-style: none; margin: 0; padding: 0; }
+/* 時間軸的線：整條連續、很淡 */
+.tl-wrap::before { content: ""; position: absolute; top: .9rem; bottom: .9rem; left: calc(var(--tl-topic) + var(--tl-gap) + 5px); width: 2px; border-radius: 1px; background: var(--border); }
+.tl-topic { display: grid; grid-template-columns: var(--tl-topic) minmax(0, 1fr); column-gap: var(--tl-gap); }
+.tl-topic + .tl-topic { margin-top: var(--space-4); }
+.tl-topic-name { padding-top: .55rem; font-size: .9375rem; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.tl-topic-name .kind-now { display: block; margin-top: 2px; font-size: .8125rem; }
+.tl-topic.is-past .tl-topic-name { color: var(--muted); font-weight: 600; }
+.tl-topic.is-current .tl-topic-name { color: var(--accent-strong); }
+.tl-sessions { list-style: none; margin: 0; padding: 0; }
+.tl-session { display: grid; grid-template-columns: 12px minmax(0, 1fr); column-gap: var(--tl-gap); padding: .4rem 0; }
+.tl-session p { margin: 0; }
+.tl-dot { width: 12px; height: 12px; margin-top: .3rem; border-radius: 50%; border: 2px solid var(--muted); background: var(--bg); position: relative; z-index: 1; }
+.tl-session.is-past .tl-dot { border-color: var(--border); background: var(--border); }
+.tl-session.is-next .tl-dot { border-color: var(--accent-strong); background: var(--accent-strong); box-shadow: 0 0 0 4px var(--accent-soft); }
+.tl-head { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .5rem; font-size: .9375rem; line-height: 1.5; }
+.tl-head b { font-variant-numeric: tabular-nums; }
+.tl-session.is-past .tl-head b { color: var(--muted); font-weight: 600; }
+.tl-session.is-next .tl-head b { color: var(--accent-strong); }
+.tl-where { color: var(--muted); font-size: .8125rem; }
+.tl-desc { margin-top: var(--space-1) !important; color: var(--muted); font-size: .8125rem; line-height: 1.6; }
+.tl-session .file-links { margin-top: -2px; }
+.tl-session.is-past .file-locked { display: none; }
+
+/* 已結束的研討收成最上面一列，點開才出現；只有這一層收合 */
+.tl-fold { margin-bottom: var(--space-4); }
+.tl-fold > summary {
+  display: grid; grid-template-columns: var(--tl-topic) 12px minmax(0, 1fr) auto; column-gap: var(--tl-gap); align-items: center;
+  min-height: 44px; cursor: pointer; list-style: none; color: var(--muted); -webkit-tap-highlight-color: transparent; }
+.tl-fold > summary::-webkit-details-marker { display: none; }
+.tl-fold > summary .tl-dot { margin-top: 0; border-color: var(--border); background: var(--border); }
+.tl-fold-name { font-size: .9375rem; font-weight: 600; }
+.tl-fold-label { font-size: .9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-fold-label small { margin-left: .5rem; font-size: .8125rem; font-weight: 400; font-variant-numeric: tabular-nums; }
+.tl-fold-chevron svg { display: block; width: 1.1rem; height: 1.1rem; transition: transform .18s var(--ease-out); }
+.tl-fold[open] > summary .tl-fold-chevron svg { transform: rotate(90deg); }
+.tl-fold[open] > summary { color: var(--text); }
+.tl-fold > .tl { padding: var(--space-2) 0 0; }
+@media (hover: hover) and (pointer: fine) { .tl-fold > summary:hover { color: var(--accent-strong); } }
+.tl-fold > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* 2.3（SU 回饋）：講義／小考用跟課本相同的 PDF 連結；測驗不另外上色；之後的研討也收合 */
+/* 2.4（SU 回饋）：Handout／Quiz 各成一組，組內分題目、解答 */
+.file-links { display: flex; flex-direction: column; gap: 0; margin-top: 2px; }
+.file-group { display: flex; flex-wrap: wrap; align-items: center; column-gap: .75rem; min-height: 40px; }
+.file-group-label { width: 3.9rem; flex: none; color: var(--muted); font-size: .6875rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.file-links .resource-document-link { gap: .3rem; margin: 0 -.35rem; min-height: 40px; font-weight: 600; }
+.file-links .resource-document-link .ui-icon { width: 1.25rem; height: 1.25rem; }
+.file-links .file-locked { min-height: 40px; font-size: .8125rem; }
+.file-pending { display: inline-flex; align-items: center; gap: .3rem; min-height: 40px; color: var(--muted); font-weight: 600; opacity: .7; }
+.file-pending .ui-icon { width: 1.25rem; height: 1.25rem; }
+.file-pending small { font-size: .6875rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.tl-fold.is-after { margin: var(--space-4) 0 0; }
+.tl-fold.is-after > .tl { padding: var(--space-2) 0 0; }
