@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# git hook 必須是 LF，否則 GitHub Desktop 執行時會失敗；bat 必須是 CRLF
+scripts/hooks/* text eol=lf
+*.bat text eol=crlf

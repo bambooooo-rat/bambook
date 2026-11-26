@@ -1,0 +1,138 @@
+<!doctype html>
+<!-- 【原型，用完即丟】課程頁「研討＋檔案」三種呈現：?variant=A 精修地鐵線／B 這次＋全部進度／C 時間表。?course=工程數學 換課程。 -->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>課程頁原型 | Bambook</title>
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="proto.css">
+<style>
+h1 { font-size: 34px; margin: 2px 0 6px; letter-spacing: -.02em; line-height: 1.15; }
+.switch { display: flex; gap: 18px; margin: 6px 0 4px; }
+.switch a { padding: 6px 0; font-size: 15px; font-weight: 600; color: var(--muted); }
+.switch a.on { color: var(--text); box-shadow: inset 0 -2px 0 var(--text); }
+.session { padding: 6px 0; }
+.session + .session { margin-top: 10px; }
+.session .when { font-size: 15px; font-weight: 600; }
+.session .when .n { font-weight: 400; }
+.session .loc { font-size: 14px; color: var(--muted); }
+.stub { margin-top: 8px; }
+
+/* A：精修地鐵線（線與圓點表示進度，目前主題用字級拉開） */
+.va { position: relative; padding-left: 28px; }
+.va::before { content: ""; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: var(--border); }
+.va .stop { position: relative; }
+.va .stop + .stop { margin-top: 18px; }
+.va .stop::before { content: ""; position: absolute; left: -26px; top: 7px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 2px var(--border); }
+.va .stop.past::before { background: var(--border); }
+.va .stop.cur::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.va .fold { display: block; text-align: left; color: var(--muted); font-size: 14px; padding: 2px 0; }
+.va .cur .lab { font-size: 13px; font-weight: 700; color: var(--accent-strong); }
+.va .cur h3 { margin: 2px 0 2px; font-size: 26px; letter-spacing: -.015em; line-height: 1.25; }
+.va .cur .desc { color: var(--muted); font-size: 15px; margin-bottom: 8px; }
+.va .mini { font-size: 16px; font-weight: 600; }
+.va .mini small { color: var(--muted); font-weight: 400; margin-left: 8px; font-size: 13px; }
+.va .past .mini { color: var(--muted); }
+
+/* B：這次＋全部進度 */
+.hero { padding: 4px 0 4px; }
+.hero .lab { font-size: 14px; color: var(--accent-strong); font-weight: 700; }
+.hero h3 { margin: 4px 0 4px; font-size: 30px; letter-spacing: -.015em; line-height: 1.2; }
+.hero .desc { color: var(--muted); font-size: 15px; margin-bottom: 4px; }
+.vb details + details { border-top: 1px solid var(--border); }
+.vb summary { list-style: none; display: grid; grid-template-columns: 26px 1fr auto; gap: 12px; align-items: baseline; padding: 14px 0; cursor: pointer; }
+.vb summary::-webkit-details-marker { display: none; }
+.vb .num { font-size: 15px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.vb .cur .num, .vb .cur b { color: var(--accent-strong); }
+.vb .past summary b, .vb .past .num { color: var(--muted); font-weight: 600; }
+.vb summary b { font-size: 17px; }
+.vb .body { padding: 0 0 14px 38px; }
+
+/* C：時間表 */
+.vc .month { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .06em; margin: 28px 0 4px; }
+.vc .r { display: grid; grid-template-columns: 54px 1fr; gap: 14px; padding: 10px 0; }
+.vc .r.past .t, .vc .r.past .d b { color: var(--muted); }
+.vc .r.cur .d b { color: var(--accent-strong); }
+.vc .d { line-height: 1.15; padding-top: 2px; }
+.vc .d b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.vc .d span { font-size: 13px; color: var(--muted); }
+.vc .t { font-weight: 700; font-size: 17px; }
+.vc .s { font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v19.5H6.5A2.5 2.5 0 0 1 4 19V4.5A2.5 2.5 0 0 1 6.5 2Z"/><path d="M8 7h8M8 11h6"/></svg>Bambook</a>
+  <nav><a href="index.html">首頁</a><a class="on">教材</a><a>文章</a></nav>
+  <button class="icon-btn" data-theme-toggle aria-label="切換深淺色"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg></button>
+</header>
+<span class="now-note" data-now></span>
+<main id="app"><p class="empty">載入中…</p></main>
+<div class="proto"><button data-prev aria-label="上一個版本">‹</button><span></span><button data-next aria-label="下一個版本">›</button></div>
+<script type="module">
+import { loadAll, visibleFiles, lockedFiles, status, relative, md, wd, hm, esc, chrome, opensText } from "./proto.js";
+const { courses } = await loadAll();
+const want = new URLSearchParams(location.search).get("course") || "微積分乙";
+const c = courses.find(x => x.name === want) || courses[0];
+const ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v12m-5-5 5 5 5-5M5 20h14"/></svg>';
+const fileBtns = s => visibleFiles(s).map(f => `<a class="file" href="${f.href}" target="_blank">${ICON}${f.label}<small>${f.sub}</small></a>`).join("")
+  + lockedFiles(s).map(f => `<span class="file locked">${f.label}${f.sub}・${opensText(f)}</span>`).join("")
+  + (s.quizPending ? `<span class="file locked">小考檔案尚未放上</span>` : "");
+const tag = s => `<span class="tag ${s.kind === "測驗" ? "quiz" : ""}">${esc(s.kind)}</span>`;
+
+// 主題：所有研討都結束才算結束；第一個沒結束的主題是「目前」
+const topics = c.topics.map((t, i) => {
+  const ss = c.sessions.filter(s => s.topicIndex === i);
+  return { ...t, i, ss, past: ss.length && ss.every(s => status(s) === "past") };
+});
+const curIdx = topics.findIndex(t => !t.past);
+topics.forEach(t => t.state = curIdx === -1 ? (t.i === topics.length - 1 ? "cur" : "past") : t.i < curIdx ? "past" : t.i === curIdx ? "cur" : "future");
+const sessionHTML = s => `<div class="session"><div class="when">${md(s.start)} ${wd(s.start)} ${esc(s.time)}・${tag(s)} <span class="n">・${relative(s)}</span></div>
+  <div class="loc">${esc(s.location)}</div><div class="files">${fileBtns(s)}</div></div>`;
+
+const head = () => `<h1>${esc(c.name)}</h1>
+  <nav class="switch">${courses.map(x => `<a class="${x.name === c.name ? "on" : ""}" href="?course=${encodeURIComponent(x.name)}&variant=${new URLSearchParams(location.search).get("variant") || "A"}">${esc(x.name)}</a>`).join("")}</nav>`;
+const stub = `<div class="stub"><div class="sec-h"><h2>課本</h2></div><p class="empty">（原本的課本、簡報、歷屆練習、延伸文章區塊，版面不在這次原型範圍）</p></div>`;
+
+function A() {
+  const past = topics.filter(t => t.state === "past"), fut = topics.filter(t => t.state === "future"), cur = topics.find(t => t.state === "cur");
+  return `${head()}<div class="sec-h"><h2>研討與講義</h2></div><div class="va">
+    ${past.length ? `<div class="stop past"><button class="fold" data-fold="past">已結束的 ${past.length} 個主題 ▾</button><div data-body="past" hidden>${past.map(t => `
+      <div class="stop past" style="margin:8px 0 14px"><div class="mini">${esc(t.topic)}<small>${t.ss[0] ? md(t.ss[0].start) : ""}</small></div>${t.ss.map(sessionHTML).join("")}</div>`).join("")}</div></div>` : ""}
+    ${cur ? `<div class="stop cur"><div class="lab">目前主題</div><h3>${esc(cur.topic)}</h3><div class="desc">${esc(cur.description)}</div>${cur.ss.map(sessionHTML).join("")}</div>` : ""}
+    ${fut.length ? `<div class="stop"><button class="fold" data-fold="fut">接下來的 ${fut.length} 個主題 ▾</button><div data-body="fut" hidden>${fut.map(t => `
+      <div class="stop" style="margin:8px 0 14px"><div class="mini">${esc(t.topic)}<small>${t.ss[0] ? md(t.ss[0].start) + " " + wd(t.ss[0].start) : ""}</small></div><div class="desc n">${esc(t.description)}</div></div>`).join("")}</div></div>` : ""}
+  </div>${stub}`;
+}
+function B() {
+  const next = c.sessions.find(s => status(s) !== "past") || c.sessions[c.sessions.length - 1];
+  return `${head()}${next ? `<div class="hero"><div class="lab">${status(next) === "past" ? "最近一次研討" : "這次研討"}・${relative(next)}</div><h3>${esc(next.topic)}</h3>
+    <div class="desc">${md(next.start)} ${wd(next.start)} ${esc(next.time)}・${esc(next.location)}・${next.kind}</div><div class="files">${fileBtns(next)}</div></div>` : ""}
+    <div class="sec-h"><h2>全部進度</h2></div><div class="vb">${topics.map(t => `
+    <details class="${t.state}" ${t.state === "cur" ? "open" : ""}><summary><span class="num">${t.i + 1}</span><span><b>${esc(t.topic)}</b><br><span class="n">${esc(t.description)}</span></span><span class="n">${t.ss[0] ? md(t.ss[0].start) : ""}</span></summary>
+      <div class="body">${t.ss.map(sessionHTML).join("")}</div></details>`).join("")}</div>${stub}`;
+}
+function C() {
+  let lastMonth = "";
+  const firstOpen = c.sessions.find(s => status(s) !== "past");
+  return `${head()}<div class="sec-h"><h2>研討時間表</h2></div><div class="vc">${c.sessions.map(s => {
+    const m = `${s.start.getFullYear()} 年 ${s.start.getMonth() + 1} 月`;
+    const mh = m !== lastMonth ? `<div class="month">${m}</div>` : ""; lastMonth = m;
+    const cls = s === firstOpen ? "cur" : status(s) === "past" ? "past" : "";
+    return `${mh}<div class="r ${cls}"><div class="d"><b>${md(s.start)}</b><span>${wd(s.start)}</span></div>
+      <div><div class="t">${esc(s.topic)} <span class="tag ${s.kind === "測驗" ? "quiz" : ""}" style="margin-left:4px">${esc(s.kind)}</span>${s === firstOpen ? '<span class="tag now" style="margin-left:6px">目前</span>' : ""}</div><div class="s">${esc(s.time)}・${esc(s.location)}</div><div class="files">${fileBtns(s)}</div></div></div>`;
+  }).join("")}</div>${stub}`;
+}
+const R = { A, B, C };
+chrome([["A", "精修地鐵線"], ["B", "這次＋全部進度"], ["C", "時間表"]], key => {
+  document.getElementById("app").innerHTML = R[key]();
+  document.querySelectorAll("[data-fold]").forEach(b => b.onclick = () => {
+    const body = document.querySelector(`[data-body="${b.dataset.fold}"]`); body.hidden = !body.hidden;
+  });
+});
+</script>
+</body>
+</html>

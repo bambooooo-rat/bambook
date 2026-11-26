@@ -1,50 +1,7 @@
 /* assets/css/fonts.css
-   Self-hosted Noto fonts, split by unicode-range under one family name so
-   the browser only downloads the subset actually needed. Shared by the
-   main site (site.css) and every standalone tool under entries/tools/ via
-   tokens.css's --font-sans/--font-mono, so there is exactly one copy of
-   each font file on disk.
+   字型改用 Google Fonts（2026-11 起）：Google 依頁面實際用到的字切片下載，每頁只抓幾百 KB；
+   原本自帶的 Noto Sans TC 是 12MB 的完整 TTF，手機只要出現一個中文字就得整個下載。
+   抓不到 Google Fonts 時（離線、被擋），tokens.css 的 --font-sans／--font-mono 會退回系統字型。
+   emoji 一律用裝置內建的彩色 emoji。主站與 entries/tools/ 底下的工具都讀這個檔。
 */
-@font-face {
-  font-family: "Bambook-Sans";
-  src: url("../fonts/NotoColorEmoji-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+2300-23FF, U+2600-26FF, U+2700-27BF, U+1F000-1FAFF;
-}
-
-@font-face {
-  font-family: "Bambook-Sans";
-  src: url("../fonts/NotoSans-VariableFont_wdth,wght.ttf") format("truetype");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+2190-21FF, U+25A0-25FF, U+0000-00FF, U+0100-017F, U+0180-024F, U+0370-03FF, U+0400-04FF, U+0500-052F, U+1F00-1FFF, U+2000-206F, U+2070-209F, U+20A0-20CF, U+2100-214F, U+2200-22FF;
-}
-
-@font-face {
-  font-family: "Bambook-Sans";
-  src: url("../fonts/NotoSansDevanagari-VariableFont_wdth,wght.ttf") format("truetype");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0900-097F, U+A8E0-A8FF;
-}
-
-@font-face {
-  font-family: "Bambook-Sans";
-  src: url("../fonts/NotoSansTC-VariableFont_wght.ttf") format("truetype");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+2E80-9FFF, U+3000-303F, U+3040-309F, U+30A0-30FF, U+FF00-FFEF, U+20000-2EBE0;
-}
-
-@font-face {
-  font-family: "Bambook-Mono";
-  src: url("../fonts/NotoSansMono-VariableFont_wdth,wght.ttf") format("truetype");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wdth,wght@0,62.5..100,100..900;1,62.5..100,100..900&family=Noto+Sans+TC:wght@100..900&family=Noto+Sans+Mono:wght@100..900&display=swap");

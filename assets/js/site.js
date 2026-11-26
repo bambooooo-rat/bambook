@@ -41,6 +41,7 @@ const markdownSanitizeOptions = {
 // Inline Tabler Icons (outline set) keep the public site independent of icon CDNs.
 const tablerIcon = paths => `<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
 const ICONS = {
+  link: tablerIcon('<path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/>'),
   book: tablerIcon('<path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/>'),
   math: tablerIcon('<path d="M19 5h-7l-4 14l-3 -6h-2"/><path d="M14 13l6 6"/><path d="M14 19l6 -6"/>'),
   pdf: tablerIcon('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4"/><path d="M5 18h1.5a1.5 1.5 0 0 0 0 -3h-1.5v6"/><path d="M17 18h2"/><path d="M20 15h-3v6"/><path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1"/>'),
@@ -372,7 +373,7 @@ function buildFooterSitemap() {
     {
       title: "文章",
       moreHref: "#articles",
-      items: state.articles.map(article => ({ label: article.title, href: `#article=${encodeURIComponent(article.path)}` })),
+      items: state.articles.map(article => ({ label: article.title, href: articleHref(article) })),
     },
     {
       title: "其他",
@@ -406,6 +407,7 @@ async function loadSiteManifest() {
       .filter(item => item && typeof item.path === "string")
       .map(item => ({
         path: item.path.replace(/^\/+/, ""),
+        slug: typeof item.slug === "string" && item.slug ? item.slug : "",
         title: item.title || fileTitle(item.path),
         date: item.date || "",
         status: item.status || "",
@@ -482,7 +484,11 @@ function route() {
     const tagMatch = /^tag:(.+)$/.exec(value || "");
     renderArticlesPage("", tagMatch ? tagMatch[1] : "");
   }
-  else if (name === "article") renderArticlesPage(value);
+  else if (name === "article") {
+    // #article=<短網址代號>&sec=<小節代號>；舊網址 #article=content 路徑 也接受（見 findArticle）
+    const [key, section = ""] = value.split("&sec=");
+    renderArticlesPage(key, "", section);
+  }
   else if (name === "tools") renderTools();
   else renderHome();
 }
@@ -515,7 +521,7 @@ function renderHome() {
     ? emptyState(state.manifestError)
     : state.articles.length
       ? state.articles.slice(0, 3).map(article => row({
-          href: `#article=${encodeURIComponent(article.path)}`,
+          href: articleHref(article),
           title: article.title,
           desc: article.summary || "閱讀這篇文章。",
           meta: formatDate(article.date),
@@ -698,7 +704,7 @@ function relatedArticlesSection(courseName) {
   const related = state.articles.filter(article => article.tags.includes(courseName));
   if (!related.length) return "";
   const rows = related.slice(0, RELATED_ARTICLES_LIMIT).map(article => row({
-    href: `#article=${encodeURIComponent(article.path)}`,
+    href: articleHref(article),
     title: article.title,
     desc: article.summary || "閱讀這篇文章。",
     meta: formatDate(article.date),
@@ -1097,14 +1103,14 @@ function normaliseArticleReaderShell() {
 
 function articleOverviewItem(article) {
   return row({
-    href: `#article=${encodeURIComponent(article.path)}`,
+    href: articleHref(article),
     title: article.title,
     desc: article.summary || "閱讀這篇文章。",
     meta: formatDate(article.date),
   });
 }
 
-async function loadArticle(record) {
+async function loadArticle(record, section = "") {
   const view = document.querySelector("#article-view");
   if (!view) return;
   try {
@@ -1124,18 +1130,32 @@ async function loadArticle(record) {
         <div class="article-date">${escapeHTML(formatDate(article.date))}</div>
         <h1>${escapeHTML(article.title)}</h1>
         <div class="tag-list">${article.tags.map(tag => `<a class="tag" href="#articles=tag:${encodeURIComponent(tag)}">${escapeHTML(tag)}</a>`).join("")}</div>
+        ${record.slug ? `<button type="button" class="copy-link" data-copy-link>${ICONS.link || ""}複製這篇文章的連結</button>` : ""}
         ${article.summary ? `<p class="article-summary">${escapeHTML(article.summary)}</p>` : ""}
       </header>
       <div class="article-body">${DOMPurify.sanitize(dirtyHTML, markdownSanitizeOptions)}</div>`;
     hydrateMarkdownBody(view.querySelector(".article-body"), record.path);
     buildArticleTocForPage(view);
+    bindShareLinks(view, record);
     document.querySelector("#content-scroll")?.scrollTo({ top: 0 });
+    if (section) scrollToSection(section);
   } catch (error) {
     view.innerHTML = `<p class="error">文章無法載入：${escapeHTML(error.message)}</p>`;
   }
 }
 
-function renderArticlesPage(requestedPath = "", tagFilter = "") {
+// 文章在網站內的網址：優先用短網址代號（build-index.py 產生的 slug），舊的 manifest 沒有 slug 時退回檔案路徑。
+function articleHref(article) {
+  return `#article=${encodeURIComponent(article.slug || article.path)}`;
+}
+
+// 對外分享的短網址：a/<slug>/（獨立頁面，帶連結預覽），小節接在 # 後面。
+function articleShareURL(article, sectionId = "") {
+  const base = new URL(`a/${encodeURIComponent(article.slug || "")}/`, SITE_BASE_URL).href;
+  return sectionId ? `${base}#${encodeURIComponent(sectionId)}` : base;
+}
+
+function renderArticlesPage(requestedPath = "", tagFilter = "", section = "") {
   setActiveNav("articles");
   if (state.manifestError) {
     renderNotFound("文章資料無法載入", state.manifestError);
@@ -1167,7 +1187,11 @@ function renderArticlesPage(requestedPath = "", tagFilter = "") {
     return;
   }
 
-  const record = findArticleByPath(requestedPath);
+  const record = findArticle(requestedPath);
+  if (record && record.slug && requestedPath !== record.slug) {
+    // 舊網址（#article=content%2F…md）換成短網址，不留下多一筆瀏覽紀錄
+    history.replaceState(null, "", `#article=${encodeURIComponent(record.slug)}${section ? `&sec=${encodeURIComponent(section)}` : ""}`);
+  }
   if (!record) {
     renderNotFound("找不到文章", "這篇文章可能已被移動、重新命名，或尚未被 site-manifest.json 收錄。");
     return;
@@ -1185,7 +1209,12 @@ function renderArticlesPage(requestedPath = "", tagFilter = "") {
     </div>`;
   document.body.classList.add("article-mode");
   normaliseArticleReaderShell();
-  loadArticle(record);
+  loadArticle(record, section);
+}
+
+function findArticle(key) {
+  const wanted = String(key || "");
+  return state.articles.find(article => article.slug && article.slug === wanted) || findArticleByPath(wanted);
 }
 
 function findArticleByPath(requestedPath) {
@@ -1233,7 +1262,7 @@ function articleListGrouped(activePath) {
 
           <div class="sidebar-month-items">
             ${monthArticles.map(article => `
-              <a class="sidebar-link ${article.path === activePath ? "is-active" : ""}" href="#article=${encodeURIComponent(article.path)}" data-path="${escapeHTML(article.path)}">
+              <a class="sidebar-link ${article.path === activePath ? "is-active" : ""}" href="${articleHref(article)}" data-path="${escapeHTML(article.path)}">
                 <span>${escapeHTML(article.title || "(無標題)")}</span>
                 ${article.status === "draft" ? `<small>draft</small>` : ""}
               </a>
@@ -1380,10 +1409,16 @@ function buildArticleTocForPage(view) {
     return;
   }
 
+  // 小節代號要穩定（分享出去的連結靠它）：用標題文字，不用第幾個標題。
+  // 想固定一個短代號時，在 Markdown 標題後面寫 {#代號}，例如「## ε-δ 定義 {#def}」。
   const usedIds = new Set();
   headings.forEach((heading, index) => {
-    let id = heading.id || slugifyHeading(heading.textContent || "", index);
-    while (usedIds.has(id)) id = `${id}-${index + 1}`;
+    let custom = "";
+    heading.innerHTML = heading.innerHTML.replace(/\s*\{#([^{}\s]+)\}\s*$/u, (_, id) => { custom = id; return ""; });
+    let id = custom || heading.id || slugifyHeading(heading.textContent || "", index);
+    let n = 2;
+    const baseId = id;
+    while (usedIds.has(id)) id = `${baseId}-${n++}`;
     heading.id = id;
     usedIds.add(id);
   });
@@ -1515,7 +1550,57 @@ function slugifyHeading(text, index) {
     .normalize("NFKC")
     .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "");
-  return `heading-${index + 1}${slug ? `-${slug}` : ""}`;
+  return slug || `sec-${index + 1}`;
+}
+
+// 文章頁的分享：標題下方「複製這篇文章的連結」，以及每個 h2／h3 旁的「#」複製該小節的連結。
+function bindShareLinks(view, article) {
+  if (!article.slug) return;
+  view.querySelector("[data-copy-link]")?.addEventListener("click", () => copyText(articleShareURL(article), "已複製文章連結"));
+  view.querySelectorAll(".article-body h2[id], .article-body h3[id]").forEach(heading => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "heading-link";
+    button.textContent = "#";
+    button.setAttribute("aria-label", `複製「${heading.textContent.trim()}」這一節的連結`);
+    button.addEventListener("click", () => copyText(articleShareURL(article, heading.id), "已複製這一節的連結"));
+    heading.append(button);
+  });
+}
+
+async function copyText(text, message) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(message);
+  } catch {
+    window.prompt("複製這個連結：", text);
+  }
+}
+
+function showToast(message) {
+  let toast = document.querySelector(".copy-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.className = "copy-toast";
+    toast.setAttribute("role", "status");
+    document.body.append(toast);
+  }
+  toast.textContent = message;
+  toast.classList.add("is-visible");
+  clearTimeout(state.toastTimer);
+  state.toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 1800);
+}
+
+function scrollToSection(section) {
+  let id = section;
+  try { id = decodeURIComponent(section); } catch {}
+  const target = document.getElementById(id);
+  if (!target) return;
+  const scrollRoot = document.querySelector("#content-scroll");
+  requestAnimationFrame(() => {
+    if (scrollRoot && scrollRoot.scrollHeight > scrollRoot.clientHeight) scrollTargetIntoContainer(scrollRoot, target);
+    else target.scrollIntoView({ block: "start" });
+  });
 }
 
 function renderMarkdown(source) {

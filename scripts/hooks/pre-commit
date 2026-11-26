@@ -1,0 +1,28 @@
+#!/bin/sh
+# Bambook pre-commit hook：commit 前自動建立網站索引、短網址頁面，並驗證內容。
+# 啟用方式（只要一次，在 bambook 資料夾執行）：git config core.hooksPath scripts/hooks
+# GitHub Desktop 按 Commit 時也會執行；驗證有 ERROR 時擋下這次 commit，訊息會顯示在 GitHub Desktop。
+# 緊急時可以跳過：git commit --no-verify
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+PY=""
+for cand in python py python3; do
+  if command -v "$cand" >/dev/null 2>&1 && "$cand" -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" >/dev/null 2>&1; then
+    PY="$cand"
+    break
+  fi
+done
+if [ -z "$PY" ]; then
+  echo "Bambook：找不到 Python 3.9 以上，無法建立網站索引。請確認 python 在 PATH 裡，或用 git commit --no-verify 暫時跳過。"
+  exit 1
+fi
+
+export PYTHONIOENCODING=utf-8
+"$PY" tools/build-index.py || { echo "Bambook：建立索引失敗，這次 commit 已取消。"; exit 1; }
+"$PY" tools/validate-content.py || { echo "Bambook：內容驗證有錯誤（見上方 ERROR），這次 commit 已取消。"; exit 1; }
+
+# 把產生的檔案加進這次 commit（a/、c/ 用 -A 才會連刪掉的舊頁面一起記錄）
+git add site-manifest.json
+git add -A a c
+exit 0

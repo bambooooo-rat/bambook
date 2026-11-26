@@ -1,0 +1,122 @@
+<!doctype html>
+<!-- 【原型，用完即丟】首頁三個版本：?variant=A 通知清單／B 焦點（最近一場大字）／C 週曆條。資料是網站真實的 manifest 與 schedule。 -->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>首頁原型 | Bambook</title>
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="proto.css">
+<style>
+/* A：通知清單（日期欄＋內容，無外框） */
+.wa .item { display: grid; grid-template-columns: 52px 1fr; gap: 14px; padding: 12px 0; }
+.wa .item + .item { margin-top: 12px; }
+.wa .date { line-height: 1.15; padding-top: 3px; }
+.wa .date b { display: block; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.wa .date span { font-size: 13px; color: var(--muted); }
+.wa .item.now .date b, .wa .item.future:first-of-type .date b { color: var(--accent-strong); }
+.wa .item.past { opacity: .62; }
+.wa .head { font-size: 13px; color: var(--muted); }
+.wa .topic { font-weight: 700; font-size: 19px; line-height: 1.35; margin: 2px 0 2px; letter-spacing: -.005em; }
+.wa .where { font-size: 14px; color: var(--muted); margin-bottom: 2px; }
+
+/* B：焦點（最近一場用大字，其餘縮小） */
+.wb .focus { padding: 4px 0 8px; }
+.wb .focus .when { font-size: 15px; font-weight: 600; color: var(--accent-strong); }
+.wb .focus h3 { margin: 6px 0 4px; font-size: 30px; line-height: 1.2; letter-spacing: -.015em; }
+.wb .focus .meta { color: var(--muted); font-size: 15px; margin-bottom: 6px; }
+.wb .rest { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
+.wb .rest .it { display: flex; gap: 12px; padding: 8px 0; align-items: baseline; }
+.wb .rest .it b { width: 72px; flex: none; font-size: 14px; color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+.wb .rest .it .tp { font-weight: 600; }
+.wb .rest .files { margin-top: 0; }
+
+/* C：週曆條（選取日用顏色與底線，不加底色塊） */
+.wc .strip { display: grid; grid-template-columns: repeat(7, 1fr); margin: 4px 0 18px; }
+.wc .day { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0 8px; color: var(--muted); font-size: 13px; position: relative; }
+.wc .day b { font-size: 19px; color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+.wc .day i { width: 5px; height: 5px; border-radius: 50%; }
+.wc .day.has i { background: var(--muted); }
+.wc .day.today b { color: var(--accent-strong); font-weight: 700; }
+.wc .day.sel b { font-weight: 700; }
+.wc .day.sel::after { content: ""; position: absolute; left: 30%; right: 30%; bottom: 0; height: 2px; border-radius: 1px; background: var(--text); }
+.wc .ev { padding: 8px 0; }
+.wc .ev + .ev { margin-top: 16px; }
+.wc .ev .row1 { font-size: 13px; color: var(--muted); }
+.wc .ev h3 { margin: 2px 0 2px; font-size: 21px; letter-spacing: -.01em; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v19.5H6.5A2.5 2.5 0 0 1 4 19V4.5A2.5 2.5 0 0 1 6.5 2Z"/><path d="M8 7h8M8 11h6"/></svg>Bambook</a>
+  <nav><a class="on">首頁</a><a href="course.html">教材</a><a>文章</a></nav>
+  <button class="icon-btn" data-theme-toggle aria-label="切換深淺色"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg></button>
+</header>
+<span class="now-note" data-now></span>
+<main id="app"><p class="empty">載入中…</p></main>
+<div class="proto"><button data-prev aria-label="上一個版本">‹</button><span></span><button data-next aria-label="下一個版本">›</button></div>
+<script type="module">
+import { loadAll, thisWeek, visibleFiles, lockedFiles, status, relative, md, wd, hm, esc, url, chrome, NOW, opensText } from "./proto.js";
+const { courses, articles } = await loadAll();
+const week = thisWeek(courses);
+const ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v12m-5-5 5 5 5-5M5 20h14"/></svg>';
+
+const fileBtns = s => visibleFiles(s).map(f => `<a class="file" href="${f.href}" target="_blank">${ICON}${f.label}<small>${f.sub}</small></a>`).join("")
+  + lockedFiles(s).map(f => `<span class="file locked">${f.label}${f.sub}・${opensText(f)}</span>`).join("");
+const tag = s => `<span class="tag ${s.kind === "測驗" ? "quiz" : ""}">${esc(s.kind)}</span>`;
+const sep = '<span class="dot-sep"></span>';
+const where = s => [`${md(s.start)} ${wd(s.start)} ${esc(s.time || hm(s.start))}`, esc(s.location)].filter(Boolean).join("・");
+
+const coursesList = () => `<div class="sec-h"><h2>課程</h2></div><div class="list">${courses.map(c => {
+  const next = c.sessions.find(s => status(s) !== "past");
+  return `<a href="course.html?course=${encodeURIComponent(c.name)}"><div class="t">${esc(c.name)}</div><div class="d">${next ? `下次：${md(next.start)} ${wd(next.start)}・${esc(next.topic)}` : "本學期研討已結束"}</div></a>`;
+}).join("")}</div>`;
+const articleList = () => `<div class="sec-h"><h2>最新文章</h2><a>全部文章 ›</a></div><div class="list">${articles.map(a =>
+  `<a><div class="t">${esc(a.title)}</div><div class="d">${esc(a.excerpt || a.summary || "")}</div></a>`).join("")}</div>`;
+const intro = `<p class="intro">微積分乙與工程數學課輔社群的講義、小考、課本與數學筆記。</p>`;
+const emptyWeek = `<p class="empty">這週沒有研討。</p>`;
+
+function A() {
+  return `${intro}<div class="sec-h"><h2>本週活動</h2></div>${week.length ? `<div class="wa">${week.map(s => `
+    <div class="item ${status(s)}">
+      <div class="date"><b>${md(s.start)}</b><span>${wd(s.start)}</span></div>
+      <div><div class="head">${esc(s.course)}${sep}${tag(s)}${status(s) === "now" ? `${sep}<span class="tag now">進行中</span>` : ""}</div>
+        <div class="topic">${esc(s.topic)}</div><div class="where">${esc(s.time)}・${esc(s.location)}</div>
+        <div class="files">${fileBtns(s)}</div></div>
+    </div>`).join("")}</div>` : emptyWeek}${coursesList()}${articleList()}`;
+}
+function B() {
+  const [first, ...rest] = week;
+  return `${intro}<div class="sec-h"><h2>本週活動</h2></div>${first ? `<div class="wb">
+    <div class="focus"><div class="when">${relative(first)}・${md(first.start)} ${wd(first.start)} ${esc(first.time)}</div>
+      <h3>${esc(first.topic)}</h3><div class="meta">${esc(first.course)}・${first.kind}・${esc(first.location)}</div>
+      <div class="files">${fileBtns(first)}</div></div>
+    ${rest.length ? `<div class="rest">${rest.map(s => `<div class="it"><b>${md(s.start)} ${wd(s.start)}</b><div><div class="tp">${esc(s.topic)} <span class="n">${esc(s.course)}・${s.kind}</span></div><div class="files">${fileBtns(s)}</div></div></div>`).join("")}</div>` : ""}
+  </div>` : emptyWeek}${coursesList()}${articleList()}`;
+}
+let selDay = null;
+function C() {
+  const start = new Date(NOW); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - 2);
+  const days = Array.from({ length: 7 }, (_, i) => new Date(start.getTime() + i * 86400000));
+  const key = d => d.toDateString();
+  const byDay = {};
+  week.forEach(s => (byDay[key(s.start)] ||= []).push(s));
+  if (!selDay) selDay = key(days.find(d => byDay[key(d)] && d >= new Date(new Date(NOW).setHours(0,0,0,0))) || days.find(d => byDay[key(d)]) || NOW);
+  const evs = byDay[selDay] || [];
+  return `${intro}<div class="sec-h"><h2>本週活動</h2></div><div class="wc">
+    <div class="strip">${days.map(d => `<button class="day ${byDay[key(d)] ? "has" : ""} ${key(d) === key(NOW) ? "today" : ""} ${key(d) === selDay ? "sel" : ""}" data-day="${key(d)}"><span>${wd(d).slice(1)}</span><b>${d.getDate()}</b><i></i></button>`).join("")}</div>
+    ${evs.length ? evs.map(s => `<div class="ev"><div class="row1">${esc(s.time)}${sep}${esc(s.course)}${sep}${tag(s)}</div>
+      <h3>${esc(s.topic)}</h3><div class="n" style="margin:-4px 0 10px">${esc(s.location)}</div><div class="files">${fileBtns(s)}</div></div>`).join("") : `<p class="empty">這天沒有研討。點有藍點的日期看活動。</p>`}
+  </div>${coursesList()}${articleList()}`;
+}
+const R = { A, B, C };
+chrome([["A", "通知清單"], ["B", "焦點"], ["C", "週曆條"]], key => {
+  document.getElementById("app").innerHTML = R[key]();
+  document.querySelectorAll("[data-day]").forEach(b => b.onclick = () => { selDay = b.dataset.day; document.getElementById("app").innerHTML = C(); bindDays(); });
+  function bindDays() { document.querySelectorAll("[data-day]").forEach(b => b.onclick = () => { selDay = b.dataset.day; document.getElementById("app").innerHTML = C(); bindDays(); }); }
+});
+</script>
+</body>
+</html>

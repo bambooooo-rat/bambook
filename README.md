@@ -107,31 +107,46 @@ entries/
 
 可從 `templates/entry.meta.template.json` 複製。
 
-## 產生公開索引
+## 發布（commit 時自動建索引）
 
-GitHub Pages 不能讓瀏覽器即時掃描資料夾，因此新增文章、教材、工具或作品後，需要執行：
+GitHub Pages 不能讓瀏覽器即時掃描資料夾，所以網站讀的是 `site-manifest.json` 這個索引，另外每篇文章、每門課程都有一個短網址頁面（`a/<代號>/`、`c/<課程>/`）。這些都由 `tools/build-index.py` 產生，**不需要手動執行**：
 
-```powershell
-python tools/build-index.py
-```
+- **第一次設定（只要一次）**：在 bambook 資料夾開 PowerShell 執行
+  ```powershell
+  git config core.hooksPath scripts/hooks
+  ```
+  之後用 GitHub Desktop 按 Commit 時，`scripts/hooks/pre-commit` 會自動建索引、產生短網址頁面、驗證內容，並把產生的檔案加進同一個 commit。驗證有 ERROR 時會擋下 commit，GitHub Desktop 會顯示原因。
+- **不開 GitHub Desktop 時**：雙擊 `發布.bat`，輸入這次改了什麼，會自動建索引、驗證、commit、push。
+- 真的需要跳過檢查：`git commit --no-verify`。
 
-它會產生 `site-manifest.json`——網站唯一會讀取的主索引。
+## 短網址與分享
+
+- 文章：`https://bambooooo-rat.github.io/bambook/a/<代號>/`。代號預設是檔名去掉開頭日期（`2026-09-26-epsilon-delta-definition.md` → `epsilon-delta-definition`），也可以在 front matter 寫 `slug: 代號` 指定。兩篇撞名時會自動加上科目資料夾名稱，驗證時會提醒。
+- 小節：`…/a/<代號>/#<小節代號>`。小節代號預設是標題文字；想要固定的短代號，在標題後面寫 `{#代號}`，例如 `## ε-δ 定義 {#def}`。
+- 課程：`…/c/微積分乙/`。
+- 文章頁標題下方有「複製這篇文章的連結」，每個小節標題旁的「#」可以複製該小節的連結。
+- 貼到 LINE、IG 時的預覽：標題加摘要（front matter 的 `summary`，沒有就用第一段），圖片是 `assets/og/bambook.png`。預覽只放不會過期的內容，不放研討日期。
+- 舊網址（`#article=content%2F…md`）會自動換成短網址。
 
 ## 驗證內容
+
+commit 時會自動跑，也可以手動：
 
 ```powershell
 python tools/validate-content.py
 ```
 
-## 本機預覽
+會檢查：單檔超過 90MB 警告、超過 100MB 錯誤（GitHub 會拒收）、網站總量超過 850MB 警告；`schedule.json` 的日期與時段格式、引用的講義與小考檔案是否存在；文章短網址撞名。
 
-雙擊：
+## 測試
 
-```text
-server.bat
+```powershell
+python -m pytest tests
 ```
 
-或執行：
+瀏覽器端的路由測試（需要 Node 與 Playwright）：先 `python -m http.server 8001`，再 `node tests/test_site_routes.mjs http://127.0.0.1:8001/`。
+
+## 本機預覽
 
 ```powershell
 python -m http.server 8001

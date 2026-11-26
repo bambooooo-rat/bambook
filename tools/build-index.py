@@ -1,5 +1,7 @@
 """Build Bambook static indexes.
 
+平常不用手動執行：commit 時 scripts/hooks/pre-commit 會自動跑（設定方式見 README）。
+
 Canonical workflow:
   python tools/build-index.py
 
@@ -15,6 +17,8 @@ import html
 import json
 import os
 import re
+import shutil
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +27,23 @@ ROOT = Path(__file__).resolve().parents[1]
 MATERIALS_DIR = ROOT / "materials"
 CONTENT_DIR = ROOT / "content"
 ENTRIES_DIR = ROOT / "entries"
+
+# 網站公開網址：連結預覽（og:url、og:image）必須是完整網址。換網域時改這裡。
+SITE_URL = os.environ.get("BAMBOOK_SITE_URL", "https://bambooooo-rat.github.io/bambook/")
+
+# 產生的短網址頁面：a/<slug>/index.html（文章）、c/<課程>/index.html（課程）。
+# 每頁放一個標記檔，重建時只清掉帶標記的舊頁面，不會誤刪手動放的東西。
+SHORT_DIRS = {"article": "a", "course": "c"}
+GENERATED_MARK = ".generated"
+
+
+def configure(root: Path) -> None:
+    """測試用：把所有路徑指到另一個網站根目錄。"""
+    global ROOT, MATERIALS_DIR, CONTENT_DIR, ENTRIES_DIR
+    ROOT = Path(root).resolve()
+    MATERIALS_DIR = ROOT / "materials"
+    CONTENT_DIR = ROOT / "content"
+    ENTRIES_DIR = ROOT / "entries"
 
 
 def web_path(path: Path) -> str:
@@ -198,16 +219,49 @@ def first_heading(source: str, fallback: str) -> str:
     return match.group(1).strip() if match else fallback
 
 
+DATE_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}[-_ ]*")
+
+
+def slugify(text: str) -> str:
+    """短網址用：小寫、保留字母數字（含中文），其他字元換成「-」。"""
+    text = unicodedata.normalize("NFKC", str(text or "")).strip().lower()
+    text = re.sub(r"[^\w]+", "-", text, flags=re.UNICODE).replace("_", "-")
+    return re.sub(r"-{2,}", "-", text).strip("-")
+
+
+def article_slug(file_path: Path, metadata: dict[str, str]) -> str:
+    """front matter 的 slug 優先；否則用檔名去掉開頭的日期。"""
+    return slugify(metadata.get("slug") or DATE_PREFIX.sub("", file_path.stem)) or slugify(file_path.stem) or "article"
+
+
+def plain_summary(body: str, limit: int = 110) -> str:
+    """連結預覽用的摘要：第一段正文（跳過標題、圖片、程式碼），去掉 Markdown 記號。"""
+    body = re.sub(r"```.*?```", " ", body, flags=re.DOTALL)
+    for block in re.split(r"\n\s*\n", body):
+        block = block.strip()
+        if not block or block.startswith(("#", "!", "|", ">", "<", "---", "$$")):
+            continue
+        text = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", block)
+        text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+        text = re.sub(r"[*_`~=>]+", "", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        if text:
+            return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+    return ""
+
+
 def markdown_record(file_path: Path) -> dict[str, Any]:
     metadata, body = parse_front_matter(file_path.read_text(encoding="utf-8-sig"))
     fallback_title = file_path.stem.replace("-", " ")
     tags = normalise_tag_list(metadata.get("tags", ""))
     return {
         "path": file_path.relative_to(CONTENT_DIR).as_posix(),
+        "slug": article_slug(file_path, metadata),
         "title": metadata.get("title") or first_heading(body, fallback_title),
         "date": metadata.get("date", ""),
         "tags": tags,
         "summary": metadata.get("summary", ""),
+        "excerpt": metadata.get("summary", "") or plain_summary(body),
     }
 
 
@@ -231,7 +285,31 @@ def build_public_articles() -> list[dict[str, Any]]:
         if file_path.parent == CONTENT_DIR:
             continue
         articles.append(markdown_record(file_path))
+    resolve_slug_collisions(articles)
     return sorted(articles, key=lambda item: (item["date"], item["path"]), reverse=True)
+
+
+def resolve_slug_collisions(articles: list[dict[str, Any]]) -> list[str]:
+    """短網址撞名時，在前面加上科目資料夾名稱；還是撞就再加流水號。回傳處理過的說明（給驗證腳本顯示）。"""
+    notes = []
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for item in articles:
+        groups.setdefault(item["slug"], []).append(item)
+    used = {slug for slug, items in groups.items() if len(items) == 1}
+    for slug, items in sorted(groups.items()):
+        if len(items) == 1:
+            continue
+        for item in sorted(items, key=lambda x: x["path"]):
+            folder = slugify(item["path"].split("/")[0]) if "/" in item["path"] else ""
+            candidate = f"{folder}-{slug}" if folder else slug
+            n = 2
+            while candidate in used:
+                candidate = f"{folder}-{slug}-{n}" if folder else f"{slug}-{n}"
+                n += 1
+            used.add(candidate)
+            notes.append(f"短網址撞名：{item['path']} 改用 {candidate}（可在 front matter 寫 slug: 指定）")
+            item["slug"] = candidate
+    return notes
 
 
 def html_title(index_file: Path) -> str:
@@ -307,6 +385,100 @@ def build_entries() -> list[dict[str, Any]]:
     return ordered + unordered
 
 
+# ---------------------------------------------------------------------------
+# 短網址頁面：a/<slug>/、c/<課程>/
+# ---------------------------------------------------------------------------
+# 每頁只做兩件事：帶連結預覽資訊（LINE、IG、Messenger 會讀 og:*），以及把瀏覽器轉進網站裡對應的頁面。
+# 文章的小節：a/<slug>/#<標題代號> 會轉成 #article=<slug>&sec=<標題代號>。
+# 預覽只放不會過期的內容（標題、摘要），不放研討日期——頁面在 commit 時產生，日期會過期。
+SHORT_PAGE = """<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} | Bambook</title>
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="{og_type}">
+<meta property="og:site_name" content="Bambook">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{image}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta http-equiv="refresh" content="1; url={fallback}">
+<script>
+  (function () {{
+    var sec = location.hash.replace(/^#/, "");
+    location.replace("{target}" + (sec ? "&sec=" + sec : ""));
+  }})();
+</script>
+<style>body{{margin:0;min-height:100vh;display:grid;place-items:center;font:16px/1.6 system-ui,"Microsoft JhengHei",sans-serif;color:#2b2b2e;background:#f6f6f6}}a{{color:#1c86d9}}</style>
+</head>
+<body>
+<p>正在開啟〈<a href="{fallback}">{title}</a>〉…</p>
+</body>
+</html>
+"""
+
+OG_IMAGE = "assets/og/bambook.png"
+
+
+def short_page(kind: str, key: str, title: str, desc: str, target: str) -> str:
+    folder = SHORT_DIRS[kind]
+    url = SITE_URL + f"{folder}/{key}/"
+    return SHORT_PAGE.format(
+        title=html.escape(title, quote=True),
+        desc=html.escape(desc, quote=True),
+        url=html.escape(url, quote=True),
+        image=html.escape(SITE_URL + OG_IMAGE, quote=True),
+        og_type="article" if kind == "article" else "website",
+        # target 只含 ASCII（slug、%XX）：JS 字串與網址都不需要再跳脫
+        target="../../" + target,
+        fallback=html.escape("../../" + target, quote=True),
+    )
+
+
+def course_description(name: str) -> str:
+    return f"{name}的課本、講義、研討時間表與歷屆練習，都整理在這一頁。"
+
+
+def build_short_pages(manifest: dict[str, Any]) -> dict[str, list[str]]:
+    """寫出 a/<slug>/index.html 與 c/<課程>/index.html，並清掉已經不存在的舊頁面。回傳寫出的資料夾名稱。"""
+    from urllib.parse import quote
+
+    wanted: dict[str, dict[str, str]] = {"article": {}, "course": {}}
+    for item in manifest.get("articles", []):
+        wanted["article"][item["slug"]] = short_page(
+            "article", item["slug"], item["title"], item.get("excerpt") or item["title"],
+            "#article=" + quote(item["slug"], safe=""))
+    for name in manifest.get("materials", {}):
+        key = slugify(name) or name
+        wanted["course"][key] = short_page(
+            "course", key, name, course_description(name), "#materials=" + quote(name, safe=""))
+
+    written: dict[str, list[str]] = {}
+    for kind, pages in wanted.items():
+        base = ROOT / SHORT_DIRS[kind]
+        base.mkdir(exist_ok=True)
+        for old in base.iterdir():
+            if old.is_dir() and (old / GENERATED_MARK).exists() and old.name not in pages:
+                shutil.rmtree(old)
+        for key, page in pages.items():
+            folder = base / key
+            folder.mkdir(exist_ok=True)
+            target = folder / "index.html"
+            if not target.exists() or target.read_text(encoding="utf-8") != page:
+                target.write_text(page, encoding="utf-8", newline="\n")
+            mark = folder / GENERATED_MARK
+            if not mark.exists():
+                mark.write_text("由 tools/build-index.py 產生，請勿手動修改。\n", encoding="utf-8")
+        written[kind] = sorted(pages)
+    return written
+
+
 def build_manifest() -> dict[str, Any]:
     return {
         "schema": 1,
@@ -331,10 +503,12 @@ def main() -> None:
 
     manifest_path = args.manifest if args.manifest.is_absolute() else ROOT / args.manifest
 
-    write_json(manifest_path, build_manifest())
+    manifest = build_manifest()
+    write_json(manifest_path, manifest)
+    pages = build_short_pages(manifest)
 
     display = manifest_path.relative_to(ROOT) if manifest_path.is_relative_to(ROOT) else manifest_path
-    print(f"Built {display}")
+    print(f"Built {display}；短網址頁面：文章 {len(pages['article'])} 篇、課程 {len(pages['course'])} 門")
 
 
 if __name__ == "__main__":
